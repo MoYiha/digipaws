@@ -41,6 +41,7 @@ class UsageTrackingService : BaseBlockingService() {
     private var isTimeElapsedCounterOn = true
     private var supportsViewScrolled = false
 
+    private var displayOverlayApps = hashSetOf("") //show overlay only on these apps
     companion object {
 
         const val INTENT_ACTION_REFRESH_USAGE_TRACKER = "nethical.digipaws.refresh.usage_tracker"
@@ -127,7 +128,7 @@ class UsageTrackingService : BaseBlockingService() {
         attentionSpanDataList = savedPreferencesLoader.loadUsageHoursAttentionSpanData()
         reelCountData = savedPreferencesLoader.getReelsScrolled()
         if (Settings.canDrawOverlays(this)) {
-            usageStatOverlayManager.startDisplaying()
+//            usageStatOverlayManager.startDisplaying()
         } else {
             Toast.makeText(
                 this,
@@ -152,6 +153,10 @@ class UsageTrackingService : BaseBlockingService() {
         isReelCountToBeDisplayed = sp.getBoolean("is_reel_counter",true)
         isTimeElapsedCounterOn = sp.getBoolean("is_time_elapsed", false)
 
+        displayOverlayApps = savedPreferencesLoader.getOverlayApps() as HashSet<String>
+        if(isReelCountToBeDisplayed){
+            displayOverlayApps.addAll(SUPPORTED_TRACKING_APPS)
+        }
         if (!isTimeElapsedCounterOn) {
             usageStatOverlayManager.binding?.timeElapsedTxt?.visibility = View.GONE
             handleScreenOff()
@@ -217,13 +222,21 @@ class UsageTrackingService : BaseBlockingService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
 
+        if(displayOverlayApps.contains(
+                event?.packageName
+            ))
+        {
+            if (Settings.canDrawOverlays(this)) {
+                usageStatOverlayManager.startDisplaying()
+            }
+        }
+        else if(usageStatOverlayManager.isOverlayVisible) {
+            usageStatOverlayManager.removeOverlay()
+        }
+
         if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED && isDelayOver(2000)) {
 
-            if (Settings.canDrawOverlays(this) && !usageStatOverlayManager.isOverlayVisible) {
-                if (isReelCountToBeDisplayed || isTimeElapsedCounterOn) {
-                    usageStatOverlayManager.startDisplaying()
-                }
-            }
+
             // apps supports reel tracking
             if (SUPPORTED_TRACKING_APPS.contains(event.packageName)) {
                 Log.d("source", event.source?.className.toString())

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -17,8 +18,6 @@ class UsageStatOverlayManager(private val context: Context) {
     var binding: OverlayUsageStatBinding? = null
     var isOverlayVisible = false
     private var windowManager: WindowManager? = null
-    private lateinit var layoutParams: LayoutParams
-    private var proceedTimer: CountDownTimer? = null
 
     var reelsScrolledThisSession = 0
 
@@ -48,10 +47,14 @@ class UsageStatOverlayManager(private val context: Context) {
     }
 
     fun removeOverlay() {
-        if (overlayView != null) {
+        if (overlayView != null && windowManager != null) {
+            Log.d("UsageStatOverlayManager", "Removing overlay.")
             windowManager?.removeView(overlayView)
-            binding = null
             overlayView = null
+            binding = null
+            isOverlayVisible = false
+        } else {
+            Log.d("UsageStatOverlayManager", "No overlay to remove.")
         }
     }
 

@@ -43,6 +43,7 @@ class SavedPreferencesLoader(private val context: Context) {
     }
 
 
+
     fun saveBlockedKeywords(pinnedApps: Set<String>) {
         val sharedPreferences =
             context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
@@ -259,5 +260,16 @@ class SavedPreferencesLoader(private val context: Context) {
         return gson.fromJson(json, type)
     }
 
+
+    fun setOverlayApps(selectedApps: Set<String>) {
+        val sharedPreferences =
+            context.getSharedPreferences("overlay_apps", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putStringSet("apps", selectedApps).apply()
+    }
+    fun getOverlayApps():Set<String>{
+        val sharedPreferences =
+            context.getSharedPreferences("overlay_apps", Context.MODE_PRIVATE)
+        return sharedPreferences.getStringSet("apps", emptySet()) ?: emptySet()
+    }
 
 }

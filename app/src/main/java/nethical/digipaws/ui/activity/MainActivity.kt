@@ -63,6 +63,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var selectFocusModeUnblockedAppsLauncher: ActivityResultLauncher<Intent>
 
+
+    private lateinit var selectOverlayAppsLauncher: ActivityResultLauncher<Intent>
+
     private lateinit var selectBlockedKeywords: ActivityResultLauncher<Intent>
 
     private lateinit var addCheatHoursActivity: ActivityResultLauncher<Intent>
@@ -129,7 +132,7 @@ class MainActivity : AppCompatActivity() {
                 if (result.resultCode == RESULT_OK) {
                     val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                     selectedApps?.let {
-                        savedPreferencesLoader.saveBlockedApps(it.toSet())
+                        savedPreferencesLoader.saveBlockedKeywords(it.toSet())
                         sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
                     }
                 }
@@ -142,6 +145,16 @@ class MainActivity : AppCompatActivity() {
                     val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                     selectedApps?.let {
                         savedPreferencesLoader.saveFocusModeSelectedApps(selectedApps)
+                    }
+                }
+            }
+
+        selectOverlayAppsLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
+                    selectedApps?.let {
+                        savedPreferencesLoader.setOverlayApps(it.toSet())
                     }
                 }
             }
@@ -237,12 +250,21 @@ class MainActivity : AppCompatActivity() {
             TweakKeywordBlocker().show(supportFragmentManager, "tweak_keyword_blocker")
         }
         binding.selectAppUsageStats.setOnClickListener {
+            val intent = Intent(this, AppUsageActivity::class.java)
+            startActivity(intent, options.toBundle())
+        }
+
+        binding.selectReelUsageStats.setOnClickListener {
             val intent = Intent(this, UsageMetricsActivity::class.java)
             startActivity(intent, options.toBundle())
         }
-        binding.selectAppUsageStats.setOnClickListener {
-            val intent = Intent(this, AppUsageActivity::class.java)
-            startActivity(intent, options.toBundle())
+        binding.btnSelectAppsToShowOverlay.setOnClickListener {
+            val intent = Intent(this, SelectAppsActivity::class.java)
+            intent.putStringArrayListExtra(
+                "PRE_SELECTED_APPS",
+                ArrayList(savedPreferencesLoader.getOverlayApps())
+            )
+            selectOverlayAppsLauncher.launch(intent, options)
         }
         binding.selectFocusBlockedApps.setOnClickListener {
             val intent = Intent(this, SelectAppsActivity::class.java)
@@ -407,6 +429,7 @@ class MainActivity : AppCompatActivity() {
                     )
                     binding.apply {
                         selectReelUsageStats.isEnabled = true
+                        btnSelectAppsToShowOverlay.isEnabled = true
                         btnConfigTracker.isEnabled = true
                     }
                 }

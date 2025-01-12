@@ -488,6 +488,15 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="App usage stats" />
+
+                <Button
+                    android:id="@+id/btn_select_apps_to_show_overlay"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:enabled="false"
+                    android:text="Apps to display an Overlay on" />
                 <Button
                     android:id="@+id/btn_config_tracker"
                     style="@style/Widget.Material3.Button.OutlinedButton"
