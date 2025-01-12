@@ -33,13 +33,13 @@ class SelectAppsActivity : AppCompatActivity() {
         binding = ActivitySelectAppsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        selectedAppList = intent.getStringArrayListExtra("PRE_SELECTED_APPS")?.toHashSet() ?: HashSet()
+        selectedAppList = intent.getStringArrayListExtra("PRE_SELECTED_APPS")?.toHashSet() ?: HashSet() // get all selected apps
 
 
         binding.appList.layoutManager = LinearLayoutManager(this)
         val appItemList: MutableList<AppItem> = mutableListOf()
 
-        if (intent.hasExtra("APP_LIST")) { // load only selected apps instead of everything installed
+        if (intent.hasExtra("APP_LIST")) { // load only few specific apps instead of everything installed
             val appList = intent.getStringArrayListExtra("APP_LIST")
 
             appList?.forEach { packageName ->
@@ -64,8 +64,15 @@ class SelectAppsActivity : AppCompatActivity() {
         appItemList.sortBy {
             it.appInfo.loadLabel(packageManager).toString().lowercase()
         }
-        binding.appList.layoutManager = LinearLayoutManager(this)
-        binding.appList.adapter = ApplicationAdapter(appItemList, selectedAppList)
+
+        val sortedAppItemList = appItemList.sortedWith(compareBy<AppItem> {
+            // First sort by selection status - false comes before true when using !
+            !selectedAppList.contains(it.appInfo.packageName)
+        }.thenBy {
+            // Then sort alphabetically within each group
+            it.appInfo.loadLabel(packageManager).toString().lowercase()
+        })
+
 
         binding.confirmSelection.setOnClickListener {
             val selectedAppsArrayList = ArrayList(selectedAppList)
@@ -76,7 +83,9 @@ class SelectAppsActivity : AppCompatActivity() {
             finish()
         }
 
-        val filteredList = appItemList.toMutableList()
+
+        binding.appList.layoutManager = LinearLayoutManager(this)
+        val filteredList = sortedAppItemList.toMutableList()
         binding.appList.adapter = ApplicationAdapter(filteredList, selectedAppList)
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
