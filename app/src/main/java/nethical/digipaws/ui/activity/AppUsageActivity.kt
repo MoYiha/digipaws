@@ -12,9 +12,14 @@ import android.content.pm.PackageManager
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Process
+import android.util.Log
+import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -162,7 +167,7 @@ class AppUsageActivity : AppCompatActivity() {
 
             // Center hole styling
             isDrawHoleEnabled = true
-            holeRadius = 65f
+            holeRadius = 85f
             transparentCircleRadius = 0f  // Remove transparent circle
             setHoleColor(MaterialColors.getColor(context, com.google.android.material.R.attr.colorSurface, Color.WHITE))
 
@@ -171,16 +176,70 @@ class AppUsageActivity : AppCompatActivity() {
             // External labels styling
             setDrawEntryLabels(false)  // Disable internal labels
 
-
             animateY(1200, Easing.EaseInOutQuart)
 
-            setExtraOffsets(50f, 50f, 50f, 50f)
 
             //Todo: Add external labels
             invalidate()
         }
+        addLegendsAroundChart(entries, pieDataSet.colors)
+    }
+    private fun addLegendsAroundChart(entries: List<PieEntry>, colors: List<Int>) {
+        binding.legendView.removeAllViews()
+
+        // Create and add all legend views first
+        val legendViews = entries.mapIndexed { index, entry ->
+            createLegendView(entry.label, colors[index]).also {
+                binding.legendView.addView(it)
+            }
+        }
+
+        // Wait for views to be measured
+        binding.legendView.post {
+            val centerX = binding.pieChart.width / 2f
+            val centerY = binding.pieChart.height / 2f
+            // Add a margin to the radius to position labels outside the chart
+            val radius = binding.pieChart.radius + 60f  // Adjust this value to control how far labels are from the pie
+
+            var currentAngle = -90f // Start from the top (-90 degrees)
+            val total = entries.sumOf { it.value.toDouble() }
+
+            legendViews.forEachIndexed { index, legendView ->
+                val sliceAngle = (entries[index].value / total * 360f).toFloat()
+                // Calculate the center angle of the current slice
+                val midAngle = currentAngle + (sliceAngle / 2f)
+
+                // Convert angle to radians for position calculation
+                val radians = Math.toRadians(midAngle.toDouble())
+
+                // Calculate position using the mid-angle
+                val x = (centerX + radius * Math.cos(radians)).toFloat() - (legendView.width / 2f)
+                val y = (centerY + radius * Math.sin(radians)).toFloat() - (legendView.height / 2f)
+
+                // Set the position
+                legendView.x = x
+                legendView.y = y
+
+                // Move to next slice
+                currentAngle += sliceAngle
+            }
+        }
     }
 
+    private fun createLegendView(label: String, color: Int): TextView {
+        return TextView(this).apply {
+            text = label
+            textSize = 12f
+            setTextColor(getColor(R.color.text_color))
+            setPadding(8, 4, 8, 4)
+
+
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+    }
     fun getUsageStats(usageStatsManager: UsageStatsManager): List<AppUsageStats> {
         val endTime = System.currentTimeMillis()
         val startTime = ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault())
@@ -211,20 +270,6 @@ class AppUsageActivity : AppCompatActivity() {
             binding.appName.text = stats.applicationInfo.loadLabel(packageManager)
             binding.appUsage.text = formatTime(stats.usageStats.totalTimeInForeground)
 
-            binding.root.setOnClickListener {
-                if (stats.applicationInfo.packageName == packageName) {
-                    Snackbar.make(
-                        binding.root, "Cannot set limit for Reef", Snackbar.LENGTH_SHORT
-                    ).show()
-                    return@setOnClickListener
-                }
-//                val intent = Intent(
-//                    this@AppUsageActivity, ApplicationDailyLimitActivity::class.java
-//                ).apply {
-//                    putExtra("package_name", stats.applicationInfo.packageName)
-//                }
-//                startActivity(intent)
-            }
         }
     }
 

@@ -8,12 +8,12 @@
     android:gravity="center"
     android:minHeight="?listPreferredItemHeightLarge"
     android:orientation="horizontal"
-    android:padding="8dp">
+    android:padding="16dp">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/app_icon"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginEnd="8dp"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
         tools:srcCompat="@mipmap/ic_launcher" />
@@ -22,6 +22,7 @@
         android:id="@+id/app_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
         android:layout_weight="1"
         android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
         android:textColor="?colorOnSurface"
