@@ -52,7 +52,12 @@ import nethical.digipaws.ui.dialogs.TweakViewBlockerCheatHours
 import nethical.digipaws.ui.dialogs.TweakViewBlockerWarning
 import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.SavedPreferencesLoader
+import rikka.shizuku.Shizuku
+import rikka.shizuku.ShizukuSystemProperties
+import rikka.shizuku.SystemServiceHelper
+import java.lang.Compiler.enable
 import java.util.Calendar
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -101,6 +106,17 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+
+        // Listen for Shizuku permission results
+        Shizuku.addRequestPermissionResultListener { requestCode, resultCode ->
+            if (requestCode == 0 && resultCode == PackageManager.PERMISSION_GRANTED) {
+                checkPermissions()
+
+
+            }
+        }
+
         if (isFirstLaunch()) {
             showTermsAndConditionsDialog()
         }
@@ -389,7 +405,7 @@ class MainActivity : AppCompatActivity() {
                 binding.apply {
                     selectBlockedApps.isEnabled = isAppBlockerOn
                     btnConfigAppblockerWarning.isEnabled = isAppBlockerOn
-                    appBlockerSelectCheatHours.isEnabled = isAppBlockerOn  
+                    appBlockerSelectCheatHours.isEnabled = isAppBlockerOn
                 }
 
                 // View Blocker
@@ -484,6 +500,21 @@ class MainActivity : AppCompatActivity() {
                     binding.selectFocusBlockedApps.isEnabled = !isFocusedModeOn
                     binding.startFocusMode.isEnabled = !isFocusedModeOn
                 }
+                binding.monochromeStatusChip.setOnClickListener {
+                    if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                        Shizuku.requestPermission(0)
+                    }
+                }
+
+                val isShizukuOn = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+                updateChip(
+                    isShizukuOn,
+                    binding.monochromeStatusChip,
+                    binding.monochromeWarning
+                )
+
+                binding.setupMonochrome.isEnabled = isShizukuOn
+                binding.selectMonochromeApps.isEnabled = isShizukuOn
             }
         }
     }
