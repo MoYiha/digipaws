@@ -33,13 +33,15 @@ class UsageStatOverlayManager(private val context: Context) {
         val layoutParams = LayoutParams(
             LayoutParams.MATCH_PARENT,
             LayoutParams.MATCH_PARENT,
-            LayoutParams.TYPE_APPLICATION_OVERLAY,
+            LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
             LayoutParams.FLAG_NOT_FOCUSABLE or
                     LayoutParams.FLAG_NOT_TOUCHABLE or
-                    LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    or LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         )
         layoutParams.gravity = Gravity.CENTER
+        layoutParams.layoutInDisplayCutoutMode = LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
