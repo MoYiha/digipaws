@@ -272,4 +272,16 @@ class SavedPreferencesLoader(private val context: Context) {
         return sharedPreferences.getStringSet("apps", emptySet()) ?: emptySet()
     }
 
+
+    fun loadGrayScaleApps(): Set<String> {
+        val sharedPreferences =
+            context.getSharedPreferences("grayscale", Context.MODE_PRIVATE)
+        return sharedPreferences.getStringSet("apps", emptySet()) ?: emptySet()
+    }
+
+    fun saveGrayScaleApps(apps: Set<String>) {
+        val sharedPreferences =
+            context.getSharedPreferences("grayscale", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putStringSet("apps", apps).apply()
+    }
 }

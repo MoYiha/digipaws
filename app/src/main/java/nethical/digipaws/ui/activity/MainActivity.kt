@@ -35,6 +35,7 @@ import nethical.digipaws.Constants
 import nethical.digipaws.R
 import nethical.digipaws.databinding.ActivityMainBinding
 import nethical.digipaws.databinding.DialogFocusModeBinding
+import nethical.digipaws.databinding.DialogGrayscaleBinding
 import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.DialogRemoveAntiUninstallBinding
 import nethical.digipaws.databinding.TermsAndConditionsDialogBinding
@@ -45,17 +46,17 @@ import nethical.digipaws.services.KeywordBlockerService
 import nethical.digipaws.services.UsageTrackingService
 import nethical.digipaws.services.ViewBlockerService
 import nethical.digipaws.ui.dialogs.TweakAppBlockerWarning
+import nethical.digipaws.ui.dialogs.TweakGrayScaleMode
 import nethical.digipaws.ui.dialogs.TweakKeywordBlocker
 import nethical.digipaws.ui.dialogs.TweakKeywordPack
 import nethical.digipaws.ui.dialogs.TweakUsageTracker
 import nethical.digipaws.ui.dialogs.TweakViewBlockerCheatHours
 import nethical.digipaws.ui.dialogs.TweakViewBlockerWarning
+import nethical.digipaws.utils.GrayscaleControl
 import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.SavedPreferencesLoader
 import rikka.shizuku.Shizuku
-import rikka.shizuku.ShizukuSystemProperties
-import rikka.shizuku.SystemServiceHelper
-import java.lang.Compiler.enable
+import rikka.shizuku.Shizuku.OnBinderReceivedListener
 import java.util.Calendar
 
 
@@ -64,10 +65,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var selectPinnedAppsLauncher: ActivityResultLauncher<Intent>
 
+    private lateinit var selectGrayScaleApps: ActivityResultLauncher<Intent>
+
     private lateinit var selectBlockedAppsLauncher: ActivityResultLauncher<Intent>
 
     private lateinit var selectFocusModeUnblockedAppsLauncher: ActivityResultLauncher<Intent>
-
 
     private lateinit var selectOverlayAppsLauncher: ActivityResultLauncher<Intent>
 
@@ -82,6 +84,15 @@ class MainActivity : AppCompatActivity() {
     private var isDeviceAdminOn = false
     private var isAntiUninstallOn = false
     private var isDisplayOverOtherAppsOn = false
+
+    private var isShizukuBinderRecieved = false
+    private val BINDER_RECEIVED_LISTENER = OnBinderReceivedListener {
+        if (!Shizuku.isPreV11()) {
+            isShizukuBinderRecieved = true
+            setupShizukuFeatures()
+        }
+    }
+
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
@@ -112,8 +123,6 @@ class MainActivity : AppCompatActivity() {
         Shizuku.addRequestPermissionResultListener { requestCode, resultCode ->
             if (requestCode == 0 && resultCode == PackageManager.PERMISSION_GRANTED) {
                 checkPermissions()
-
-
             }
         }
 
@@ -124,9 +133,15 @@ class MainActivity : AppCompatActivity() {
         setupActivityLaunchers()
         setupClickListeners()
 
+        Shizuku.addBinderReceivedListenerSticky(BINDER_RECEIVED_LISTENER);
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        Shizuku.removeBinderReceivedListener(BINDER_RECEIVED_LISTENER);
+    }
     override fun onResume() {
         super.onResume()
         checkPermissions()
@@ -153,6 +168,19 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+
+        selectGrayScaleApps =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
+                    selectedApps?.let {
+                        savedPreferencesLoader.saveGrayScaleApps(it.toSet())
+                        sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_GRAYSCALE)
+                    }
+                }
+            }
+
 
 
         selectFocusModeUnblockedAppsLauncher =
@@ -198,8 +226,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-
-
         // click listeners for configuration options
         binding.selectPinnedApps.setOnClickListener {
             val intent = Intent(this, SelectAppsActivity::class.java)
@@ -209,6 +235,16 @@ class MainActivity : AppCompatActivity() {
             )
 
             selectPinnedAppsLauncher.launch(intent, options)
+
+        }
+        binding.selectMonochromeApps.setOnClickListener {
+            val intent = Intent(this, SelectAppsActivity::class.java)
+            intent.putStringArrayListExtra(
+                "PRE_SELECTED_APPS",
+                ArrayList(savedPreferencesLoader.loadGrayScaleApps())
+            )
+
+            selectGrayScaleApps.launch(intent, options)
 
         }
         binding.selectBlockedApps.setOnClickListener {
@@ -227,6 +263,8 @@ class MainActivity : AppCompatActivity() {
             )
             selectBlockedKeywords.launch(intent, options)
         }
+
+
         binding.appBlockerSelectCheatHours.setOnClickListener {
             val intent = Intent(this, TimedActionActivity::class.java)
             intent.putExtra("selected_mode", TimedActionActivity.MODE_APP_BLOCKER_CHEAT_HOURS)
@@ -342,6 +380,13 @@ class MainActivity : AppCompatActivity() {
             } else {
                 makeAccessibilityInfoDialog("Usage Tracker", UsageTrackingService::class.java)
             }
+        }
+
+        binding.setupMonochrome.setOnClickListener {
+            TweakGrayScaleMode(savedPreferencesLoader).show(
+                supportFragmentManager,
+                "tweak_monochrome"
+            )
         }
 
         // socials click listeners
@@ -503,22 +548,33 @@ class MainActivity : AppCompatActivity() {
                 binding.monochromeStatusChip.setOnClickListener {
                     if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                         Shizuku.requestPermission(0)
+                    }else{
+                        val gc = GrayscaleControl()
+                        gc.toggleGrayscale()
                     }
                 }
 
-                val isShizukuOn = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
-                updateChip(
-                    isShizukuOn,
-                    binding.monochromeStatusChip,
-                    binding.monochromeWarning
-                )
 
-                binding.setupMonochrome.isEnabled = isShizukuOn
-                binding.selectMonochromeApps.isEnabled = isShizukuOn
+                if(isShizukuBinderRecieved){
+                    setupShizukuFeatures()
+                }
             }
         }
     }
 
+
+    private fun setupShizukuFeatures(){
+        val isShizukuOn = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        updateChip(
+            isShizukuOn,
+            binding.monochromeStatusChip,
+            binding.monochromeWarning
+        )
+
+
+        binding.setupMonochrome.isEnabled = isShizukuOn
+        binding.selectMonochromeApps.isEnabled = isShizukuOn
+    }
 
     private fun isFirstLaunch(): Boolean {
         val sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)

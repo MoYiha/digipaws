@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
@@ -13,6 +14,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
 import nethical.digipaws.Constants
 import nethical.digipaws.ui.activity.TimedActionActivity
+import nethical.digipaws.utils.GrayscaleControl
 import nethical.digipaws.utils.TimeTools
 import java.util.Calendar
 import java.util.Locale
@@ -21,18 +23,52 @@ class DigipawsMainService : BaseBlockingService() {
     companion object {
         const val INTENT_ACTION_REFRESH_FOCUS_MODE = "nethical.digipaws.refresh.focus_mode"
         const val INTENT_ACTION_REFRESH_ANTI_UNINSTALL = "nethical.digipaws.refresh.anti_uninstall"
+        const val INTENT_ACTION_REFRESH_GRAYSCALE = "nethical.digipaws.refresh.grayscale"
     }
 
     private var focusModeData = FocusModeData()
-    private var selectedApps: HashSet<String> = hashSetOf()
+    private var selectedFocusModeApps: HashSet<String> = hashSetOf()
+
+    private var lastPackageName: String? = null // Store the last active app's package name
+
+    private var selectedGrayScaleApps: HashSet<String> = hashSetOf()
+    private var grayScaleMode = Constants.GRAYSCALE_MODE_ONLY_SELECTED
+
     private var launcherPackage = "nethical.digipaws"
 
     private var isAntiUninstallOn = true
+    private val grayscaleControl = GrayscaleControl()
 
     private var autoFocusData: List<TimedActionActivity.AutoTimedActionItem> = emptyList()
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         super.onAccessibilityEvent(event)
 
+        if(event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
+            val currentPackageName = event.packageName?.toString()
+            // Check if the app has changed
+            if (currentPackageName != null && currentPackageName != lastPackageName) {
+                lastPackageName = currentPackageName // Update the last package name
+                Log.d("apps",selectedGrayScaleApps.toString() + "mode: " + grayScaleMode)
+                when(grayScaleMode){
+                    Constants.GRAYSCALE_MODE_ONLY_SELECTED -> {
+                        if(selectedGrayScaleApps.contains(event.packageName)){
+                            grayscaleControl.enableGrayscale()
+                            Log.d("enabled","enabled")
+                        }else{
+                            grayscaleControl.disableGrayscale()
+                        }
+                    }
+                    Constants.GRAYSCALE_MODE_ALL_EXCEPT_SELECTED -> {
+                        if(selectedGrayScaleApps.contains(event.packageName)){
+                            grayscaleControl.disableGrayscale()
+                        }else{
+                            grayscaleControl.enableGrayscale()
+                        }
+                    }
+                }
+            }
+
+        }
         // Check if autofocus hour ongoing
         autoFocusData.forEach { item ->
             val currentTime = Calendar.getInstance()
@@ -58,14 +94,14 @@ class DigipawsMainService : BaseBlockingService() {
             when (focusModeData.modeType) {
                 // Block only apps selected by user
                 Constants.FOCUS_MODE_BLOCK_SELECTED -> {
-                    if (selectedApps.contains(event?.packageName) && launcherPackage != event?.packageName) {
+                    if (selectedFocusModeApps.contains(event?.packageName) && launcherPackage != event?.packageName) {
                         pressHome()
                     }
                 }
 
                 // Block all apps except the ones selected
                 Constants.FOCUS_MODE_BLOCK_ALL_EX_SELECTED -> {
-                    if (!(selectedApps.contains(event?.packageName))) {
+                    if (!(selectedFocusModeApps.contains(event?.packageName))) {
                         pressHome()
                     }
                 }
@@ -101,6 +137,7 @@ class DigipawsMainService : BaseBlockingService() {
         }
         setupFocusMode()
         setupAntiUninstall()
+        setupGrayscale()
     }
 
     private val refreshReceiver = object : BroadcastReceiver() {
@@ -110,21 +147,22 @@ class DigipawsMainService : BaseBlockingService() {
                 when (intent.action) {
                     INTENT_ACTION_REFRESH_FOCUS_MODE -> setupFocusMode()
                     INTENT_ACTION_REFRESH_ANTI_UNINSTALL -> setupAntiUninstall()
+                    INTENT_ACTION_REFRESH_GRAYSCALE -> setupGrayscale()
                 }
             }
         }
     }
 
     fun setupFocusMode() {
-        selectedApps = savedPreferencesLoader.getFocusModeSelectedApps().toHashSet()
+        selectedFocusModeApps = savedPreferencesLoader.getFocusModeSelectedApps().toHashSet()
         getDefaultLauncherPackageName()?.let { launcherPackage = it }
         focusModeData = savedPreferencesLoader.getFocusModeData()
 
         // As all apps wil get blocked except the selected ones, add essential packages
         // to the list of selected apps
         if (focusModeData.modeType == Constants.FOCUS_MODE_BLOCK_ALL_EX_SELECTED) {
-            selectedApps.add("com.android.systemui") // mostly notification bar
-            selectedApps.add(launcherPackage)
+            selectedFocusModeApps.add("com.android.systemui") // mostly notification bar
+            selectedFocusModeApps.add(launcherPackage)
         }
 
         autoFocusData = savedPreferencesLoader.loadAutoFocusHoursList()
@@ -134,6 +172,13 @@ class DigipawsMainService : BaseBlockingService() {
         val info = getSharedPreferences("anti_uninstall", Context.MODE_PRIVATE)
         isAntiUninstallOn = info.getBoolean("is_anti_uninstall_on", false)
     }
+
+    fun setupGrayscale() {
+        selectedGrayScaleApps = savedPreferencesLoader.loadGrayScaleApps().toHashSet()
+        val sp = getSharedPreferences("grayscale", MODE_PRIVATE)
+        grayScaleMode = sp.getInt("mode",Constants.GRAYSCALE_MODE_ONLY_SELECTED)
+    }
+
 
     private fun getDefaultLauncherPackageName(): String? {
         val packageManager: PackageManager = packageManager

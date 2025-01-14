@@ -13,5 +13,10 @@ class Constants {
         // available types for focus mode
         const val FOCUS_MODE_BLOCK_ALL_EX_SELECTED = 1
         const val FOCUS_MODE_BLOCK_SELECTED = 2
+
+        // available types for focus mode
+        const val GRAYSCALE_MODE_ALL = 1
+        const val GRAYSCALE_MODE_ONLY_SELECTED = 2
+        const val GRAYSCALE_MODE_ALL_EXCEPT_SELECTED = 3
     }
 }
