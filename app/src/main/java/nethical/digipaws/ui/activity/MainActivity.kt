@@ -343,7 +343,7 @@ class MainActivity : AppCompatActivity() {
                         this, Manifest.permission.POST_NOTIFICATIONS
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS,options)
                     return@setOnClickListener
                 }
             }

@@ -153,7 +153,7 @@ class UsageTrackingService : BaseBlockingService() {
         isReelCountToBeDisplayed = sp.getBoolean("is_reel_counter",true)
         isTimeElapsedCounterOn = sp.getBoolean("is_time_elapsed", false)
 
-        displayOverlayApps = savedPreferencesLoader.getOverlayApps() as HashSet<String>
+        displayOverlayApps = savedPreferencesLoader.getOverlayApps().toHashSet()
         if(isReelCountToBeDisplayed){
             displayOverlayApps.addAll(SUPPORTED_TRACKING_APPS)
         }
