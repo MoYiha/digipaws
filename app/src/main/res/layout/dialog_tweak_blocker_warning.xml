@@ -10,17 +10,25 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="8dp"
-        android:text="@string/configure_warning_screen"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="@string/configure_warning_screen"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-    <nethical.digipaws.views.HorizontalNumberPicker
+        <TextView
+            android:id="@+id/textView29"
+            style="@style/TextAppearance.Material3.BodySmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:text="How long should the cooldown be after pressing the proceed button?" />
+
+        <nethical.digipaws.views.HorizontalNumberPicker
         android:id="@+id/select_mins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

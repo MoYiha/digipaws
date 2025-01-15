@@ -46,7 +46,7 @@
     <string name="block_adult_keywords">Block Adult Keywords</string>
     <string name="password">Password</string>
     <string name="specify_cooldown_interval_in_minutes">Specify cooldown interval in minutes</string>
-    <string name="warning_message">Warning Message</string>
+    <string name="warning_message">Warning message</string>
     <string name="allow_viewing_instagram_reels_sent_in_instagram_inbox">Allow viewing instagram reels sent in Instagram inbox</string>
     <string name="allow_opening_the_first_reel_in_feed">Allow opening the first reel in feed</string>
     <string name="in_warning_changeable_cooldown">in-warning changeable cooldown</string>

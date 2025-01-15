@@ -1,50 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="8dp">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/start_focus_mode"
-        style="@style/TextAppearance.Material3.TitleLarge"
-        android:padding="8dp"
-        android:textSize="24sp"
-        android:textStyle="bold" />
+    android:layout_height="wrap_content">
 
-    <nethical.digipaws.views.HorizontalNumberPicker
-        android:id="@+id/focus_mode_mins_picker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-    </nethical.digipaws.views.HorizontalNumberPicker>
-
-    <RadioGroup
-        android:id="@+id/mode_type"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="16dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <TextView
-            android:id="@+id/textView"
+            style="@style/TextAppearance.Material3.TitleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="@string/start_focus_mode"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView24"
             style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Select your preference" />
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:text="How long do you want the session to last?" />
 
-        <RadioButton
-            android:id="@+id/block_all"
+        <nethical.digipaws.views.HorizontalNumberPicker
+            android:id="@+id/focus_mode_mins_picker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Block all apps except selected apps" />
+            android:gravity="center">
 
-        <RadioButton
-            android:id="@+id/block_selected"
+        </nethical.digipaws.views.HorizontalNumberPicker>
+
+        <RadioGroup
+            android:id="@+id/mode_type"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Block only selected apps " />
-    </RadioGroup>
-</LinearLayout>
+            android:layout_height="match_parent"
+            android:layout_marginTop="16dp">
+
+            <TextView
+                android:id="@+id/textView"
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="Select your preference" />
+
+            <RadioButton
+                android:id="@+id/block_all"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Block all apps except selected apps" />
+
+            <RadioButton
+                android:id="@+id/block_selected"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Block only selected apps " />
+        </RadioGroup>
+    </LinearLayout>
+
+</ScrollView>
