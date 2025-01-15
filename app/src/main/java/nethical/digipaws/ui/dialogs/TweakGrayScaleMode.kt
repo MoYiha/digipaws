@@ -54,12 +54,18 @@ class TweakGrayScaleMode(
                         val grayscaleControl = GrayscaleControl()
                         grayscaleControl.enableGrayscale()
                     }
+                    dialogGrayscaleBinding.turnOff.id -> {
+                        trackerPreferences.edit().putInt("mode",Constants.GRAYSCALE_MODE_OFF).commit()
+                        val grayscaleControl = GrayscaleControl()
+                        grayscaleControl.disableGrayscale()
+                    }
                     dialogGrayscaleBinding.blockSelected.id -> {
                         trackerPreferences.edit().putInt("mode",Constants.GRAYSCALE_MODE_ONLY_SELECTED).commit()
                     }
                     dialogGrayscaleBinding.blockExceptSelected.id -> {
                         trackerPreferences.edit().putInt("mode",Constants.GRAYSCALE_MODE_ALL_EXCEPT_SELECTED).commit()
                     }
+
                 }
                 // Send broadcast to refresh UsageTrackingService
                 sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_GRAYSCALE)

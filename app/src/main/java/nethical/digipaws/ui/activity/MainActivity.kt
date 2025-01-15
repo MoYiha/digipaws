@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -35,7 +36,6 @@ import nethical.digipaws.Constants
 import nethical.digipaws.R
 import nethical.digipaws.databinding.ActivityMainBinding
 import nethical.digipaws.databinding.DialogFocusModeBinding
-import nethical.digipaws.databinding.DialogGrayscaleBinding
 import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.DialogRemoveAntiUninstallBinding
 import nethical.digipaws.databinding.TermsAndConditionsDialogBinding
@@ -52,7 +52,6 @@ import nethical.digipaws.ui.dialogs.TweakKeywordPack
 import nethical.digipaws.ui.dialogs.TweakUsageTracker
 import nethical.digipaws.ui.dialogs.TweakViewBlockerCheatHours
 import nethical.digipaws.ui.dialogs.TweakViewBlockerWarning
-import nethical.digipaws.utils.GrayscaleControl
 import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.SavedPreferencesLoader
 import rikka.shizuku.Shizuku
@@ -83,13 +82,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var options: ActivityOptionsCompat
     private var isDeviceAdminOn = false
     private var isAntiUninstallOn = false
+
+    private var isGeneralSettingsOn = false
     private var isDisplayOverOtherAppsOn = false
 
     private var isShizukuBinderRecieved = false
     private val BINDER_RECEIVED_LISTENER = OnBinderReceivedListener {
         if (!Shizuku.isPreV11()) {
             isShizukuBinderRecieved = true
-            setupShizukuFeatures()
+            checkPermissions()
         }
     }
 
@@ -362,6 +363,33 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        binding.monochromeStatusChip.setOnClickListener {
+            if(!isGeneralSettingsOn){
+                makeAccessibilityInfoDialog("General Features", DigipawsMainService::class.java)
+                return@setOnClickListener
+            }
+            if(isShizukuBinderRecieved){
+                if( (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED)){
+                    Shizuku.requestPermission(0)
+                }
+            }else{
+                val packageManager = packageManager
+                try {
+                    // Check if Shizuku is installed
+                    packageManager.getPackageInfo(
+                        "moe.shizuku.privileged.api",
+                        PackageManager.GET_ACTIVITIES
+                    )
+                    Toast.makeText(this,"Failed! Make sure that shizuku is active",Toast.LENGTH_SHORT).show()
+                } catch (e: PackageManager.NameNotFoundException) {
+                    // Shizuku is not installed
+                    Log.d("Shizuku", "Shizuku is not installed on the device.")
+                    makeShizukuInfoDialog()
+                }
+            }
+        }
+
         binding.keywordBlockerStatusChip.setOnClickListener {
             makeAccessibilityInfoDialog("Keyword Blocker", KeywordBlockerService::class.java)
         }
@@ -429,7 +457,7 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.IO) { isAccessibilityServiceEnabled(KeywordBlockerService::class.java) }
             val isUsageTrackerOn =
                 withContext(Dispatchers.IO) { isAccessibilityServiceEnabled(UsageTrackingService::class.java) }
-            val isGeneralSettingsOn =
+            isGeneralSettingsOn =
                 withContext(Dispatchers.IO) { isAccessibilityServiceEnabled(DigipawsMainService::class.java) }
 
             val devicePolicyManager =
@@ -545,19 +573,17 @@ class MainActivity : AppCompatActivity() {
                     binding.selectFocusBlockedApps.isEnabled = !isFocusedModeOn
                     binding.startFocusMode.isEnabled = !isFocusedModeOn
                 }
-                binding.monochromeStatusChip.setOnClickListener {
-                    if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                        Shizuku.requestPermission(0)
-                    }else{
-                        val gc = GrayscaleControl()
-                        gc.toggleGrayscale()
+
+                if(isGeneralSettingsOn){
+                    binding.monochromeWarning.text = "Authorize digipaws to access Shizuku"
+                    if(isShizukuBinderRecieved){
+                        setupShizukuFeatures()
                     }
+                }else{
+                    binding.monochromeWarning.text = getString(R.string.warning_general_settings)
+                    binding.monochromeStatusChip.text = getString(R.string.disabled)
                 }
 
-
-                if(isShizukuBinderRecieved){
-                    setupShizukuFeatures()
-                }
             }
         }
     }
@@ -731,6 +757,32 @@ class MainActivity : AppCompatActivity() {
 
         }
     }
+
+    private fun makeShizukuInfoDialog() {
+        val dialogAccessibilityServiceInfoBinding =
+            DialogPermissionInfoBinding.inflate(layoutInflater)
+        dialogAccessibilityServiceInfoBinding.title.text = "Integrate Shizuku"
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogAccessibilityServiceInfoBinding.root)
+            .show()
+
+        dialogAccessibilityServiceInfoBinding.btnAccept.text = "Download Shizuku"
+        dialogAccessibilityServiceInfoBinding.btnReject.text = "Cancel"
+        dialogAccessibilityServiceInfoBinding.desc.text = "Shizuku is a powerful Android app that allows other apps to access system-level features securely without rooting your device. It acts as a bridge, enabling apps to perform advanced tasks by running commands with elevated permissions."
+
+        dialogAccessibilityServiceInfoBinding.point1.text = "control of the Daltonizer."
+        dialogAccessibilityServiceInfoBinding.point2.text = "Make your phone boring."
+        dialogAccessibilityServiceInfoBinding.point3.text = "Feels like using a 90s dumbphone"
+        dialogAccessibilityServiceInfoBinding.point4.visibility = View.GONE
+
+        dialogAccessibilityServiceInfoBinding.btnReject.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialogAccessibilityServiceInfoBinding.btnAccept.setOnClickListener {
+            openUrl("https://shizuku.rikka.app/")
+        }
+            }
 
     private fun makeAccessibilityInfoDialog(title: String, cls: Class<*>) {
         val dialogAccessibilityServiceInfoBinding =

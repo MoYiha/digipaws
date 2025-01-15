@@ -43,12 +43,12 @@ class DigipawsMainService : BaseBlockingService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         super.onAccessibilityEvent(event)
 
-        if(event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
-            val currentPackageName = event.packageName?.toString()
+//        if(event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
+            val currentPackageName = event?.packageName?.toString()
             // Check if the app has changed
             if (currentPackageName != null && currentPackageName != lastPackageName) {
                 lastPackageName = currentPackageName // Update the last package name
-                Log.d("apps",selectedGrayScaleApps.toString() + "mode: " + grayScaleMode)
+//                Log.d("apps",selectedGrayScaleApps.toString() + "mode: " + grayScaleMode)
                 when(grayScaleMode){
                     Constants.GRAYSCALE_MODE_ONLY_SELECTED -> {
                         if(selectedGrayScaleApps.contains(event.packageName)){
@@ -63,12 +63,13 @@ class DigipawsMainService : BaseBlockingService() {
                             grayscaleControl.disableGrayscale()
                         }else{
                             grayscaleControl.enableGrayscale()
+                            Log.d("enabled","enabled")
                         }
                     }
                 }
             }
 
-        }
+//        }
         // Check if autofocus hour ongoing
         autoFocusData.forEach { item ->
             val currentTime = Calendar.getInstance()
@@ -129,6 +130,7 @@ class DigipawsMainService : BaseBlockingService() {
         val filter = IntentFilter().apply {
             addAction(INTENT_ACTION_REFRESH_FOCUS_MODE)
             addAction(INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
+            addAction(INTENT_ACTION_REFRESH_GRAYSCALE)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)

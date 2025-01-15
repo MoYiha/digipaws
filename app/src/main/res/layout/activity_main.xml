@@ -190,7 +190,7 @@
                         style="@style/TextAppearance.Material3.TitleLarge"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Monochrome Filter"
+                        android:text="Grayscale Filter"
                         android:textStyle="bold"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"

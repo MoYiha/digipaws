@@ -2,9 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="16dp">
 
     <TextView
         style="@style/TextAppearance.Material3.TitleLarge"
@@ -26,7 +25,7 @@
             style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:padding="8dp"
             android:text="Select your preference" />
 
         <RadioButton
@@ -46,5 +45,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Apply everywhere except selected apps" />
+
+        <RadioButton
+            android:id="@+id/turn_off"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Turn off" />
     </RadioGroup>
 </LinearLayout>
