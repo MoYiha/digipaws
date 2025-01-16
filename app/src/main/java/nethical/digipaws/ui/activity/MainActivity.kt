@@ -835,8 +835,8 @@ class MainActivity : AppCompatActivity() {
             action = Intent.ACTION_CREATE_SHORTCUT
         }
         val shortcutInfo = ShortcutInfoCompat.Builder(this, "digipaws_focus_mode")
-            .setShortLabel("Focus Mode")
-            .setLongLabel("Start Focus Mode")
+            .setShortLabel(getString(R.string.focus_mode))
+            .setLongLabel(getString(R.string.focus_mode))
             .setIntent(intent)
             .setIcon(IconCompat.createWithResource(this, R.drawable.focus_mode_icon))
             .build()
