@@ -23,6 +23,12 @@
         android:theme="@style/Theme.DigiPaws"
         tools:targetApi="34">
         <activity
+            android:name=".ui.activity.ShortcutActivity"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.Digipaws.TransparentDialog"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.AppUsageActivity"
             android:exported="false" />
         <activity
@@ -153,11 +159,10 @@
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"
-            android:multiprocess="false"
             android:enabled="true"
             android:exported="true"
+            android:multiprocess="false"
             android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
-
     </application>
 
 </manifest>

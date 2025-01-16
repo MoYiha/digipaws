@@ -3,6 +3,8 @@ package nethical.digipaws.ui.activity
 import android.Manifest
 import android.accessibilityservice.AccessibilityService
 import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.admin.DevicePolicyManager
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
@@ -23,6 +25,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +50,7 @@ import nethical.digipaws.services.DigipawsMainService
 import nethical.digipaws.services.KeywordBlockerService
 import nethical.digipaws.services.UsageTrackingService
 import nethical.digipaws.services.ViewBlockerService
+import nethical.digipaws.ui.dialogs.StartFocusMode
 import nethical.digipaws.ui.dialogs.TweakAppBlockerWarning
 import nethical.digipaws.ui.dialogs.TweakGrayScaleMode
 import nethical.digipaws.ui.dialogs.TweakKeywordBlocker
@@ -135,6 +141,9 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
 
         Shizuku.addBinderReceivedListenerSticky(BINDER_RECEIVED_LISTENER);
+
+
+
 
     }
 
@@ -347,7 +356,19 @@ class MainActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
             }
-            makeStartFocusModeDialog()
+
+
+            createFocusModeShortcut()
+
+            StartFocusMode(savedPreferencesLoader, onPositiveButtonPressed = {
+                binding.selectFocusBlockedApps.isEnabled = false
+                binding.startFocusMode.isEnabled = false
+
+            }).show(
+                supportFragmentManager,
+                "start_focus_mode"
+            )
+
         }
 
         // listeners for turn on/ off buttons
@@ -803,6 +824,62 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun createFocusModeShortcut() {
+
+        val sp = getSharedPreferences("shortcuts",Context.MODE_PRIVATE)
+        if(sp.getBoolean("focus_mode",false)){
+            return
+        }
+        val intent = Intent(this, ShortcutActivity::class.java).apply {
+            action = Intent.ACTION_CREATE_SHORTCUT
+        }
+        val shortcutInfo = ShortcutInfoCompat.Builder(this, "digipaws_focus_mode")
+            .setShortLabel("Focus Mode")
+            .setLongLabel("Start Focus Mode")
+            .setIntent(intent)
+            .setIcon(IconCompat.createWithResource(this, R.drawable.focus_mode_icon))
+            .build()
+
+
+        val supported = ShortcutManagerCompat.isRequestPinShortcutSupported(this)
+        val dynamicShortcuts = ShortcutManagerCompat.getDynamicShortcuts(this)
+
+        if(supported){
+            if(dynamicShortcuts.contains(shortcutInfo)){
+                return
+            }
+        }
+        MaterialAlertDialogBuilder(this).apply {
+            setTitle("Add Focus Mode to Home Screen")
+            setMessage("Would you like to add Focus Mode to your home screen for quick access?")
+            setPositiveButton("Ok") { dialog, _ ->
+                sp.edit().putBoolean("focus_mode",true).apply()
+                val pinnedShortcutCallbackIntent = Intent("example.intent.action.SHORTCUT_CREATED")
+
+                val successCallback = PendingIntent.getBroadcast(
+                    this@MainActivity,
+                    1000,
+                    pinnedShortcutCallbackIntent,
+                    FLAG_IMMUTABLE
+                )
+
+                ShortcutManagerCompat.requestPinShortcut(
+                    this@MainActivity,
+                    shortcutInfo,
+                    successCallback.intentSender
+                )
+
+            }
+            setNegativeButton("Cancel", { _,_ ->
+                sp.edit().putBoolean("focus_mode",false).apply()
+            })
+            show()
+        }
+
+    }
+
+
     private fun openAccessibilityServiceScreen(cls: Class<*>) {
         try {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
@@ -815,53 +892,6 @@ class MainActivity : AppCompatActivity() {
             // Fallback to general Accessibility Settings
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
-    }
-
-    private fun makeStartFocusModeDialog() {
-        val dialogFocusModeBinding = DialogFocusModeBinding.inflate(layoutInflater)
-        val previousData = savedPreferencesLoader.getFocusModeData()
-        dialogFocusModeBinding.focusModeMinsPicker.setValue(3)
-        dialogFocusModeBinding.focusModeMinsPicker.minValue = 2
-
-        var selectedMode = previousData.modeType
-        when (previousData.modeType) {
-            Constants.FOCUS_MODE_BLOCK_SELECTED -> dialogFocusModeBinding.blockSelected.isChecked =
-                true
-
-            Constants.FOCUS_MODE_BLOCK_ALL_EX_SELECTED -> dialogFocusModeBinding.blockAll.isChecked =
-                true
-        }
-
-        dialogFocusModeBinding.modeType.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                dialogFocusModeBinding.blockAll.id -> selectedMode =
-                    Constants.FOCUS_MODE_BLOCK_ALL_EX_SELECTED
-
-                dialogFocusModeBinding.blockSelected.id -> selectedMode =
-                    Constants.FOCUS_MODE_BLOCK_SELECTED
-            }
-        }
-        MaterialAlertDialogBuilder(this)
-            .setView(dialogFocusModeBinding.root)
-            .setPositiveButton(getString(R.string.start)) { _, _ ->
-                val totalMillis = dialogFocusModeBinding.focusModeMinsPicker.getValue() * 60000
-                savedPreferencesLoader.saveFocusModeData(
-                    DigipawsMainService.FocusModeData(
-                        true,
-                        System.currentTimeMillis() + totalMillis,
-                        selectedMode
-                    )
-                )
-                sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_FOCUS_MODE)
-                val timer = NotificationTimerManager(this)
-                // TODO: add notification permission check
-                timer.startTimer(totalMillis.toLong())
-
-                binding.selectFocusBlockedApps.isEnabled = false
-                binding.startFocusMode.isEnabled = false
-            }
-            .setNegativeButton(getString(R.string.cancel), null)
-            .show()
     }
 
     @SuppressLint("ApplySharedPref")
