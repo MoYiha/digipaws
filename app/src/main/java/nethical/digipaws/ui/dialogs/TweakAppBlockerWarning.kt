@@ -2,6 +2,7 @@ package nethical.digipaws.ui.dialogs
 
 import android.app.Dialog
 import android.os.Bundle
+import android.view.View
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.R
 import nethical.digipaws.databinding.DialogTweakBlockerWarningBinding
@@ -21,12 +22,45 @@ class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : B
         binding.selectMins.minValue = 1
         binding.selectMins.maxValue = 240
 
+
+        binding.cbProceedBtn.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked){
+                binding.cbDynamicWarning.visibility = View.GONE
+                binding.selectMins.visibility = View.GONE
+                binding.textInputLayout2.visibility = View.GONE
+                binding.info.visibility = View.GONE
+            } else {
+                binding.cbDynamicWarning.visibility = View.VISIBLE
+                binding.selectMins.visibility = View.VISIBLE
+                binding.textInputLayout2.visibility = View.VISIBLE
+                binding.info.visibility = View.VISIBLE
+            }
+        }
+
+        binding.cbBackWithoutWarning.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked){
+                binding.cbDynamicWarning.visibility = View.GONE
+                binding.selectMins.visibility = View.GONE
+                binding.textInputLayout2.visibility = View.GONE
+                binding.info.visibility = View.GONE
+                binding.cbProceedBtn.visibility = View.GONE
+            } else {
+                binding.cbDynamicWarning.visibility = View.VISIBLE
+                binding.selectMins.visibility = View.VISIBLE
+                binding.textInputLayout2.visibility = View.VISIBLE
+                binding.info.visibility = View.VISIBLE
+                binding.cbProceedBtn.visibility = View.VISIBLE
+            }
+        }
+
+
         // Load previous data from preferences
         val previousData = savedPreferencesLoader!!.loadAppBlockerWarningInfo()
         previousData.let {
             binding.selectMins.setValue(it.timeInterval / 60000)
             binding.warningMsgEdit.setText(it.message)
             binding.cbProceedBtn.isChecked = it.isProceedDisabled
+            binding.cbBackWithoutWarning.isChecked = it.isWarningDialogHidden
         }
 
         // Build and return the dialog
@@ -39,7 +73,8 @@ class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : B
                         binding.warningMsgEdit.text.toString(),
                         selectedMinInMs,
                         binding.cbDynamicWarning.isChecked,
-                        binding.cbProceedBtn.isChecked
+                        binding.cbProceedBtn.isChecked,
+                        binding.cbBackWithoutWarning.isChecked
                     )
                 )
                 sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)

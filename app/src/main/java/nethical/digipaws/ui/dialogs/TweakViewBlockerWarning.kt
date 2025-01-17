@@ -29,8 +29,40 @@ class TweakViewBlockerWarning(
         tweakViewBlockerWarningBinding.selectMins.maxValue = 240
 
         // Show additional checkbox options
-        tweakViewBlockerWarningBinding.cbFirstReel.visibility = View.VISIBLE
+        tweakViewBlockerWarningBinding.cbBackWithoutWarning.visibility = View.VISIBLE
         tweakViewBlockerWarningBinding.cbReelInbox.visibility = View.VISIBLE
+
+
+        tweakViewBlockerWarningBinding.cbProceedBtn.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked){
+                tweakViewBlockerWarningBinding.cbDynamicWarning.visibility = View.GONE
+                tweakViewBlockerWarningBinding.selectMins.visibility = View.GONE
+                tweakViewBlockerWarningBinding.textInputLayout2.visibility = View.GONE
+                tweakViewBlockerWarningBinding.info.visibility = View.GONE
+            } else {
+                tweakViewBlockerWarningBinding.cbDynamicWarning.visibility = View.VISIBLE
+                tweakViewBlockerWarningBinding.selectMins.visibility = View.VISIBLE
+                tweakViewBlockerWarningBinding.textInputLayout2.visibility = View.VISIBLE
+                tweakViewBlockerWarningBinding.info.visibility = View.VISIBLE
+            }
+        }
+
+        tweakViewBlockerWarningBinding.cbBackWithoutWarning.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked){
+                tweakViewBlockerWarningBinding.cbDynamicWarning.visibility = View.GONE
+                tweakViewBlockerWarningBinding.selectMins.visibility = View.GONE
+                tweakViewBlockerWarningBinding.textInputLayout2.visibility = View.GONE
+                tweakViewBlockerWarningBinding.info.visibility = View.GONE
+                tweakViewBlockerWarningBinding.cbProceedBtn.visibility = View.GONE
+            } else {
+                tweakViewBlockerWarningBinding.cbDynamicWarning.visibility = View.VISIBLE
+                tweakViewBlockerWarningBinding.selectMins.visibility = View.VISIBLE
+                tweakViewBlockerWarningBinding.textInputLayout2.visibility = View.VISIBLE
+                tweakViewBlockerWarningBinding.info.visibility = View.VISIBLE
+                tweakViewBlockerWarningBinding.cbProceedBtn.visibility = View.VISIBLE
+            }
+        }
+
 
         // Load saved preferences
         val previousData = savedPreferencesLoader!!.loadViewBlockerWarningInfo()
@@ -39,13 +71,13 @@ class TweakViewBlockerWarning(
         tweakViewBlockerWarningBinding.cbDynamicWarning.isChecked =
             previousData.isDynamicIntervalSettingAllowed
         tweakViewBlockerWarningBinding.cbProceedBtn.isChecked = previousData.isProceedDisabled
+        tweakViewBlockerWarningBinding.cbBackWithoutWarning.isChecked = previousData.isWarningDialogHidden
+
 
         // Load additional Reel data
         addReelData = requireContext().getSharedPreferences("config_reels", Context.MODE_PRIVATE)
         tweakViewBlockerWarningBinding.cbReelInbox.isChecked =
             addReelData.getBoolean("is_reel_inbox", false)
-        tweakViewBlockerWarningBinding.cbFirstReel.isChecked =
-            addReelData.getBoolean("is_reel_first", false)
 
         // Build and show the dialog
         return MaterialAlertDialogBuilder(requireContext())
@@ -60,7 +92,8 @@ class TweakViewBlockerWarning(
                         tweakViewBlockerWarningBinding.warningMsgEdit.text.toString(),
                         selectedMinInMs,
                         tweakViewBlockerWarningBinding.cbDynamicWarning.isChecked,
-                        tweakViewBlockerWarningBinding.cbProceedBtn.isChecked
+                        tweakViewBlockerWarningBinding.cbProceedBtn.isChecked,
+                        tweakViewBlockerWarningBinding.cbBackWithoutWarning.isChecked
                     )
                 )
 
@@ -69,10 +102,6 @@ class TweakViewBlockerWarning(
                     putBoolean(
                         "is_reel_inbox",
                         tweakViewBlockerWarningBinding.cbReelInbox.isChecked
-                    )
-                    putBoolean(
-                        "is_reel_first",
-                        tweakViewBlockerWarningBinding.cbFirstReel.isChecked
                     )
                     commit() // Apply changes immediately
                 }

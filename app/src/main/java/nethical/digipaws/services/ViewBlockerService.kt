@@ -13,6 +13,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import nethical.digipaws.Constants
 import nethical.digipaws.blockers.ViewBlocker
+import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.WarningActivity
 
 class ViewBlockerService : BaseBlockingService() {
@@ -25,14 +26,10 @@ class ViewBlockerService : BaseBlockingService() {
     }
 
     private val viewBlocker = ViewBlocker()
-
-    private var cooldownIntervalInMillis = 10 * 60000
-    private var warningMessage = ""
-    private var isDynamicCooldownAllowed = false
-    private var isProceedBtnDisabled = false
+    private var warningScreenConfig = MainActivity.WarningData()
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (!isDelayOver(4000)) {
+        if (!isDelayOver(2500)) {
             return
         }
         val rootNode: AccessibilityNodeInfo? = rootInActiveWindow
@@ -52,19 +49,21 @@ class ViewBlockerService : BaseBlockingService() {
 
     private fun handleViewBlockerResult(result: ViewBlocker.ViewBlockerResult?) {
         if (result == null || !result.isBlocked) return
+
+        lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
         pressBack()
 
+        if(warningScreenConfig.isWarningDialogHidden) return
         val dialogIntent = Intent(this, WarningActivity::class.java)
         dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        dialogIntent.putExtra("warning_message", warningMessage)
+        dialogIntent.putExtra("warning_message", warningScreenConfig.message)
         dialogIntent.putExtra("mode", Constants.WARNING_SCREEN_MODE_VIEW_BLOCKER)
-        dialogIntent.putExtra("is_dynamic_timing", isDynamicCooldownAllowed)
+        dialogIntent.putExtra("is_dynamic_timing", warningScreenConfig.isDynamicIntervalSettingAllowed)
         dialogIntent.putExtra("result_id", result.viewId)
-        dialogIntent.putExtra("default_cooldown", cooldownIntervalInMillis / 60000)
-        dialogIntent.putExtra("is_proceed_disabled", isProceedBtnDisabled)
+        dialogIntent.putExtra("default_cooldown", warningScreenConfig.timeInterval / 60000)
+        dialogIntent.putExtra("is_proceed_disabled", warningScreenConfig.isProceedDisabled)
         dialogIntent.putExtra("is_press_home", result.requestHomePressInstead)
         startActivity(dialogIntent)
-        lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
     }
 
     private val refreshReceiver = object : BroadcastReceiver() {
@@ -74,7 +73,7 @@ class ViewBlockerService : BaseBlockingService() {
                 INTENT_ACTION_REFRESH_VIEW_BLOCKER -> setupBlocker()
 
                 INTENT_ACTION_REFRESH_VIEW_BLOCKER_COOLDOWN -> {
-                    val interval = intent.getIntExtra("selected_time", cooldownIntervalInMillis)
+                    val interval = intent.getIntExtra("selected_time", warningScreenConfig.timeInterval)
                     viewBlocker.applyCooldown(
                         intent.getStringExtra("result_id") ?: "xxxxxxxxxxxxxx",
                         SystemClock.uptimeMillis() + interval
@@ -86,13 +85,7 @@ class ViewBlockerService : BaseBlockingService() {
 
 
     private fun setupBlocker() {
-        val warningScreenConfig = savedPreferencesLoader.loadViewBlockerWarningInfo()
-        cooldownIntervalInMillis = warningScreenConfig.timeInterval
-        warningMessage = warningScreenConfig.message
-        isDynamicCooldownAllowed =
-            warningScreenConfig.isDynamicIntervalSettingAllowed
-        isProceedBtnDisabled = warningScreenConfig.isProceedDisabled
-
+        warningScreenConfig = savedPreferencesLoader.loadViewBlockerWarningInfo()
 
         val viewBlockerCheatHours = getSharedPreferences("cheat_hours", Context.MODE_PRIVATE)
         viewBlocker.cheatMinuteStartTime =

@@ -12,6 +12,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import nethical.digipaws.Constants
 import nethical.digipaws.blockers.AppBlocker
+import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.WarningActivity
 
 class AppBlockerService : BaseBlockingService() {
@@ -24,11 +25,7 @@ class AppBlockerService : BaseBlockingService() {
 
     private val appBlocker = AppBlocker()
 
-    private var cooldownIntervalInMillis = 10 * 60000 // stores the default value for how long the user wants the app to be unblocked for
-    private var warningMessage = ""
-    private var isDynamicCooldownALlowed = false
-    private var isProceedDisabled = false
-
+    private var warningScreenConfig = MainActivity.WarningData()
 
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -44,17 +41,23 @@ class AppBlockerService : BaseBlockingService() {
         Log.d("Appblocker result", result.toString())
         if (result == null || !result.isBlocked) return
 
+        lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
+
+        if(warningScreenConfig.isWarningDialogHidden){
+            pressHome()
+            return
+        }
+
         val dialogIntent = Intent(this, WarningActivity::class.java)
         dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        dialogIntent.putExtra("warning_message", warningMessage)
+        dialogIntent.putExtra("warning_message", warningScreenConfig.message)
         dialogIntent.putExtra("mode", Constants.WARNING_SCREEN_MODE_APP_BLOCKER)
-        dialogIntent.putExtra("is_dynamic_timing", isDynamicCooldownALlowed)
+        dialogIntent.putExtra("is_dynamic_timing", warningScreenConfig.isDynamicIntervalSettingAllowed)
         dialogIntent.putExtra("result_id", packageName)
-        dialogIntent.putExtra("default_cooldown", cooldownIntervalInMillis / 60000)
-        dialogIntent.putExtra("is_proceed_disabled", isProceedDisabled)
+        dialogIntent.putExtra("default_cooldown", warningScreenConfig.timeInterval / 60000)
+        dialogIntent.putExtra("is_proceed_disabled", warningScreenConfig.isProceedDisabled)
         startActivity(dialogIntent)
 
-        lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
     }
 
     override fun onInterrupt() {
@@ -92,7 +95,7 @@ class AppBlockerService : BaseBlockingService() {
             when (intent.action) {
                 INTENT_ACTION_REFRESH_APP_BLOCKER -> setupBlocker()
                 INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN -> {
-                    val interval = intent.getIntExtra("selected_time", cooldownIntervalInMillis)
+                    val interval = intent.getIntExtra("selected_time", warningScreenConfig.timeInterval)
                     appBlocker.putCooldownTo(
                         intent.getStringExtra("result_id") ?: "xxxxxxxxxxxxxx",
                         SystemClock.uptimeMillis() + interval
@@ -108,12 +111,7 @@ class AppBlockerService : BaseBlockingService() {
         appBlocker.blockedAppsList = savedPreferencesLoader.loadBlockedApps().toHashSet()
         appBlocker.refreshCheatMinutesData(savedPreferencesLoader.loadAppBlockerCheatHoursList())
 
-        val warningScreenConfig = savedPreferencesLoader.loadAppBlockerWarningInfo()
-        cooldownIntervalInMillis = warningScreenConfig.timeInterval
-        warningMessage = warningScreenConfig.message
-        isDynamicCooldownALlowed =
-            warningScreenConfig.isDynamicIntervalSettingAllowed
-        isProceedDisabled = warningScreenConfig.isProceedDisabled
+        warningScreenConfig = savedPreferencesLoader.loadAppBlockerWarningInfo()
     }
 
     override fun onDestroy() {

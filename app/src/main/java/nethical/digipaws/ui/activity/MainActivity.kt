@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
                 if (result.resultCode == RESULT_OK) {
                     val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                     selectedApps?.let {
-                        savedPreferencesLoader.saveBlockedKeywords(it.toSet())
+                        savedPreferencesLoader.saveBlockedApps(it.toSet())
                         sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
                     }
                 }
@@ -983,7 +983,8 @@ class MainActivity : AppCompatActivity() {
         val message: String = "",
         val timeInterval: Int = 120000, // default cooldown period
         val isDynamicIntervalSettingAllowed: Boolean = false,
-        val isProceedDisabled: Boolean = false
+        val isProceedDisabled: Boolean = false,
+        val isWarningDialogHidden:Boolean = false // perform back/home action directly without showing warning screen
     )
 
 

@@ -20,7 +20,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/textView29"
+            android:id="@+id/info"
             style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -44,16 +44,7 @@
         android:visibility="gone"
         tools:visibility="visible" />
 
-    <CheckBox
-        android:id="@+id/cb_first_reel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:text="@string/allow_opening_the_first_reel_in_feed"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
-    <CheckBox
+        <CheckBox
         android:id="@+id/cb_dynamic_warning"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -64,6 +55,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/disable_proceed_button" />
+
+        <CheckBox
+            android:id="@+id/cb_back_without_warning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="true"
+            android:text="Press back directly without showing a warning screen" />
 
         <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout2"
