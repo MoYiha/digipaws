@@ -1,13 +1,14 @@
 package nethical.digipaws.ui.dialogs
 
+import android.animation.LayoutTransition
 import android.app.Dialog
 import android.os.Bundle
-import android.view.View
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.R
 import nethical.digipaws.databinding.DialogTweakBlockerWarningBinding
 import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.ui.activity.MainActivity
+import nethical.digipaws.utils.AnimTools.Companion.animateVisibility
 import nethical.digipaws.utils.SavedPreferencesLoader
 
 class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : BaseDialog(
@@ -22,35 +23,26 @@ class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : B
         binding.selectMins.minValue = 1
         binding.selectMins.maxValue = 240
 
-
         binding.cbProceedBtn.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked){
-                binding.cbDynamicWarning.visibility = View.GONE
-                binding.selectMins.visibility = View.GONE
-                binding.textInputLayout2.visibility = View.GONE
-                binding.info.visibility = View.GONE
-            } else {
-                binding.cbDynamicWarning.visibility = View.VISIBLE
-                binding.selectMins.visibility = View.VISIBLE
-                binding.textInputLayout2.visibility = View.VISIBLE
-                binding.info.visibility = View.VISIBLE
-            }
+            val viewsToToggle = listOf(
+                binding.cbDynamicWarning,
+                binding.selectMins,
+                binding.textInputLayout2,
+                binding.info
+            )
+            viewsToToggle.forEach { it.animateVisibility(!isChecked) }
+
         }
 
         binding.cbBackWithoutWarning.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked){
-                binding.cbDynamicWarning.visibility = View.GONE
-                binding.selectMins.visibility = View.GONE
-                binding.textInputLayout2.visibility = View.GONE
-                binding.info.visibility = View.GONE
-                binding.cbProceedBtn.visibility = View.GONE
-            } else {
-                binding.cbDynamicWarning.visibility = View.VISIBLE
-                binding.selectMins.visibility = View.VISIBLE
-                binding.textInputLayout2.visibility = View.VISIBLE
-                binding.info.visibility = View.VISIBLE
-                binding.cbProceedBtn.visibility = View.VISIBLE
-            }
+            val viewsToToggle = listOf(
+                binding.cbDynamicWarning,
+                binding.selectMins,
+                binding.textInputLayout2,
+                binding.info,
+                binding.cbProceedBtn
+            )
+            viewsToToggle.forEach { it.animateVisibility(!isChecked) }
         }
 
 
@@ -61,6 +53,11 @@ class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : B
             binding.warningMsgEdit.setText(it.message)
             binding.cbProceedBtn.isChecked = it.isProceedDisabled
             binding.cbBackWithoutWarning.isChecked = it.isWarningDialogHidden
+        }
+
+        binding.root.layoutTransition = LayoutTransition().apply {
+            enableTransitionType(LayoutTransition.CHANGING)
+            setDuration(300) // Set animation duration in ms
         }
 
         // Build and return the dialog
@@ -85,6 +82,7 @@ class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : B
                 dialog.dismiss()
             }
             .create()
+
     }
 
 }

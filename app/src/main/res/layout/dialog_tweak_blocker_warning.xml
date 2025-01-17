@@ -14,6 +14,7 @@
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:padding="8dp"
             android:text="@string/configure_warning_screen"
             android:textSize="24sp"
@@ -24,7 +25,6 @@
             style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:padding="8dp"
             android:text="How long should the cooldown be after pressing the proceed button?" />
 

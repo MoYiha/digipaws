@@ -1,5 +1,6 @@
 package nethical.digipaws.ui.dialogs
 
+import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
@@ -11,89 +12,84 @@ import nethical.digipaws.R
 import nethical.digipaws.databinding.DialogTweakBlockerWarningBinding
 import nethical.digipaws.services.ViewBlockerService
 import nethical.digipaws.ui.activity.MainActivity
+import nethical.digipaws.utils.AnimTools.Companion.animateVisibility
 import nethical.digipaws.utils.SavedPreferencesLoader
 
 class TweakViewBlockerWarning(
     savedPreferencesLoader: SavedPreferencesLoader
 ) : BaseDialog(savedPreferencesLoader) {
 
-    private lateinit var addReelData: SharedPreferences
 
     @SuppressLint("ApplySharedPref")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val tweakViewBlockerWarningBinding =
+        val binding =
             DialogTweakBlockerWarningBinding.inflate(layoutInflater)
 
         // Configure NumberPicker
-        tweakViewBlockerWarningBinding.selectMins.minValue = 1
-        tweakViewBlockerWarningBinding.selectMins.maxValue = 240
+        binding.selectMins.minValue = 1
+        binding.selectMins.maxValue = 240
 
         // Show additional checkbox options
-        tweakViewBlockerWarningBinding.cbBackWithoutWarning.visibility = View.VISIBLE
-        tweakViewBlockerWarningBinding.cbReelInbox.visibility = View.VISIBLE
+        binding.cbBackWithoutWarning.visibility = View.VISIBLE
+        binding.cbReelInbox.visibility = View.VISIBLE
 
-
-        tweakViewBlockerWarningBinding.cbProceedBtn.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked){
-                tweakViewBlockerWarningBinding.cbDynamicWarning.visibility = View.GONE
-                tweakViewBlockerWarningBinding.selectMins.visibility = View.GONE
-                tweakViewBlockerWarningBinding.textInputLayout2.visibility = View.GONE
-                tweakViewBlockerWarningBinding.info.visibility = View.GONE
-            } else {
-                tweakViewBlockerWarningBinding.cbDynamicWarning.visibility = View.VISIBLE
-                tweakViewBlockerWarningBinding.selectMins.visibility = View.VISIBLE
-                tweakViewBlockerWarningBinding.textInputLayout2.visibility = View.VISIBLE
-                tweakViewBlockerWarningBinding.info.visibility = View.VISIBLE
-            }
+        binding.cbProceedBtn.setOnCheckedChangeListener { _, isChecked ->
+            val viewsToToggle = listOf(
+                binding.cbDynamicWarning,
+                binding.selectMins,
+                binding.textInputLayout2,
+                binding.info
+            )
+            viewsToToggle.forEach { it.animateVisibility(!isChecked) }
         }
 
-        tweakViewBlockerWarningBinding.cbBackWithoutWarning.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked){
-                tweakViewBlockerWarningBinding.cbDynamicWarning.visibility = View.GONE
-                tweakViewBlockerWarningBinding.selectMins.visibility = View.GONE
-                tweakViewBlockerWarningBinding.textInputLayout2.visibility = View.GONE
-                tweakViewBlockerWarningBinding.info.visibility = View.GONE
-                tweakViewBlockerWarningBinding.cbProceedBtn.visibility = View.GONE
-            } else {
-                tweakViewBlockerWarningBinding.cbDynamicWarning.visibility = View.VISIBLE
-                tweakViewBlockerWarningBinding.selectMins.visibility = View.VISIBLE
-                tweakViewBlockerWarningBinding.textInputLayout2.visibility = View.VISIBLE
-                tweakViewBlockerWarningBinding.info.visibility = View.VISIBLE
-                tweakViewBlockerWarningBinding.cbProceedBtn.visibility = View.VISIBLE
-            }
+        binding.cbBackWithoutWarning.setOnCheckedChangeListener { _, isChecked ->
+            val viewsToToggle = listOf(
+                binding.cbDynamicWarning,
+                binding.selectMins,
+                binding.textInputLayout2,
+                binding.info,
+                binding.cbProceedBtn
+            )
+            viewsToToggle.forEach { it.animateVisibility(!isChecked) }
         }
 
 
         // Load saved preferences
         val previousData = savedPreferencesLoader!!.loadViewBlockerWarningInfo()
-        tweakViewBlockerWarningBinding.selectMins.setValue(previousData.timeInterval / 60000)
-        tweakViewBlockerWarningBinding.warningMsgEdit.setText(previousData.message)
-        tweakViewBlockerWarningBinding.cbDynamicWarning.isChecked =
+        binding.selectMins.setValue(previousData.timeInterval / 60000)
+        binding.warningMsgEdit.setText(previousData.message)
+        binding.cbDynamicWarning.isChecked =
             previousData.isDynamicIntervalSettingAllowed
-        tweakViewBlockerWarningBinding.cbProceedBtn.isChecked = previousData.isProceedDisabled
-        tweakViewBlockerWarningBinding.cbBackWithoutWarning.isChecked = previousData.isWarningDialogHidden
-
+        binding.cbProceedBtn.isChecked = previousData.isProceedDisabled
+        binding.cbBackWithoutWarning.isChecked = previousData.isWarningDialogHidden
 
         // Load additional Reel data
-        addReelData = requireContext().getSharedPreferences("config_reels", Context.MODE_PRIVATE)
-        tweakViewBlockerWarningBinding.cbReelInbox.isChecked =
+        val addReelData: SharedPreferences =
+            requireContext().getSharedPreferences("config_reels", Context.MODE_PRIVATE)
+        binding.cbReelInbox.isChecked =
             addReelData.getBoolean("is_reel_inbox", false)
+
+        binding.root.layoutTransition = LayoutTransition().apply {
+            enableTransitionType(LayoutTransition.CHANGING)
+            setDuration(300) // Set animation duration in ms
+        }
 
         // Build and show the dialog
         return MaterialAlertDialogBuilder(requireContext())
-            .setView(tweakViewBlockerWarningBinding.root)
+            .setView(binding.root)
             .setCancelable(false)
             .setPositiveButton(getString(R.string.save)) { dialog, _ ->
-                val selectedMinInMs = tweakViewBlockerWarningBinding.selectMins.getValue() * 60000
+                val selectedMinInMs = binding.selectMins.getValue() * 60000
 
                 // Save data using SavedPreferencesLoader
                 savedPreferencesLoader.saveViewBlockerWarningInfo(
                     MainActivity.WarningData(
-                        tweakViewBlockerWarningBinding.warningMsgEdit.text.toString(),
+                        binding.warningMsgEdit.text.toString(),
                         selectedMinInMs,
-                        tweakViewBlockerWarningBinding.cbDynamicWarning.isChecked,
-                        tweakViewBlockerWarningBinding.cbProceedBtn.isChecked,
-                        tweakViewBlockerWarningBinding.cbBackWithoutWarning.isChecked
+                        binding.cbDynamicWarning.isChecked,
+                        binding.cbProceedBtn.isChecked,
+                        binding.cbBackWithoutWarning.isChecked
                     )
                 )
 
@@ -101,7 +97,7 @@ class TweakViewBlockerWarning(
                 with(addReelData.edit()) {
                     putBoolean(
                         "is_reel_inbox",
-                        tweakViewBlockerWarningBinding.cbReelInbox.isChecked
+                        binding.cbReelInbox.isChecked
                     )
                     commit() // Apply changes immediately
                 }
