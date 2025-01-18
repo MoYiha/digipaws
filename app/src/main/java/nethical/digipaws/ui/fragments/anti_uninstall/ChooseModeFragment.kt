@@ -10,6 +10,9 @@ import nethical.digipaws.databinding.FragmentChoseAntiUninstallModeBinding
 
 class ChooseModeFragment : Fragment() {
 
+    companion object {
+        const val FRAGMENT_ID = "choose_anti_uninstall_mode"
+    }
     private var _binding: FragmentChoseAntiUninstallModeBinding? = null
     private val binding get() = _binding!!  // Safe getter for binding
 
@@ -29,7 +32,7 @@ class ChooseModeFragment : Fragment() {
                 binding.passMode.id -> {
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(
-                            R.id.anti_uninstall_fragment_holder,
+                            R.id.fragment_holder,
                             SetupPasswordModeFragment()
                         ) // Replace with FragmentB
                         .addToBackStack(null)
@@ -39,7 +42,7 @@ class ChooseModeFragment : Fragment() {
                 binding.timedMode.id -> {
                     requireActivity().supportFragmentManager.beginTransaction()
                         .replace(
-                            R.id.anti_uninstall_fragment_holder,
+                            R.id.fragment_holder,
                             SetupTimedModeFragment()
                         ) // Replace with FragmentB
                         .addToBackStack(null)

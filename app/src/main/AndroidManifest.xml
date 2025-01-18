@@ -38,7 +38,7 @@
             android:launchMode="singleTop"
             android:theme="@style/Theme.Digipaws.TransparentDialog" />
         <activity
-            android:name=".ui.activity.SetupAntiUninstallActivity"
+            android:name=".ui.activity.FragmentActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activity.UsageMetricsActivity"

@@ -1,28 +1,21 @@
-package nethical.digipaws.ui.activity
-
-import androidx.activity.enableEdgeToEdge
-import nethical.digipaws.R
-import nethical.digipaws.databinding.ActivityAppUsageBinding
+package nethical.digipaws.ui.fragments.usage
 
 import android.annotation.SuppressLint
 import android.app.usage.UsageStatsManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Process
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.appcompat.app.AppCompatActivity.LAUNCHER_APPS_SERVICE
+import androidx.appcompat.app.AppCompatActivity.USAGE_STATS_SERVICE
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.OrientationHelper
@@ -31,43 +24,40 @@ import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
-import com.github.mikephil.charting.renderer.PieChartRenderer
 import com.google.android.material.color.MaterialColors
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import nethical.digipaws.R
 import nethical.digipaws.databinding.AppUsageItemBinding
+import nethical.digipaws.databinding.FragmentAllAppUsageBinding
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-class AppUsageActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityAppUsageBinding
+class AllAppsUsageFragment : Fragment() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    companion object {
+        const val FRAGMENT_ID = "all_app_usage"
+    }
 
-        enableEdgeToEdge()
-        binding = ActivityAppUsageBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    private var _binding: FragmentAllAppUsageBinding? = null
+    private val binding get() = _binding!!
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAllAppUsageBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        val appUsageStats =
+            getUsageStats(requireContext().getSystemService(UsageStatsManager::class.java))
 
-        val appUsageStats = getUsageStats(getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager)
-
-        val launcherApps = getSystemService(LAUNCHER_APPS_SERVICE) as LauncherApps
+        val launcherApps = requireContext().getSystemService(LauncherApps::class.java)
 
         val filteredAppUsageStats =
             appUsageStats.asSequence()
@@ -90,15 +80,17 @@ class AppUsageActivity : AppCompatActivity() {
         }
     }
 
+
     @SuppressLint("NotifyDataSetChanged")
     override fun onResume() {
         super.onResume()
 
         lifecycleScope.launch(Dispatchers.IO) {
             val appUsageStats =
-                getUsageStats(getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager)
+                getUsageStats(requireContext().getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager)
 
-            val launcherApps = getSystemService(LAUNCHER_APPS_SERVICE) as LauncherApps
+            val launcherApps =
+                requireContext().getSystemService(LAUNCHER_APPS_SERVICE) as LauncherApps
 
             val filteredAppUsageStats =
                 appUsageStats.asSequence()
@@ -128,7 +120,8 @@ class AppUsageActivity : AppCompatActivity() {
 
         val entries = mutableListOf<PieEntry>()
         topApps.forEach { stats ->
-            val appName = stats.applicationInfo.loadLabel(packageManager).toString()
+            val appName =
+                stats.applicationInfo.loadLabel(requireContext().packageManager).toString()
             val usageTime = stats.usageStats.totalTimeInForeground
             entries.add(PieEntry(usageTime.toFloat(), appName))
         }
@@ -139,11 +132,31 @@ class AppUsageActivity : AppCompatActivity() {
 
         val pieDataSet = PieDataSet(entries, "").apply {
             colors = listOf(
-                MaterialColors.getColor(this@AppUsageActivity, com.google.android.material.R.attr.colorPrimary, Color.BLUE),
-                MaterialColors.getColor(this@AppUsageActivity, com.google.android.material.R.attr.colorSecondary, Color.WHITE),
-                MaterialColors.getColor(this@AppUsageActivity, com.google.android.material.R.attr.colorTertiary, Color.WHITE),
-                MaterialColors.getColor(this@AppUsageActivity, com.google.android.material.R.attr.colorPrimaryVariant, Color.CYAN),
-                MaterialColors.getColor(this@AppUsageActivity, com.google.android.material.R.attr.colorSurfaceVariant, Color.GRAY)
+                MaterialColors.getColor(
+                    requireContext(),
+                    com.google.android.material.R.attr.colorPrimary,
+                    Color.BLUE
+                ),
+                MaterialColors.getColor(
+                    requireContext(),
+                    com.google.android.material.R.attr.colorSecondary,
+                    Color.WHITE
+                ),
+                MaterialColors.getColor(
+                    requireContext(),
+                    com.google.android.material.R.attr.colorTertiary,
+                    Color.WHITE
+                ),
+                MaterialColors.getColor(
+                    requireContext(),
+                    com.google.android.material.R.attr.colorPrimaryVariant,
+                    Color.CYAN
+                ),
+                MaterialColors.getColor(
+                    requireContext(),
+                    com.google.android.material.R.attr.colorSurfaceVariant,
+                    Color.GRAY
+                )
             )
 
             // Add spacing between slices
@@ -154,8 +167,18 @@ class AppUsageActivity : AppCompatActivity() {
             // Increase selection shift
             selectionShift = 10f
 
-            setGradientColor(MaterialColors.getColor(this@AppUsageActivity, com.google.android.material.R.attr.colorPrimaryContainer, Color.LTGRAY),
-                MaterialColors.getColor(this@AppUsageActivity, com.google.android.material.R.attr.colorSecondaryContainer, Color.DKGRAY))
+            setGradientColor(
+                MaterialColors.getColor(
+                    requireContext(),
+                    com.google.android.material.R.attr.colorPrimaryContainer,
+                    Color.LTGRAY
+                ),
+                MaterialColors.getColor(
+                    requireContext(),
+                    com.google.android.material.R.attr.colorSecondaryContainer,
+                    Color.DKGRAY
+                )
+            )
         }
 
         val pieData = PieData(pieDataSet)
@@ -227,10 +250,10 @@ class AppUsageActivity : AppCompatActivity() {
     }
 
     private fun createLegendView(label: String, color: Int): TextView {
-        return TextView(this).apply {
+        return TextView(requireContext()).apply {
             text = label
             textSize = 12f
-            setTextColor(getColor(R.color.text_color))
+            setTextColor(requireContext().getColor(R.color.text_color))
             setPadding(8, 4, 8, 4)
 
 
@@ -240,26 +263,7 @@ class AppUsageActivity : AppCompatActivity() {
             )
         }
     }
-    fun getUsageStats(usageStatsManager: UsageStatsManager): List<AppUsageStats> {
-        val endTime = System.currentTimeMillis()
-        val startTime = ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault())
-            .toLocalDate()
-            .atStartOfDay(ZoneOffset.systemDefault())
-            .toInstant()
-            .toEpochMilli()
 
-        return usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            startTime,
-            endTime
-        ).map { AppUsageStats(it.packageName, it.totalTimeInForeground) }
-            .groupBy { it.packageName }
-            .map { (_, statsList) ->
-                statsList.reduce { acc, stats ->
-                    acc.apply { totalTimeInForeground += stats.totalTimeInForeground }
-                }
-            }.sortedByDescending { it.totalTimeInForeground }
-    }
 
     data class AppUsageStats(val packageName: String, var totalTimeInForeground: Long)
 
@@ -285,6 +289,29 @@ class AppUsageActivity : AppCompatActivity() {
         }
     }
 
+
+    fun getUsageStats(usageStatsManager: UsageStatsManager): List<AppUsageStats> {
+        val endTime = System.currentTimeMillis()
+        val startTime = ZonedDateTime.ofInstant(Instant.now(), ZoneId.systemDefault())
+            .toLocalDate()
+            .atStartOfDay(ZoneOffset.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+        return usageStatsManager.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY,
+            startTime,
+            endTime
+        ).map { AppUsageStats(it.packageName, it.totalTimeInForeground) }
+            .groupBy { it.packageName }
+            .map { (_, statsList) ->
+                statsList.reduce { acc, stats ->
+                    acc.apply { totalTimeInForeground += stats.totalTimeInForeground }
+                }
+            }.sortedByDescending { it.totalTimeInForeground }
+    }
+
+
     data class Stats(val applicationInfo: ApplicationInfo, val usageStats: AppUsageStats)
 
     inner class AppUsageAdapter(private var appUsageStats: List<Stats>) :
@@ -296,7 +323,7 @@ class AppUsageActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: AppUsageViewHolder, position: Int) {
-            holder.bind(appUsageStats[position], packageManager)
+            holder.bind(appUsageStats[position], requireContext().packageManager)
         }
 
         @SuppressLint("NotifyDataSetChanged")
@@ -307,4 +334,5 @@ class AppUsageActivity : AppCompatActivity() {
 
         override fun getItemCount(): Int = appUsageStats.size
     }
+
 }

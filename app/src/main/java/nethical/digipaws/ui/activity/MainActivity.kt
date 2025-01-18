@@ -40,7 +40,6 @@ import kotlinx.coroutines.withContext
 import nethical.digipaws.Constants
 import nethical.digipaws.R
 import nethical.digipaws.databinding.ActivityMainBinding
-import nethical.digipaws.databinding.DialogFocusModeBinding
 import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.DialogRemoveAntiUninstallBinding
 import nethical.digipaws.databinding.TermsAndConditionsDialogBinding
@@ -58,7 +57,7 @@ import nethical.digipaws.ui.dialogs.TweakKeywordPack
 import nethical.digipaws.ui.dialogs.TweakUsageTracker
 import nethical.digipaws.ui.dialogs.TweakViewBlockerCheatHours
 import nethical.digipaws.ui.dialogs.TweakViewBlockerWarning
-import nethical.digipaws.utils.NotificationTimerManager
+import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.utils.SavedPreferencesLoader
 import rikka.shizuku.Shizuku
 import rikka.shizuku.Shizuku.OnBinderReceivedListener
@@ -314,7 +313,8 @@ class MainActivity : AppCompatActivity() {
             TweakKeywordBlocker().show(supportFragmentManager, "tweak_keyword_blocker")
         }
         binding.selectAppUsageStats.setOnClickListener {
-            val intent = Intent(this, AppUsageActivity::class.java)
+            val intent = Intent(this, FragmentActivity::class.java)
+            intent.putExtra("fragment", AllAppsUsageFragment.FRAGMENT_ID)
             startActivity(intent, options.toBundle())
         }
 
@@ -377,7 +377,7 @@ class MainActivity : AppCompatActivity() {
                 makeDeviceAdminPermissionDialog()
             } else {
                 if (binding.antiUninstallWarning.visibility == View.GONE) {
-                    val intent = Intent(this, SetupAntiUninstallActivity::class.java)
+                    val intent = Intent(this, FragmentActivity::class.java)
                     startActivity(intent, options.toBundle())
                 } else {
                     makeAccessibilityInfoDialog("General Features", DigipawsMainService::class.java)

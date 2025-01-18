@@ -4,12 +4,11 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.activity.SetupAntiUninstallActivity">
+    tools:context=".ui.activity.FragmentActivity">
 
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/anti_uninstall_fragment_holder"
-        android:name="nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment"
+        android:id="@+id/fragment_holder"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </LinearLayout>
