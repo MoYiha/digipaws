@@ -1,9 +1,10 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut
-        android:shortcutId="compose"
+        android:shortcutDisabledMessage="@string/focus_mode"
         android:enabled="true"
         android:icon="@drawable/focus_mode_icon"
         android:shortcutShortLabel="@string/focus_mode"
+        android:shortcutId="digipaws_focus_mode_shortcut"
         android:shortcutLongLabel="@string/focus_mode">
         <intent
             android:action="android.intent.action.VIEW"
@@ -12,7 +13,7 @@
         <!-- If your shortcut is associated with multiple intents, include them
              here. The last intent in the list determines what the user sees when
              they launch this shortcut. -->
-        <categories android:name="android.shortcut.conversation" />
+        <categories android:name="digiipaws" />
         <capability-binding android:key="actions.intent.CREATE_MESSAGE" />
     </shortcut>
     <!-- Specify more shortcuts here. -->
