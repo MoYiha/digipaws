@@ -54,21 +54,9 @@ class TimeTools {
             return dateString
         }
 
-        fun convertMillisToDate(millis: Long): String {
-            val instant = Instant.ofEpochMilli(millis)
-
-            val dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-
-            val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
-
-            return dateTime.format(formatter)
+        fun formatDate(timestamp: Long): String {
+            val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+            return dateFormat.format(Date(timestamp))
         }
-        fun convertTo24HourTimeFormat(currentTimeMillis: Long): String {
-            val dateFormat =
-                SimpleDateFormat("HH:mm", Locale.getDefault()) // HH:mm is 24-hour format
-            val date = Date(currentTimeMillis)
-            return dateFormat.format(date)
-        }
-
     }
 }

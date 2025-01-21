@@ -7,7 +7,12 @@ import android.app.usage.UsageStatsManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.os.Process
@@ -34,6 +39,7 @@ import kotlinx.coroutines.withContext
 import nethical.digipaws.R
 import nethical.digipaws.databinding.AppUsageItemBinding
 import nethical.digipaws.databinding.FragmentAllAppUsageBinding
+import nethical.digipaws.utils.TimeTools
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -88,7 +94,7 @@ class AllAppsUsageFragment : Fragment() {
         binding.selectDate.setOnClickListener {
             showDatePickerDialog(selectedDate, earliestDate, currentDate) { newDate ->
                 selectedDate = newDate
-
+                binding.selectDate.text = TimeTools.formatDate(newDate)
                 val localDate = Instant.ofEpochMilli(newDate)
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate()
@@ -109,7 +115,6 @@ class AllAppsUsageFragment : Fragment() {
             this.adapter = adapter
         }
     }
-
 
     private suspend fun setUsageStats(date : LocalDate = LocalDate.now()) {
         val list = getDailyStats(requireContext().getSystemService(UsageStatsManager::class.java),date)
@@ -186,6 +191,7 @@ class AllAppsUsageFragment : Fragment() {
                             currentStartTime = 0L
                         }
                     }
+
                 }
             }
 
@@ -235,50 +241,39 @@ class AllAppsUsageFragment : Fragment() {
 
     private fun updatePieChart(statsList: List<Stat>) {
         val sortedStats = statsList.sortedByDescending { it.totalTime }
-        val topApps = sortedStats.take(4)
+        val topApps = sortedStats.take(3)
 
-        val othersTime = sortedStats.drop(4)
+        val othersTime = sortedStats.drop(3)
             .sumOf { it.totalTime }
 
         val entries = mutableListOf<PieEntry>()
+        val pm = requireContext().packageManager
         topApps.forEach { stats ->
-            val appName = activity?.packageManager?.getApplicationInfo(stats.packageName,0)
+            val appInfo = pm.getApplicationInfo(stats.packageName,0)
+            val icon = appInfo.loadIcon(pm)
             val usageTime = stats.totalTime
-            entries.add(PieEntry(usageTime.toFloat(), appName))
+
+            entries.add(PieEntry(usageTime.toFloat(),resizeIcon(icon,25,25)))
         }
 
         if (othersTime > 0) {
-            entries.add(PieEntry(othersTime.toFloat(), "Others"))
+            entries.add(PieEntry(othersTime.toFloat(), ""))
         }
-
         val pieDataSet = PieDataSet(entries, "").apply {
             colors = listOf(
-                MaterialColors.getColor(
-                    requireContext(),
-                    com.google.android.material.R.attr.colorPrimary,
-                    Color.BLUE
-                ),
-                MaterialColors.getColor(
-                    requireContext(),
-                    com.google.android.material.R.attr.colorSecondary,
-                    Color.WHITE
-                ),
-                MaterialColors.getColor(
-                    requireContext(),
-                    com.google.android.material.R.attr.colorTertiary,
-                    Color.WHITE
-                ),
-                MaterialColors.getColor(
-                    requireContext(),
-                    com.google.android.material.R.attr.colorPrimaryVariant,
-                    Color.CYAN
-                ),
-                MaterialColors.getColor(
-                    requireContext(),
-                    com.google.android.material.R.attr.colorSurfaceVariant,
-                    Color.GRAY
-                )
+                // Material Blue 500
+                Color.parseColor("#2196F3"),
+
+                // Material Red 500
+                Color.parseColor("#F44336"),
+
+                // Material Green 500
+                Color.parseColor("#4CAF50"),
+
+                // Material Yellow 500
+                requireContext().getColor(R.color.md_theme_inverseSurface)
             )
+
 
             // Add spacing between slices
             sliceSpace = 3f
@@ -318,58 +313,47 @@ class AllAppsUsageFragment : Fragment() {
             legend.isEnabled = false
 
             // External labels styling
-            setDrawEntryLabels(false)  // Disable internal labels
-
+            setDrawEntryLabels(true)  // Disable internal labels
             animateY(1200, Easing.EaseInOutQuart)
 
 
             //Todo: Add external labels
             invalidate()
         }
-        addLegendsAroundChart(entries, pieDataSet.colors)
-    }
-    private fun addLegendsAroundChart(entries: List<PieEntry>, colors: List<Int>) {
-        binding.legendView.removeAllViews()
-
-        // Create and add all legend views first
-        val legendViews = entries.mapIndexed { index, entry ->
-            createLegendView(entry.label, colors[index]).also {
-                binding.legendView.addView(it)
-            }
-        }
-
-        // Wait for views to be measured
-        binding.legendView.post {
-            val centerX = binding.pieChart.width / 2f
-            val centerY = binding.pieChart.height / 2f
-            // Add a margin to the radius to position labels outside the chart
-            val radius = binding.pieChart.radius + 60f  // Adjust this value to control how far labels are from the pie
-
-            var currentAngle = -90f // Start from the top (-90 degrees)
-            val total = entries.sumOf { it.value.toDouble() }
-
-            legendViews.forEachIndexed { index, legendView ->
-                val sliceAngle = (entries[index].value / total * 360f).toFloat()
-                // Calculate the center angle of the current slice
-                val midAngle = currentAngle + (sliceAngle / 2f)
-
-                // Convert angle to radians for position calculation
-                val radians = Math.toRadians(midAngle.toDouble())
-
-                // Calculate position using the mid-angle
-                val x = (centerX + radius * Math.cos(radians)).toFloat() - (legendView.width / 2f)
-                val y = (centerY + radius * Math.sin(radians)).toFloat() - (legendView.height / 2f)
-
-                // Set the position
-                legendView.x = x
-                legendView.y = y
-
-                // Move to next slice
-                currentAngle += sliceAngle
-            }
-        }
     }
 
+    private fun resizeIcon(icon: Drawable, width: Int, height: Int): Drawable {
+        // Convert Drawable to Bitmap
+        val bitmap = if (icon is BitmapDrawable) {
+            icon.bitmap
+        } else {
+            val bitmap = Bitmap.createBitmap(
+                icon.intrinsicWidth,
+                icon.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
+            val canvas = Canvas(bitmap)
+            icon.setBounds(0, 0, canvas.width, canvas.height)
+            icon.draw(canvas)
+            bitmap
+        }
+
+        // Calculate the target size in pixels (assuming density is needed)
+        val density = Resources.getSystem().displayMetrics.density
+        val targetWidth = (width * density).toInt()
+        val targetHeight = (height * density).toInt()
+
+        // Create scaled bitmap
+        val scaledBitmap = Bitmap.createScaledBitmap(
+            bitmap,
+            targetWidth,
+            targetHeight,
+            true
+        )
+
+        // Convert back to Drawable
+        return BitmapDrawable(Resources.getSystem(), scaledBitmap)
+    }
     private fun createLegendView(label: String, color: Int): TextView {
         return TextView(requireContext()).apply {
             text = label
