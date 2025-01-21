@@ -2,6 +2,7 @@ package nethical.digipaws.ui.fragments.usage
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
@@ -19,6 +20,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.animation.Easing
@@ -33,6 +35,8 @@ import nethical.digipaws.R
 import nethical.digipaws.databinding.AppUsageItemBinding
 import nethical.digipaws.databinding.FragmentAllAppUsageBinding
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -63,15 +67,12 @@ class AllAppsUsageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val adapter = AppUsageAdapter(emptyList())
+        binding.appUsageRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.appUsageRecyclerView.adapter = adapter
 
-        lifecycleScope.launch {
-            setUsageStats(
-                requireContext().getSystemService(UsageStatsManager::class.java),
-                currentDate
-            )
-        }
         lifecycleScope.launch(Dispatchers.IO) {
+            setUsageStats()
+
             val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
             val stats = usageStatsManager.queryUsageStats(
                 UsageStatsManager.INTERVAL_DAILY,
@@ -84,20 +85,16 @@ class AllAppsUsageFragment : Fragment() {
             selectedDate = currentDate.coerceAtLeast(earliestDate) // Ensure valid range
 
         }
-
         binding.selectDate.setOnClickListener {
             showDatePickerDialog(selectedDate, earliestDate, currentDate) { newDate ->
                 selectedDate = newDate
-                binding.selectDate.text = formatDate(selectedDate)
-                Log.d("date", formatDate(selectedDate))
 
+                val localDate = Instant.ofEpochMilli(newDate)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
 
-                lifecycleScope.launch {
-                    setUsageStats(
-                        requireContext().getSystemService(UsageStatsManager::class.java),
-                        selectedDate,
-                        endDate = selectedDate + 24 * 60 * 60 * 1000
-                    )
+                lifecycleScope.launch(Dispatchers.IO) {
+                    setUsageStats(localDate)
                 }
 
             }
@@ -113,56 +110,102 @@ class AllAppsUsageFragment : Fragment() {
         }
     }
 
-    private suspend fun setUsageStats(usageStatsManager: UsageStatsManager, selectedDate: Long, endDate: Long = System.currentTimeMillis()) {
-        val startTime = ZonedDateTime.ofInstant(Date(selectedDate).toInstant(), ZoneId.systemDefault())
-            .toLocalDate()
-            .atStartOfDay(ZoneOffset.systemDefault())
-            .toInstant()
-            .toEpochMilli()
 
-
-        val appUsageStats =  usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            startTime,
-            endDate
-        ).map { AppUsageStats(it.packageName, it.totalTimeInForeground) }
-            .groupBy { it.packageName }
-            .map { (_, statsList) ->
-                statsList.reduce { acc, stats ->
-                    acc.apply { totalTimeInForeground += stats.totalTimeInForeground }
-                }
-            }.sortedByDescending { it.totalTimeInForeground }
-
-        val launcherApps = requireContext().getSystemService(LauncherApps::class.java)
-
-        val filteredAppUsageStats =
-            appUsageStats.asSequence()
-                .takeWhile { it.totalTimeInForeground > 5 * 1000 }.map { stats ->
-                    Stats(
-                        launcherApps.getApplicationInfo(
-                            stats.packageName, 0, Process.myUserHandle()
-                        ), stats
-                    )
-                }.toList()
-
-
+    private suspend fun setUsageStats(date : LocalDate = LocalDate.now()) {
+        val list = getDailyStats(requireContext().getSystemService(UsageStatsManager::class.java),date)
         withContext(Dispatchers.Main) {
             try {
-                val adapter = binding.appUsageRecyclerView.adapter as? AppUsageAdapter
-                    ?: AppUsageAdapter(emptyList()).also { binding.appUsageRecyclerView.adapter = it }
-
-                adapter.updateData(filteredAppUsageStats)
-                updatePieChart(filteredAppUsageStats)
+                val adapter = binding.appUsageRecyclerView.adapter as AppUsageAdapter
+                adapter.updateData(list)
+                updatePieChart(list)
             } catch (e: Exception) {
                 Log.e("AppUsageFragment", "Error updating UI with stats", e)
             }
         }
     }
+    private fun getDailyStats(
+        usageManager: UsageStatsManager,
+        date: LocalDate = LocalDate.now()
+    ): List<Stat> {
+        val utc = ZoneId.of("UTC")
+        val defaultZone = ZoneId.systemDefault()
 
-    private fun formatDate(timestamp: Long): String {
-        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        return dateFormat.format(Date(timestamp))
+        // Calculate the start and end times for the given date
+        val startDate = date.atStartOfDay(defaultZone).withZoneSameInstant(utc)
+        val start = startDate.toInstant().toEpochMilli()
+        val end = startDate.plusDays(1).toInstant().toEpochMilli()
+
+        // Query the list of events within the specified timeframe
+        val sortedEvents = mutableMapOf<String, MutableList<UsageEvents.Event>>()
+        val systemEvents = usageManager.queryEvents(start, end)
+
+        // Collect all events
+        while (systemEvents.hasNextEvent()) {
+            val event = UsageEvents.Event()
+            systemEvents.getNextEvent(event)
+            sortedEvents.getOrPut(event.packageName) { mutableListOf() }.add(event)
+        }
+
+        // Process the events and calculate stats
+        val stats = sortedEvents.mapNotNull { (packageName, events) ->
+            var currentStartTime = 0L
+            var totalTime = 0L
+            var lastPauseTime = 0L
+            val startTimes = mutableListOf<ZonedDateTime>()
+
+            // Sort events by timestamp to ensure correct order
+            val sortedTimeEvents = events.sortedBy { it.timeStamp }
+
+            sortedTimeEvents.forEach { event ->
+                when (event.eventType) {
+                    UsageEvents.Event.ACTIVITY_RESUMED -> {
+                        // Only set start time if we don't already have one
+                        if (currentStartTime == 0L) {
+                            currentStartTime = event.timeStamp
+                            startTimes.add(
+                                Instant.ofEpochMilli(currentStartTime).atZone(utc)
+                                    .withZoneSameInstant(defaultZone)
+                            )
+                        }
+                    }
+                    UsageEvents.Event.ACTIVITY_PAUSED -> {
+                        lastPauseTime = event.timeStamp
+                        // Only calculate time if we have a valid start time
+                        if (currentStartTime != 0L) {
+                            // Ensure we don't count negative time periods
+                            val timeToAdd = maxOf(0L, lastPauseTime - currentStartTime)
+                            totalTime += timeToAdd
+                            currentStartTime = 0L
+                        }
+                    }
+                    UsageEvents.Event.ACTIVITY_STOPPED -> {
+                        // Force close any ongoing session when app is stopped
+                        if (currentStartTime != 0L) {
+                            val timeToAdd = maxOf(0L, event.timeStamp - currentStartTime)
+                            totalTime += timeToAdd
+                            currentStartTime = 0L
+                        }
+                    }
+                }
+            }
+
+            // Handle case where app is still running at end of day
+            if (currentStartTime != 0L) {
+                // Cap the time at the end of the day
+                val timeToAdd = maxOf(0L, minOf(end, System.currentTimeMillis()) - currentStartTime)
+                totalTime += timeToAdd
+            }
+
+            // Filter out apps with usage time less than 3 seconds
+            if (totalTime < 3000) return@mapNotNull null
+
+            Stat(packageName, totalTime, startTimes)
+        }
+
+        // Sort the stats by total usage time in descending order
+        return stats.sortedByDescending { it.totalTime }
     }
+
     private fun showDatePickerDialog(
         selectedDate: Long,
         startDate: Long,
@@ -190,18 +233,17 @@ class AllAppsUsageFragment : Fragment() {
         datePicker.show()
     }
 
-    private fun updatePieChart(statsList: List<Stats>) {
-        val sortedStats = statsList.sortedByDescending { it.usageStats.totalTimeInForeground }
+    private fun updatePieChart(statsList: List<Stat>) {
+        val sortedStats = statsList.sortedByDescending { it.totalTime }
         val topApps = sortedStats.take(4)
 
         val othersTime = sortedStats.drop(4)
-            .sumOf { it.usageStats.totalTimeInForeground }
+            .sumOf { it.totalTime }
 
         val entries = mutableListOf<PieEntry>()
         topApps.forEach { stats ->
-            val appName =
-                stats.applicationInfo.loadLabel(requireContext().packageManager).toString()
-            val usageTime = stats.usageStats.totalTimeInForeground
+            val appName = activity?.packageManager?.getApplicationInfo(stats.packageName,0)
+            val usageTime = stats.totalTime
             entries.add(PieEntry(usageTime.toFloat(), appName))
         }
 
@@ -344,18 +386,6 @@ class AllAppsUsageFragment : Fragment() {
     }
 
 
-    data class AppUsageStats(val packageName: String, var totalTimeInForeground: Long)
-
-    inner class AppUsageViewHolder(private val binding: AppUsageItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bind(stats: Stats, packageManager: PackageManager) {
-            binding.appIcon.setImageDrawable(stats.applicationInfo.loadIcon(packageManager))
-            binding.appName.text = stats.applicationInfo.loadLabel(packageManager)
-            binding.appUsage.text = formatTime(stats.usageStats.totalTimeInForeground)
-
-        }
-    }
-
     private fun formatTime(timeInMillis: Long): String {
         val hours = timeInMillis / (1000 * 60 * 60)
         val minutes = (timeInMillis % (1000 * 60 * 60)) / (1000 * 60)
@@ -369,29 +399,47 @@ class AllAppsUsageFragment : Fragment() {
     }
 
 
+    inner class AppUsageViewHolder(private val binding: AppUsageItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
+        fun bind(stats: Stat, packageManager: PackageManager) {
+            lifecycleScope.launch {
+                val appInfo = withContext(Dispatchers.IO) {
+                    packageManager.getApplicationInfo(stats.packageName, 0)
+                }
 
-    data class Stats(val applicationInfo: ApplicationInfo, val usageStats: AppUsageStats)
+                // Load app icon and label on the main thread
+                binding.appIcon.setImageDrawable(appInfo.loadIcon(packageManager))
+                binding.appName.text = appInfo.loadLabel(packageManager)
+                binding.appUsage.text = formatTime(stats.totalTime)
+            }
+        }
+    }
 
-    inner class AppUsageAdapter(private var appUsageStats: List<Stats>) :
-        RecyclerView.Adapter<AppUsageViewHolder>() {
+    inner class AppUsageAdapter(
+        private var appUsageStats: List<Stat>
+    ) : RecyclerView.Adapter<AppUsageViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppUsageViewHolder {
-            val binding = AppUsageItemBinding.inflate(layoutInflater, parent, false)
+            val binding = AppUsageItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             return AppUsageViewHolder(binding)
         }
 
         override fun onBindViewHolder(holder: AppUsageViewHolder, position: Int) {
-            holder.bind(appUsageStats[position], requireContext().packageManager)
+            holder.bind(appUsageStats[position], holder.itemView.context.packageManager)
         }
 
         @SuppressLint("NotifyDataSetChanged")
-        fun updateData(newAppUsageStats: List<Stats>) {
+        fun updateData(newAppUsageStats: List<Stat>) {
             appUsageStats = newAppUsageStats
             notifyDataSetChanged()
         }
 
         override fun getItemCount(): Int = appUsageStats.size
     }
+
+
+
+    class Stat(val packageName: String, val totalTime: Long, val startTimes: List<ZonedDateTime>)
 
 }

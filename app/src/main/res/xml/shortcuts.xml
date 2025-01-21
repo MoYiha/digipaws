@@ -10,9 +10,6 @@
             android:action="android.intent.action.VIEW"
             android:targetPackage="nethical.digipaws"
             android:targetClass="nethical.digipaws.ui.activity.ShortcutActivity" />
-        <!-- If your shortcut is associated with multiple intents, include them
-             here. The last intent in the list determines what the user sees when
-             they launch this shortcut. -->
         <categories android:name="digiipaws" />
         <capability-binding android:key="actions.intent.CREATE_MESSAGE" />
     </shortcut>
