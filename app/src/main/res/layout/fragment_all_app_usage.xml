@@ -43,13 +43,13 @@
             style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Today"
-            app:layout_constraintBottom_toTopOf="@+id/textView27"
-            app:layout_constraintEnd_toEndOf="@+id/textView27"
-            app:layout_constraintStart_toStartOf="@+id/textView27" />
+            android:text="Screentime"
+            app:layout_constraintBottom_toTopOf="@+id/total_usage"
+            app:layout_constraintEnd_toEndOf="@+id/total_usage"
+            app:layout_constraintStart_toStartOf="@+id/total_usage" />
 
         <TextView
-            android:id="@+id/textView27"
+            android:id="@+id/total_usage"
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -59,68 +59,17 @@
             app:layout_constraintStart_toStartOf="@+id/pieChart"
             app:layout_constraintTop_toTopOf="@+id/pieChart" />
 
-        <FrameLayout
-            android:id="@+id/legend_view"
-            android:layout_width="0dp"
-            android:layout_height="250dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/pieChart">
-
-        </FrameLayout>
-
-        <TextView
-            android:id="@+id/textView22"
-            style="@style/MaterialAlertDialog.Material3.Title.Text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="69"
-            app:layout_constraintEnd_toEndOf="@+id/textView23"
-            app:layout_constraintStart_toStartOf="@+id/textView23"
-            app:layout_constraintTop_toTopOf="@+id/textView25" />
-
-        <TextView
-            android:id="@+id/textView23"
-            style="@style/TextAppearance.Material3.BodySmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="52dp"
-            android:text="Unlocks"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView22" />
-
-        <TextView
-            android:id="@+id/textView25"
-            style="@style/MaterialAlertDialog.Material3.Title.Text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="69"
-            app:layout_constraintEnd_toEndOf="@+id/textView26"
-            app:layout_constraintStart_toStartOf="@+id/textView26"
-            app:layout_constraintTop_toBottomOf="@+id/legend_view" />
-
-        <TextView
-            android:id="@+id/textView26"
-            style="@style/TextAppearance.Material3.BodySmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="52dp"
-            android:text="Notifications"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView25" />
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/app_usage_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="40dp"
+            android:layout_marginTop="32dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView23"
+            app:layout_constraintTop_toBottomOf="@+id/pieChart"
             tools:listitem="@layout/app_usage_item" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 

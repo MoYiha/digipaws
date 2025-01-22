@@ -58,5 +58,21 @@ class TimeTools {
             val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
             return dateFormat.format(Date(timestamp))
         }
+
+
+
+        fun formatTime(timeInMillis: Long, showSeconds: Boolean = true): String {
+            val hours = timeInMillis / (1000 * 60 * 60)
+            val minutes = (timeInMillis % (1000 * 60 * 60)) / (1000 * 60)
+            val seconds = (timeInMillis % (1000 * 60)) / 1000
+
+            return buildString {
+                if (hours > 0) append("$hours hr")
+                if (minutes > 0) append(" $minutes mins")
+                if (showSeconds && seconds > 0) append(" $seconds secs")
+            }.trim()
+        }
+
+
     }
 }
