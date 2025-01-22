@@ -4,35 +4,48 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.google.android.material.color.MaterialColors
 import nethical.digipaws.R
+import nethical.digipaws.databinding.AppUsageItemBinding
+import nethical.digipaws.databinding.FragmentAllAppUsageBinding
+import nethical.digipaws.databinding.FragmentAppUsageBreakdownBinding
+import nethical.digipaws.utils.TimeTools
 
 class AppUsageBreakdown(private val stat: AllAppsUsageFragment.Stat) : Fragment() {
 
-    private lateinit var lineChart: LineChart
 
+    private lateinit var binding: FragmentAppUsageBreakdownBinding
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_app_usage_breakdown, container, false)
+
+        binding = FragmentAppUsageBreakdownBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        lineChart = view.findViewById(R.id.lineChart)
-        setupLineChart()
+        setupLineChart(binding.lineChart)
         plotUsageData()
+
+        binding.screentime.text = TimeTools.formatTime(stat.totalTime, false)
+        binding.sessions.text = stat.startTimes.size.toString()
     }
 
-    private fun setupLineChart() {
+    private fun setupLineChart(lineChart: LineChart) {
         lineChart.apply {
             description.isEnabled = false
             legend.isEnabled = true
@@ -78,23 +91,66 @@ class AppUsageBreakdown(private val stat: AllAppsUsageFragment.Stat) : Fragment(
         }
 
         // Create and configure the dataset
-        val dataSet = LineDataSet(entries, "Usage (minutes)").apply {
-            color = resources.getColor(R.color.md_theme_primary)
-            valueTextColor = resources.getColor(R.color.white)
-            lineWidth = 2f
-            setDrawFilled(true)
-            fillColor = resources.getColor(R.color.md_theme_primary)
-            fillAlpha = 50
-            setDrawCircles(true)
-            circleRadius = 4f
-            circleHoleRadius = 2f
+        val dataSet = LineDataSet(entries, "Usage (minutes)")
+
+        setupChartUI(binding.lineChart,dataSet)
+    }
+
+
+
+    private fun setupChartUI(
+        chart: LineChart,
+        lineDataSet: LineDataSet
+    ) {
+
+        val primaryColor = MaterialColors.getColor(
+            requireContext(), com.google.android.material.R.attr.colorPrimary, ContextCompat.getColor(
+                requireContext(),
+                R.color.text_color
+            )
+        )
+        lineDataSet.apply {
+            color = primaryColor
+            valueTextColor = primaryColor
+            lineWidth = 3f
+            setDrawCircles(false)
+
             setDrawValues(false)
-            valueFormatter = MinutesValueFormatter()
+
+            mode = LineDataSet.Mode.CUBIC_BEZIER
+            cubicIntensity = 0.2f
         }
 
-        // Set the data and refresh
-        lineChart.data = LineData(dataSet)
-        lineChart.invalidate()
+        chart.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+            granularity = 1f
+            labelCount = 5
+            setDrawGridLines(false) // Disable vertical grid lines
+            textColor = primaryColor
+        }
+
+        chart.axisLeft.apply {
+            isEnabled = false
+            setDrawGridLines(false)
+            textColor = primaryColor
+        }
+
+        chart.apply {
+            axisRight.isEnabled = false
+            legend.isEnabled = false
+            description.isEnabled = false
+            animateY(800, Easing.EaseInCubic)
+
+            setTouchEnabled(true)
+            isDragEnabled = true
+            setScaleEnabled(true)
+
+            setPinchZoom(false)
+
+            data = LineData(lineDataSet)
+
+        }
+        chart.invalidate()
     }
 
     private class HourAxisFormatter : ValueFormatter() {

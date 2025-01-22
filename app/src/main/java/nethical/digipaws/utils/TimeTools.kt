@@ -73,6 +73,17 @@ class TimeTools {
             }.trim()
         }
 
+        fun formatTimeForWidget(timeInMillis: Long): String {
+            val hours = timeInMillis / (1000 * 60 * 60)
+            val minutes = (timeInMillis % (1000 * 60 * 60)) / (1000 * 60)
+
+            return buildString {
+                if (hours > 0) append("${hours}h")
+                if (minutes > 0L && hours == 0L) append("${minutes}m") // Append minutes only if hours is 0 or minutes > 0
+                if (hours == 0L && minutes == 0L) append("<1m") // Handle case for less than 1 minute
+            }.trim()
+        }
+
 
     }
 }

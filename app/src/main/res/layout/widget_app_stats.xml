@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="200dp"
+    android:layout_height="180dp"
+    android:background="@drawable/widget_background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Screen time"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/refresh_stats"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:contentDescription="Refresh stats"
+                android:src="@drawable/baseline_refresh_24"
+                android:tint="#FFFFFF" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/screentime_widget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:singleLine="true"
+            android:text="4 hr 11 mins"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/app_1_sm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:singleLine="true"
+            android:text="1h App"
+            android:textColor="#FFFFFF" />
+
+
+        <TextView
+            android:id="@+id/app_2_sm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:singleLine="true"
+            android:text="2h App2"
+            android:textColor="#FFFFFF" />
+
+
+        <TextView
+            android:id="@+id/app_3_sm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:singleLine="true"
+            android:text="69h App3"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+</FrameLayout>

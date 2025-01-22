@@ -277,22 +277,18 @@ class AllAppsUsageFragment : Fragment() {
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(stats: Stat, packageManager: PackageManager) {
-            lifecycleScope.launch {
-                val appInfo = withContext(Dispatchers.IO) {
-                    packageManager.getApplicationInfo(stats.packageName, 0)
-                }
-                binding.root.setOnClickListener{
-                    activity?.supportFragmentManager?.beginTransaction()
-                        ?.replace(R.id.fragment_holder, AppUsageBreakdown(stats))
-                        ?.addToBackStack(null)
-                        ?.commit()
-                }
-
-                // Load app icon and label on the main thread
-                binding.appIcon.setImageDrawable(appInfo.loadIcon(packageManager))
-                binding.appName.text = appInfo.loadLabel(packageManager)
-                binding.appUsage.text = TimeTools.formatTime(stats.totalTime)
+            val appInfo = packageManager.getApplicationInfo(stats.packageName, 0)
+            binding.root.setOnClickListener{
+                activity?.supportFragmentManager?.beginTransaction()
+                    ?.replace(R.id.fragment_holder, AppUsageBreakdown(stats))
+                    ?.addToBackStack(null)
+                    ?.commit()
             }
+
+            // Load app icon and label on the main thread
+            binding.appIcon.setImageDrawable(appInfo.loadIcon(packageManager))
+            binding.appName.text = appInfo.loadLabel(packageManager)
+            binding.appUsage.text = TimeTools.formatTime(stats.totalTime)
         }
     }
 

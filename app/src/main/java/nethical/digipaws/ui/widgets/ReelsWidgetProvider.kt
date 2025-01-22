@@ -16,7 +16,7 @@ class ReelsWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val TAG = "ReelsWidgetProvider"
-        private const val ACTION_WIDGET_REFRESH = "nethical.digipaws.action.WIDGET_REFRESH"
+        private const val ACTION_WIDGET_REFRESH = "nethical.digipaws.reels.WIDGET_REFRESH"
     }
 
     override fun onUpdate(
