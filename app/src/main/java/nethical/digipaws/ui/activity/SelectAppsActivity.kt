@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.SearchView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.R
+import nethical.digipaws.data.blockers.PackageWand
 import nethical.digipaws.databinding.ActivitySelectAppsBinding
 
 class SelectAppsActivity : AppCompatActivity() {
@@ -28,6 +30,7 @@ class SelectAppsActivity : AppCompatActivity() {
     private lateinit var selectedAppList: HashSet<String>
 
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySelectAppsBinding.inflate(layoutInflater)
@@ -39,6 +42,44 @@ class SelectAppsActivity : AppCompatActivity() {
         binding.appList.layoutManager = LinearLayoutManager(this)
         val appItemList: MutableList<AppItem> = mutableListOf()
 
+        binding.selectAppsMagic.setOnClickListener {
+            val popupMenu = PopupMenu(this, binding.selectAppsMagic)
+
+            // Inflate the menu resource
+            popupMenu.menuInflater.inflate(R.menu.app_wand, popupMenu.menu)
+
+            // Set click listener for menu items
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.select_social_media -> {
+                        appItemList.forEach { item ->
+                            if (PackageWand.SOCIAL_MEDIA_APPS.contains(item.appInfo.packageName)) {
+                                selectedAppList.add(item.appInfo.packageName)
+                            }
+                        }
+                        val slist = sortSelectedItemsToTop(appItemList)
+                        (binding.appList.adapter as ApplicationAdapter).updateData(slist)
+                        true
+                    }
+
+                    R.id.select_productive_apps -> {
+                        appItemList.forEach { item ->
+                            if (PackageWand.PRODUCTIVE_APPS.contains(item.appInfo.packageName)) {
+                                selectedAppList.add(item.appInfo.packageName)
+                            }
+                        }
+                        val slist = sortSelectedItemsToTop(appItemList)
+                        (binding.appList.adapter as ApplicationAdapter).updateData(slist)
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+
+            // Show the popup menu
+            popupMenu.show()
+        }
         if (intent.hasExtra("APP_LIST")) { // load only few specific apps instead of everything installed
             val appList = intent.getStringArrayListExtra("APP_LIST")
 
@@ -65,13 +106,6 @@ class SelectAppsActivity : AppCompatActivity() {
             it.appInfo.loadLabel(packageManager).toString().lowercase()
         }
 
-        val sortedAppItemList = appItemList.sortedWith(compareBy<AppItem> {
-            // First sort by selection status - false comes before true when using !
-            !selectedAppList.contains(it.appInfo.packageName)
-        }.thenBy {
-            // Then sort alphabetically within each group
-            it.appInfo.loadLabel(packageManager).toString().lowercase()
-        })
 
 
         binding.confirmSelection.setOnClickListener {
@@ -83,6 +117,7 @@ class SelectAppsActivity : AppCompatActivity() {
             finish()
         }
 
+        val sortedAppItemList = sortSelectedItemsToTop(appItemList)
 
         binding.appList.layoutManager = LinearLayoutManager(this)
         val filteredList = sortedAppItemList.toMutableList()
@@ -110,6 +145,17 @@ class SelectAppsActivity : AppCompatActivity() {
 
     }
 
+    fun sortSelectedItemsToTop(appItemList: List<AppItem>): List<AppItem> {
+        val sortedAppItemList = appItemList.sortedWith(compareBy<AppItem> {
+            // First sort by selection status - false comes before true when using !
+            !selectedAppList.contains(it.appInfo.packageName)
+        }.thenBy {
+            // Then sort alphabetically within each group
+            it.appInfo.loadLabel(packageManager).toString().lowercase()
+        })
+        return sortedAppItemList
+    }
+
 
     inner class ApplicationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val appIcon: ImageView = itemView.findViewById(R.id.app_icon)
@@ -118,7 +164,7 @@ class SelectAppsActivity : AppCompatActivity() {
     }
 
     inner class ApplicationAdapter(
-        private val apps: List<AppItem>,
+        private var apps: List<AppItem>,
         private val selectedAppList: HashSet<String>
     ) : RecyclerView.Adapter<ApplicationViewHolder>() {
 
@@ -163,6 +209,12 @@ class SelectAppsActivity : AppCompatActivity() {
         }
 
         override fun getItemCount(): Int = apps.size
+
+        @SuppressLint("NotifyDataSetChanged")
+        fun updateData(newList: List<AppItem>) {
+            apps = newList
+            notifyDataSetChanged()
+        }
     }
 
     data class AppItem(

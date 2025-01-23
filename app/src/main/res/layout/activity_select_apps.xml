@@ -16,12 +16,12 @@
         android:iconifiedByDefault="false"
         android:queryHint="Search apps"
         app:layout_constraintBottom_toTopOf="@+id/app_list"
-        app:layout_constraintEnd_toStartOf="@+id/select_ignored_apps"
+        app:layout_constraintEnd_toStartOf="@+id/select_apps_magic"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/select_ignored_apps"
+        android:id="@+id/select_apps_magic"
         style="@style/Widget.Material3.Button.IconButton.Filled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
