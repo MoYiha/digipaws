@@ -1,8 +1,10 @@
 package nethical.digipaws.ui.fragments.usage
 
 import android.annotation.SuppressLint
+import android.app.AppOpsManager
 import android.app.DatePickerDialog
 import android.app.usage.UsageStatsManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
@@ -12,11 +14,14 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.icu.util.Calendar
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
 import androidx.core.app.ActivityOptionsCompat
@@ -31,11 +36,13 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.R
 import nethical.digipaws.databinding.AppUsageItemBinding
+import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.FragmentAllAppUsageBinding
 import nethical.digipaws.ui.activity.SelectAppsActivity
 import nethical.digipaws.utils.SavedPreferencesLoader
@@ -79,6 +86,10 @@ class AllAppsUsageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        if (!hasUsageStatsPermission(requireContext())) {
+            makeUsageStatsPermissoinDialog()
+        }
 
         val adapter = AppUsageAdapter(emptyList())
         binding.appUsageRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -144,6 +155,33 @@ class AllAppsUsageFragment : Fragment() {
                 .toLocalDate()
 
             setUsageStats(localDate)
+        }
+    }
+    private fun makeUsageStatsPermissoinDialog() {
+        val dialogAccessibilityServiceInfoBinding =
+            DialogPermissionInfoBinding.inflate(layoutInflater)
+        dialogAccessibilityServiceInfoBinding.title.text =
+            getString(R.string.enable_2, "Device Usage Access")
+
+        dialogAccessibilityServiceInfoBinding.desc.text =
+            "DigiPaws requires device usage access to monitor apps, helping you manage screen time effectively and stay focused on your goals. Rest assured, all data stays securely on your device and is never shared with anyone, ensuring your privacy is fully protected."
+
+        dialogAccessibilityServiceInfoBinding.point1.text = "Track what apps you use"
+        dialogAccessibilityServiceInfoBinding.point2.visibility = View.GONE
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogAccessibilityServiceInfoBinding.root)
+            .setCancelable(false)
+            .show()
+
+        dialogAccessibilityServiceInfoBinding.btnReject.setOnClickListener {
+            dialog.dismiss()
+            activity?.finish()
+        }
+        dialogAccessibilityServiceInfoBinding.btnAccept.setOnClickListener {
+            Toast.makeText(requireContext(), "Find 'Digipaws' and press enable", Toast.LENGTH_LONG)
+                .show()
+            requestUsageStatsPermission(requireContext())
+            dialog.dismiss()
         }
     }
 
@@ -355,7 +393,30 @@ class AllAppsUsageFragment : Fragment() {
         override fun getItemCount(): Int = appUsageStats.size
     }
 
+    fun hasUsageStatsPermission(context: Context): Boolean {
+        val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOpsManager.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            appOpsManager.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
 
+    fun requestUsageStatsPermission(context: Context) {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.startActivity(intent)
+    }
 
     class Stat(
         val packageName: String,
