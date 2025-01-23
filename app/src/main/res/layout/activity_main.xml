@@ -687,6 +687,15 @@
                     android:text="@string/support"
                     android:textStyle="bold" />
 
+
+                <Button
+                    android:id="@+id/btn_donate"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Donate us" />
+
                 <Button
                     android:id="@+id/btn_discord"
                     style="@style/Widget.Material3.Button.OutlinedButton"
@@ -696,6 +705,23 @@
                     android:text="@string/join_discord" />
 
                 <Button
+                    android:id="@+id/btn_telegram"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/join_telegram" />
+
+
+                <Button
+                    android:id="@+id/btn_github"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Star us on github" />
+
+                <Button
                     android:id="@+id/btn_instagram"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
@@ -703,13 +729,6 @@
                     android:layout_marginTop="8dp"
                     android:text="@string/follow_us_on_instagram" />
 
-                <Button
-                    android:id="@+id/btn_donate"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Donate us" />
 
 
             </LinearLayout>

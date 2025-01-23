@@ -62,6 +62,8 @@ import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.utils.SavedPreferencesLoader
 import rikka.shizuku.Shizuku
 import rikka.shizuku.Shizuku.OnBinderReceivedListener
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.Calendar
 
 
@@ -105,6 +107,7 @@ class MainActivity : AppCompatActivity() {
             if (isGranted) {
                 // Permission granted, show notifications
                 Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show()
+
 //                makeStartFocusModeDialog()
             } else {
                 // Permission denied
@@ -143,8 +146,6 @@ class MainActivity : AppCompatActivity() {
         setupClickListeners()
 
         Shizuku.addBinderReceivedListenerSticky(BINDER_RECEIVED_LISTENER);
-
-
 
 
     }
@@ -445,6 +446,13 @@ class MainActivity : AppCompatActivity() {
         binding.btnDiscord.setOnClickListener {
             openUrl("https://discord.com/invite/Vs9mwUtuCN")
         }
+
+        binding.btnTelegram.setOnClickListener {
+            openUrl("https://t.me/digipaws6")
+        }
+        binding.btnGithub.setOnClickListener {
+            openUrl("https://github.com/nethical6/digipaws")
+        }
         binding.btnInstagram.setOnClickListener {
             openUrl("https://www.instagram.com/digipaws.app")
         }
@@ -628,12 +636,48 @@ class MainActivity : AppCompatActivity() {
 
     private fun isFirstLaunch(): Boolean {
         val sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val firstDate = sharedPreferences.getString("first_date", null)
+        if (firstDate == null) {
+            // Store the current date as a string representation
+            val currentDateString = LocalDate.now().toString()
+            sharedPreferences.edit().putString("first_date", currentDateString).apply()
+        }
+        if (!(sharedPreferences.getBoolean("is_donation_alerted", false))) {
+            // Parse the stored date string back to LocalDate
+            val storedFirstDate = firstDate?.let { LocalDate.parse(it) } ?: LocalDate.now()
+            val daysPassed = ChronoUnit.DAYS.between(storedFirstDate, LocalDate.now())
+
+            Log.d("days passed", daysPassed.toString())
+            if (daysPassed > 5L) {
+                sharedPreferences.edit().putBoolean("is_donation_alerted", true).apply()
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Consider Donating?")
+                    .setMessage(
+                        "Hello, this is Nethical, the creator of digipaws. I'm a 17-year-old high school student with a passion for technology and computers. " +
+                                "A few months ago, I couldn't find any free app blocker solution that perfectly suited my needs, so I decided to build digipaws myself. " +
+                                "I have a strong vision for digipaws, including integrating gamification features. However, I may have to unfortunately halt this project due to a lack of funding. " +
+                                "If you find digipaws useful, please consider donating even a small amount to support its continued development. Thank you!"
+                    )
+                    .setNegativeButton("Close") { dialog, _ ->
+                        dialog.dismiss()
+
+
+                    }
+                    .setPositiveButton("Donate") { dialog, _ ->
+                        openUrl("https://digipaws.life/donate")
+                        dialog.dismiss()
+                    }
+                    .setCancelable(false)
+                    .show()
+            }
+        }
         return sharedPreferences.getBoolean("isFirstLaunch", true)
     }
 
     private fun setFirstLaunchCompleted() {
         val sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
         sharedPreferences.edit().putBoolean("isFirstLaunch", false).apply()
+        sharedPreferences.edit().putString("first_date", LocalDate.now().toString()).apply()
     }
 
     private fun showTermsAndConditionsDialog() {
