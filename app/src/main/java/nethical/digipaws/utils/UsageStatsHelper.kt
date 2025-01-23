@@ -3,6 +3,7 @@ package nethical.digipaws.utils
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import java.time.Instant
@@ -28,10 +29,16 @@ class UsageStatsHelper(private val context: Context) {
         val foregroundEvents = mutableMapOf<String, Long>()
         val usageStatsMap = mutableMapOf<String, MutableList<Pair<Long, ZonedDateTime>>>()
         val event = UsageEvents.Event()
+        val savedPreferencesLoader = SavedPreferencesLoader(context)
+        val ignoredApps = savedPreferencesLoader.loadIgnoredAppUsageTracker().toMutableSet()
 
+        getDefaultLauncherPackageName(context)?.let { ignoredApps.add(it) }
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
 
+            if(ignoredApps.contains(event.packageName)){
+                continue
+            }
             when (event.eventType) {
                 UsageEvents.Event.ACTIVITY_RESUMED -> {
                     foregroundEvents[event.packageName] = event.timeStamp
@@ -106,5 +113,12 @@ class UsageStatsHelper(private val context: Context) {
 
 
         return getForegroundStatsByTimestamps(start, end)
+    }
+    fun getDefaultLauncherPackageName(context: Context): String? {
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        val resolveInfo = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        return resolveInfo?.activityInfo?.packageName
     }
 }

@@ -116,7 +116,7 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
     }
 
     private fun createRefreshIntent(context: Context, widgetId: Int): Intent {
-        return Intent(context, ReelsWidgetProvider::class.java).apply {
+        return Intent(context, ScreentimeWidgetProvider::class.java).apply {
             action = ACTION_WIDGET_REFRESH
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
         }

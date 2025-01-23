@@ -2,8 +2,8 @@ package nethical.digipaws.ui.fragments.usage
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -17,6 +17,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity.RESULT_OK
+import androidx.core.app.ActivityOptionsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -34,6 +37,8 @@ import kotlinx.coroutines.withContext
 import nethical.digipaws.R
 import nethical.digipaws.databinding.AppUsageItemBinding
 import nethical.digipaws.databinding.FragmentAllAppUsageBinding
+import nethical.digipaws.ui.activity.SelectAppsActivity
+import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
 import java.time.Instant
@@ -54,6 +59,17 @@ class AllAppsUsageFragment : Fragment() {
     private var _binding: FragmentAllAppUsageBinding? = null
     private val binding get() = _binding!!
 
+
+    val selectIgnoredAppsLauncher =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
+            selectedApps?.let {
+                val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
+                savedPreferencesLoader.saveIgnoredAppUsageTracker(it.toSet())
+            }
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -83,6 +99,17 @@ class AllAppsUsageFragment : Fragment() {
             selectedDate = currentDate.coerceAtLeast(earliestDate) // Ensure valid range
 
         }
+        binding.selectIgnoredApps.setOnClickListener {
+            val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
+
+            val intent = Intent(requireContext(), SelectAppsActivity::class.java)
+            intent.putStringArrayListExtra(
+                "PRE_SELECTED_APPS",
+                ArrayList(savedPreferencesLoader.loadIgnoredAppUsageTracker())
+            )
+            selectIgnoredAppsLauncher.launch(intent,
+                ActivityOptionsCompat.makeCustomAnimation(requireContext(), R.anim.fade_in, R.anim.fade_out))
+        }
         binding.selectDate.setOnClickListener {
             showDatePickerDialog(selectedDate, earliestDate, currentDate) { newDate ->
                 selectedDate = newDate
@@ -108,10 +135,23 @@ class AllAppsUsageFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val localDate = Instant.ofEpochMilli(selectedDate)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+
+            setUsageStats(localDate)
+        }
+    }
+
     private suspend fun setUsageStats(date : LocalDate = LocalDate.now()) {
         val usageStatsHelper = UsageStatsHelper(requireContext())
         val list = usageStatsHelper.getForegroundStatsByDay(date)
         val totalTime = TimeTools.formatTime(calculateTotalScreenTimeInHours(list),false)
+
         withContext(Dispatchers.Main) {
             try {
                 val adapter = binding.appUsageRecyclerView.adapter as AppUsageAdapter
@@ -280,6 +320,7 @@ class AllAppsUsageFragment : Fragment() {
             val appInfo = packageManager.getApplicationInfo(stats.packageName, 0)
             binding.root.setOnClickListener{
                 activity?.supportFragmentManager?.beginTransaction()
+                    ?.setCustomAnimations(R.anim.fade_in,R.anim.fade_out)
                     ?.replace(R.id.fragment_holder, AppUsageBreakdown(stats))
                     ?.addToBackStack(null)
                     ?.commit()

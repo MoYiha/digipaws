@@ -17,6 +17,12 @@ class SavedPreferencesLoader(private val context: Context) {
     }
 
 
+    fun loadIgnoredAppUsageTracker(): Set<String> {
+        val sharedPreferences =
+            context.getSharedPreferences("app_usage_tracker", Context.MODE_PRIVATE)
+        return sharedPreferences.getStringSet("ignored_apps", emptySet()) ?: emptySet()
+    }
+
     fun loadBlockedApps(): Set<String> {
         val sharedPreferences =
             context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
@@ -42,6 +48,12 @@ class SavedPreferencesLoader(private val context: Context) {
         sharedPreferences.edit().putStringSet("blocked_apps", pinnedApps).apply()
     }
 
+
+    fun saveIgnoredAppUsageTracker(pinnedApps: Set<String>) {
+        val sharedPreferences =
+            context.getSharedPreferences("app_usage_tracker", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putStringSet("ignored_apps", pinnedApps).apply()
+    }
 
 
     fun saveBlockedKeywords(pinnedApps: Set<String>) {
