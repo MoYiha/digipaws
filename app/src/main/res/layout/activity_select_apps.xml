@@ -16,19 +16,30 @@
         android:iconifiedByDefault="false"
         android:queryHint="Search apps"
         app:layout_constraintBottom_toTopOf="@+id/app_list"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/select_ignored_apps"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/select_ignored_apps"
+        style="@style/Widget.Material3.Button.IconButton.Filled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:icon="@drawable/baseline_auto_fix_high_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/app_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="8dp"
         android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:clipToPadding="false"
+        android:fitsSystemWindows="true"
+        android:paddingBottom="?attr/actionBarSize"
         app:layout_constraintTop_toBottomOf="@+id/searchView" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
