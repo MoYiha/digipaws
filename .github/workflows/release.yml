@@ -47,7 +47,7 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - name: Upload Signed Lite Release APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lite-release-apk
           path: app/build/outputs/apk/lite/release/*.apk
