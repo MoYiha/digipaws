@@ -7,6 +7,7 @@
    [![Telegram Group](https://img.shields.io/badge/Telegram%20Group-blue?style=flat&logo=telegram)](https://t.me/digipaws6)
    [![Total downloads](https://img.shields.io/github/downloads/nethical6/digipaws/total)](https://github.com/nethical6/digipaws/releases)
    [![Repository Size](https://img.shields.io/github/repo-size/nethical6/digipaws)](https://github.com/nethical6/digipaws)
+
 </div>
 
 <div align="center">
@@ -27,10 +28,10 @@ DigiPaws is an open-source Android productivity utility designed to help users r
 >This project is being re-written in kotlin with a new UI
 
 > [!CAUTION]
-> This project is experimental and not yet ready for full production. [Donate](https://nethical6.github.io/digipaws/donate)
+> This project is experimental and not yet ready for full production. [Donate](https://digipaws.life/donate)
 
 > [!CAUTION]
-> If you are stuck and unable to uninstall the app. You can uninstall it via the safe mode. ][How to enter safe mode](https://www.androidauthority.com/how-to-enter-safe-mode-android-801476/)
+> If you are stuck and unable to uninstall the app. You can uninstall it via the safe mode. [How to enter safe mode](https://www.androidauthority.com/how-to-enter-safe-mode-android-801476/)
 
 
 ## Features
@@ -39,7 +40,8 @@ DigiPaws is an open-source Android productivity utility designed to help users r
 - **Open Source**: Fully transparent and free to use, with the source code available for community contributions.
 - **Productivity Enhancement**: Helps build healthier digital habits and reduce screen addiction.
 - **Versatile Blockers**: Take control of your digital environment by blocking apps, keywords, and unwanted in-app screens (e.g., YouTube shorts, comments).
-
+- **Widgets** : Add stats to your homescreen
+- **App Usage Stats** : Display Your stats
 ## Screenshots
 Click on any image to enlarge it.
 <table>
@@ -49,8 +51,34 @@ Click on any image to enlarge it.
 		<td><img src='fastlane/metadata/android/en-US/images/phoneScreenshots/3.png' width='120'></td>
 		<td><img src='fastlane/metadata/android/en-US/images/phoneScreenshots/4.png' width='120'></td>
 		<td><img src='fastlane/metadata/android/en-US/images/phoneScreenshots/5.png' width='120'></td>
+		<td><img src='fastlane/metadata/android/en-US/images/phoneScreenshots/6.png' width='120'></td>
+		<td><img src='fastlane/metadata/android/en-US/images/phoneScreenshots/7.png' width='120'></td>
+		<td><img src='fastlane/metadata/android/en-US/images/phoneScreenshots/8.png' width='120'></td>
 	</tr>
 </table>
+
+
+## ToDo
+- [x] Block reels
+- [x] Block comments
+- [x] Block explicit context
+- [x] App blockers
+- [x] Focus Mode
+- [x] Turn selected apps black and white to make them boring
+- [x] Show time elapsed using an app on the centre of the screen
+- [x] Anti-Uninstall
+- [x] Customisable warning screen
+- [x] Track App Usage Stats
+- [x] Homescreen widgets
+- [x] track how many tiktoks you scroll everyday 
+- [ ] track attention span
+- [ ] Quests and gamified mode
+- [ ] Api for other developers to transform their existing apps into digipaw quests!
+- [ ] Geoblocker (basically block things when a certain area is entered, like workplace)
+- [x] Block custom user defined keywords
+- [x] redirect to a different website when a blocked keyword is found
+- [ ] Modular and downloadable view blockers
+- [ ] expand the app to ios and desktop.
 
 ## Modes
 
@@ -78,22 +106,6 @@ by.
 > [!TIP]  
 > This app relies exclusively on accessibility services to function. Because it requires sensitive permissions, please avoid downloading it from untrusted sources.
 
-## ToDo
-- [x] Block reels
-- [x] Block comments
-- [x] Block explicit context
-- [x] App blockers
-- [x] Focus Quest
-- [x] Anti-Uninstall
-- [x] Customisable warning screen
-- [ ] Quests and gamified mode
-- [x] track how many tiktoks you scroll everyday 
-- [x] track attention span
-- [ ] Api for other developers to transform their existing apps into digipaw quests!
-- [ ] Geoblocker (basically block things when a certain area is entered, like workplace)
-- [x] Block custom user defined keywords
-- [ ] Modular and downloadable view blockers
-- [ ] expand the app to ios and desktop.
 ## Contributing
 
 We welcome contributions from the community! If you'd like to contribute, please follow these steps:
@@ -117,16 +129,12 @@ Please ensure your code adheres to our coding standards and includes relevant te
 
 Developing codes for accessibility services and blockers can be exceptionally complex and challenging to understand. This is primarily because blocking mechanisms must account for various app types, each functioning differently. Discovering these mechanisms has often required extensive app-specific debugging, coupled with trial-and-error approaches.
 
-## Translations 
-[![Translation Status](https://hosted.weblate.org/widgets/digipaws/-/multi-auto.svg)](https://hosted.weblate.org/projects/digipaws/)
-Press [here](https://hosted.weblate.org/projects/digipaws/) to help translate digipaws.
 
 
-## Contributors
-- [Henry Delallal](https://github.com/HenriDellal): assisted in setting up fdroid version
-- [Remaker17](https://github.com/remaker17): setup workflow files
-- Error 404: help
-
+## Thanks
+- [Usage Direct](https://codeberg.org/fynngodau/usageDirect): I had an extremely tough time figuring out and fixing the app usage stats. Extremely thanks to this app for saving me.
+- [ShizuTools](https://github.com/legendsayantan/ShizuTools): [ShizukuRunner.kt](https://github.com/nethical6/digipaws/blob/kt-rewrite/app/src/main/java/nethical/digipaws/utils/ShizukuRunner.kt) has been derived from this project
+- [MPAndroidChart](https://github.com/PhilJay/MPAndroidChart): All charts and graphs were made using this library
 ## License
 
 DigiPaws is licensed under the [GPL 3 or later licence](LICENSE). You are free to use, modify, and distribute this software in accordance with the license.
