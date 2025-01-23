@@ -14,6 +14,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -115,6 +116,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+
+        checkBackgroundRestrictions()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -880,6 +883,35 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    fun checkBackgroundRestrictions() {
+
+        val powerManager =
+            getSystemService(POWER_SERVICE) as PowerManager
+        val packageName = packageName
+        val i = Intent()
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            requestBackgroundPermission()
+        }
+    }
+
+    @SuppressLint("BatteryLife")
+    fun requestBackgroundPermission() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Background Permission Required")
+            .setMessage("This app needs permission to run in the background for a smoother experience. Please enable background restrictions in the settings.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                val i = Intent()
+                i.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                i.data = Uri.parse("package:$packageName")
+                startActivity(i)
+
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
     private fun openAccessibilityServiceScreen(cls: Class<*>) {
         try {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
