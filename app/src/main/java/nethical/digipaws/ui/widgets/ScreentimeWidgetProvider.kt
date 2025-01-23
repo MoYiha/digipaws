@@ -5,16 +5,12 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.util.Log
 import android.widget.RemoteViews
 import nethical.digipaws.R
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
-import nethical.digipaws.ui.widgets.ReelsWidgetProvider.Companion
-import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
-import java.sql.Time
 
 class ScreentimeWidgetProvider : AppWidgetProvider() {
 
@@ -43,6 +39,7 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
         try {
             when (intent.action) {
                 ACTION_WIDGET_REFRESH -> handleRefresh(context, intent)
+                "android.appwidget.action.APPWIDGET_UPDATE" -> handleRefresh(context, intent)
                 else -> Log.d(TAG, "Received unhandled action: ${intent.action}")
             }
         } catch (e: Exception) {
@@ -76,7 +73,7 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
         val totalScreentime = list.sumOf { it.totalTime }
         try{
             val views = RemoteViews(context.packageName, R.layout.widget_app_stats).apply {
-                setTextViewText(R.id.screentime_widget, TimeTools.formatTime(totalScreentime, false))
+                setTextViewText(R.id.screentime_widget, formatTime(totalScreentime))
                 // Loop to handle the first 3 items dynamically
                 for (i in 0..2) {
                     val item =
@@ -95,7 +92,7 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
                         refreshIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                     )
-                    setOnClickPendingIntent(R.id.refresh_stats, pendingIntent)
+                    setOnClickPendingIntent(R.id.refresh_stats_screentime, pendingIntent)
                 }
             }
 
@@ -124,4 +121,17 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
         }
     }
+
+
+    fun formatTime(timeInMillis: Long): String {
+        val hours = timeInMillis / (1000 * 60 * 60)
+        val minutes = (timeInMillis % (1000 * 60 * 60)) / (1000 * 60)
+
+        return buildString {
+            if (hours > 0) append("${hours}h")
+            if (minutes > 0) append(" ${minutes}m")
+        }.trim()
+    }
+
+
 }

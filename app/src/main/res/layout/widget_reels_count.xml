@@ -1,53 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="120dp"
-    android:layout_height="150dp"
-    android:background="@drawable/widget_background"
-    android:padding="8dp">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/Theme.Material3.DynamicColors.DayNight">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:background="@drawable/widget_background"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:weightSum="4">
 
-        <ImageView
-            android:id="@+id/refresh_stats"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginBottom="8dp"
-            android:contentDescription="Refresh stats"
-            android:src="@drawable/baseline_refresh_24"
-            android:tint="#FFFFFF" />
-
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:gravity="center"
-            android:text="Reels Today"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Reels Today"
+                android:textColor="?android:attr/textColorPrimary" />
+
+            <ImageView
+                android:id="@+id/refresh_stats"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:contentDescription="Refresh stats"
+                android:src="@drawable/baseline_refresh_24"
+                android:tint="?android:attr/colorAccent" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/widget_reels_cout"
+            style="@style/TextAppearance.MaterialComponents.Headline2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:gravity="center"
-            android:text="0"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"
+            android:layout_marginVertical="8dp"
+            android:layout_weight="2"
+            android:ellipsize="none"
+            android:gravity="center_vertical"
+            android:singleLine="true"
+            android:text="1.3k"
+            android:textColor="?android:attr/textColorPrimary"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/widget_reels_cout_percentage"
+            style="@style/MaterialAlertDialog.Material3.Body.Text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:gravity="center"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
             android:text="+100%"
-            android:textColor="#FF0101"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp" />
 
     </LinearLayout>

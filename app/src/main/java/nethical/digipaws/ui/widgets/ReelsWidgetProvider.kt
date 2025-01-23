@@ -39,6 +39,7 @@ class ReelsWidgetProvider : AppWidgetProvider() {
         try {
             when (intent.action) {
                 ACTION_WIDGET_REFRESH -> handleRefresh(context, intent)
+                "android.appwidget.action.APPWIDGET_UPDATE" -> handleRefresh(context, intent)
                 else -> Log.d(TAG, "Received unhandled action: ${intent.action}")
             }
         } catch (e: Exception) {
@@ -76,6 +77,7 @@ class ReelsWidgetProvider : AppWidgetProvider() {
                 val softRed = Color.parseColor("#F44336")  // Muted red
 
                 val reelsCountToday = preferencesLoader.getReelsScrolled()[currentDate] ?: 0
+//                val reelsCountToday = 13500
                 val reelsCountYesterday = preferencesLoader.getReelsScrolled()[yesterdayDate] ?: 0
 
                 // Calculate the change percentage
@@ -92,26 +94,26 @@ class ReelsWidgetProvider : AppWidgetProvider() {
                             R.id.widget_reels_cout_percentage,
                             "-%.1f%%".format(-changePercentage) // Remove negative sign when displaying reduction
                         )
-                        setTextColor(R.id.widget_reels_cout_percentage, softGreen) // Green for reduction
+//                        setTextColor(R.id.widget_reels_cout_percentage, softGreen) // Green for reduction
                     }
                     changePercentage > 0 -> { // Increase in usage
                         setTextViewText(
                             R.id.widget_reels_cout_percentage,
                             "+%.1f%%".format(changePercentage)
                         )
-                        setTextColor(R.id.widget_reels_cout_percentage, softRed) // Red for increase
+//                        setTextColor(R.id.widget_reels_cout_percentage, softRed) // Red for increase
                     }
                     else -> { // No change
                         setTextViewText(
                             R.id.widget_reels_cout_percentage,
-                            "0.0%%" // Display no change
+                            "0.0%" // Display no change
                         )
-                        setTextColor(R.id.widget_reels_cout_percentage, Color.WHITE) // Neutral color for no change
+//                        setTextColor(R.id.widget_reels_cout_percentage, Color.WHITE) // Neutral color for no change
                     }
                 }
 
 
-                setTextViewText(R.id.widget_reels_cout, reelsCountToday.toString())
+                setTextViewText(R.id.widget_reels_cout, formatNumber(reelsCountToday.toLong()))
 
                 // Set up refresh button
                 val refreshIntent = createRefreshIntent(context, widgetId)
@@ -135,6 +137,22 @@ class ReelsWidgetProvider : AppWidgetProvider() {
         return Intent(context, ReelsWidgetProvider::class.java).apply {
             action = ACTION_WIDGET_REFRESH
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
+        }
+    }
+    fun formatNumber(number: Long): String {
+        val suffixes = arrayOf("", "k", "m", "b", "t")
+        var value = number.toDouble()
+        var index = 0
+
+        while (value >= 1000 && index < suffixes.size - 1) {
+            value /= 1000
+            index++
+        }
+
+        return if (value % 1.0 == 0.0) {
+            "${value.toInt()}${suffixes[index]}"
+        } else {
+            String.format("%.1f%s", value, suffixes[index])
         }
     }
 
