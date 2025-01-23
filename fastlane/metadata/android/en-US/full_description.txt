@@ -3,12 +3,24 @@ Tired of losing hours to endless scrolling and Screen Time? Meet DigiPaws – th
 
 <b>Features</b>
 
-- <b>Versatile Blockers</b>: Take control of your digital environment by blocking apps, keywords, and unwanted in-app screens (e.g., YouTube shorts, comments).
+- <b>Versatile Blockers</b>: Everything Packed in a single app
+- <b>App Blocker</b> : Block apps, set cheat hours, and more
+- <b>Keyword Blocker</b> : Block custom keywords, Porn blocker , and setup custom link redirection
+- <b>In App blocker</b> : Block youtube shorts or instagram reels while allowing access to other app features
+
+- <b>Grayscale Filter</b> : Turn specific apps black and white to make them boring
+
+- <b>Reels Tracker</b> : Track the number of Intagram reels or tiktoks you scroll
+- <b>App Usage Tracker</b> : Track how you are spending your time on phone
+- <b>Homescreen Widgets</b> : Display statistics on your homescreen
+
 - <b>Anti-Uninstall</b>: Put password or block uninstallation for a few days
-- <b>Focus Mode</b> : Block all apps except the whitelisted ones
-- <b>Usage Tracker</b> : View time elapsed in real time or track tiktoks scrolled and attention span
-- <b>Open Source</b>: Fully transparent and free to use, with the source code available for community contributions.
-- <b>Productivity Enhancement</b>: Helps build healthier digital habits and reduce screen addiction.
+
+- <b>Focus Mode</b> : Block all apps except the whitelisted ones or vice versa
+- <b>Auto Focus</b> : Automatically block selected apps at specified hours of the day
+
+- <b>Extremely Customisable</b> : Setup custom warning messages, cooldowns, and more
+- <b>Privacy Oriented</b> : Everything stays secure on your local device without the need of INTERNET permission
 <b>Usage</b>
 
 1. Launch DigiPaws on your Android device.

@@ -193,6 +193,9 @@ class AllAppsUsageFragment : Fragment() {
         withContext(Dispatchers.Main) {
             try {
                 val adapter = binding.appUsageRecyclerView.adapter as AppUsageAdapter
+                if(list.isEmpty()){
+                    Toast.makeText(requireContext(),"No data available",Toast.LENGTH_SHORT).show()
+                }
                 adapter.updateData(list)
                 updatePieChart(list)
                 binding.totalUsage.setText(totalTime)
