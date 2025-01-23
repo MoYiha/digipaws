@@ -5,12 +5,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import nethical.digipaws.Constants
 import nethical.digipaws.ui.activity.TimedActionActivity
@@ -163,8 +163,10 @@ class DigipawsMainService : BaseBlockingService() {
         // As all apps wil get blocked except the selected ones, add essential packages
         // to the list of selected apps
         if (focusModeData.modeType == Constants.FOCUS_MODE_BLOCK_ALL_EX_SELECTED) {
-            selectedFocusModeApps.add("com.android.systemui") // mostly notification bar
+            selectedFocusModeApps.add("com.android.systemui")
             selectedFocusModeApps.add(launcherPackage)
+            getCurrentKeyboardPackageName(this)?.let { selectedFocusModeApps.add(it) }
+
         }
 
         autoFocusData = savedPreferencesLoader.loadAutoFocusHoursList()
@@ -213,6 +215,16 @@ class DigipawsMainService : BaseBlockingService() {
             val childNode = node.getChild(i)
             traverseNodesForKeywords(childNode)
         }
+    }
+
+    fun getCurrentKeyboardPackageName(context: Context): String? {
+        val inputMethodManager =
+            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val currentInputMethodId = android.provider.Settings.Secure.getString(
+            context.contentResolver,
+            android.provider.Settings.Secure.DEFAULT_INPUT_METHOD
+        )
+        return currentInputMethodId?.substringBefore('/')
     }
 
     data class FocusModeData(
