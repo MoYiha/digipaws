@@ -6,7 +6,7 @@
     android:minHeight="80dp"
     android:targetCellWidth="2"
     android:targetCellHeight="2"
-    android:updatePeriodMillis="86400000"
+    android:updatePeriodMillis="1800000"
     android:resizeMode="horizontal|vertical"
     android:previewLayout="@layout/widget_reels_count"
     android:widgetFeatures="reconfigurable|configuration_optional"
