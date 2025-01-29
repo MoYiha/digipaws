@@ -3,6 +3,8 @@ package nethical.digipaws.ui.fragments.usage
 import android.annotation.SuppressLint
 import android.app.AppOpsManager
 import android.app.DatePickerDialog
+import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
@@ -24,7 +26,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -44,6 +50,7 @@ import nethical.digipaws.R
 import nethical.digipaws.databinding.AppUsageItemBinding
 import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.FragmentAllAppUsageBinding
+import nethical.digipaws.ui.activity.FragmentActivity
 import nethical.digipaws.ui.activity.SelectAppsActivity
 import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
@@ -110,16 +117,88 @@ class AllAppsUsageFragment : Fragment() {
             selectedDate = currentDate.coerceAtLeast(earliestDate) // Ensure valid range
 
         }
-        binding.selectIgnoredApps.setOnClickListener {
-            val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
+        binding.openMenu.setOnClickListener {
+            val popupMenu = PopupMenu(requireContext(), binding.openMenu)
+            popupMenu.menuInflater.inflate(R.menu.usage_tracker_options, popupMenu.menu)
 
-            val intent = Intent(requireContext(), SelectAppsActivity::class.java)
-            intent.putStringArrayListExtra(
-                "PRE_SELECTED_APPS",
-                ArrayList(savedPreferencesLoader.loadIgnoredAppUsageTracker())
-            )
-            selectIgnoredAppsLauncher.launch(intent,
-                ActivityOptionsCompat.makeCustomAnimation(requireContext(), R.anim.fade_in, R.anim.fade_out))
+            // Handle menu item clicks
+            popupMenu.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.select_ignored -> {
+                        val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
+
+                        val intent = Intent(requireContext(), SelectAppsActivity::class.java)
+                        intent.putStringArrayListExtra(
+                            "PRE_SELECTED_APPS",
+                            ArrayList(savedPreferencesLoader.loadIgnoredAppUsageTracker())
+                        )
+                        selectIgnoredAppsLauncher.launch(
+                            intent,
+                            ActivityOptionsCompat.makeCustomAnimation(
+                                requireContext(),
+                                R.anim.fade_in,
+                                R.anim.fade_out
+                            )
+                        )
+                        true
+                    }
+
+                    R.id.add_shortcut_usage_tracker -> {
+
+                        val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                            action = Intent.ACTION_CREATE_SHORTCUT
+                        }
+
+                        intent.putExtra("fragment", FRAGMENT_ID)
+                        val shortcutInfo =
+                            ShortcutInfoCompat.Builder(requireContext(), "digipaws_usage_tracker")
+                                .setShortLabel("Usage Stats")
+                                .setLongLabel("Usage Stats")
+                                .setIntent(intent)
+                                .setIcon(
+                                    IconCompat.createWithResource(
+                                        requireContext(),
+                                        R.drawable.baseline_query_stats_24
+                                    )
+                                )
+                                .build()
+
+
+                        val supported =
+                            ShortcutManagerCompat.isRequestPinShortcutSupported(requireContext())
+                        val dynamicShortcuts =
+                            ShortcutManagerCompat.getDynamicShortcuts(requireContext())
+
+                        if (supported) {
+                            if (dynamicShortcuts.contains(shortcutInfo)) {
+                                return@setOnMenuItemClickListener false
+                            }
+                        }
+                        val pinnedShortcutCallbackIntent =
+                            Intent("example.intent.action.SHORTCUT_CREATED")
+
+                        val successCallback = PendingIntent.getBroadcast(
+                            requireContext(),
+                            3000,
+                            pinnedShortcutCallbackIntent,
+                            FLAG_IMMUTABLE
+                        )
+
+                        ShortcutManagerCompat.requestPinShortcut(
+                            requireContext(),
+                            shortcutInfo,
+                            successCallback.intentSender
+                        )
+
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+
+            popupMenu.show()
+
         }
         binding.selectDate.setOnClickListener {
             showDatePickerDialog(selectedDate, earliestDate, currentDate) { newDate ->
@@ -365,6 +444,32 @@ class AllAppsUsageFragment : Fragment() {
                     ?.replace(R.id.fragment_holder, AppUsageBreakdown(stats))
                     ?.addToBackStack(null)
                     ?.commit()
+            }
+            binding.root.setOnLongClickListener {
+
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Add to ignored packages?")
+                    .setMessage("This action will cause the tracker to not display any stats from this app.")
+                    .setCancelable(true)
+                    .setPositiveButton("Okay") { dialog, _ ->
+                        val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
+                        val ignoredApps =
+                            savedPreferencesLoader.loadIgnoredAppUsageTracker().toMutableSet()
+                        ignoredApps.add(stats.packageName)
+
+                        savedPreferencesLoader.saveIgnoredAppUsageTracker(ignoredApps)
+
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val localDate = Instant.ofEpochMilli(selectedDate)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate()
+
+                            setUsageStats(localDate)
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+                true
             }
 
             // Load app icon and label on the main thread
