@@ -58,6 +58,7 @@ import nethical.digipaws.ui.dialogs.TweakKeywordPack
 import nethical.digipaws.ui.dialogs.TweakUsageTracker
 import nethical.digipaws.ui.dialogs.TweakViewBlockerCheatHours
 import nethical.digipaws.ui.dialogs.TweakViewBlockerWarning
+import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.utils.SavedPreferencesLoader
 import rikka.shizuku.Shizuku
@@ -382,6 +383,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 if (binding.antiUninstallWarning.visibility == View.GONE) {
                     val intent = Intent(this, FragmentActivity::class.java)
+                    intent.putExtra("fragment", ChooseModeFragment.FRAGMENT_ID)
                     startActivity(intent, options.toBundle())
                 } else {
                     makeAccessibilityInfoDialog("General Features", DigipawsMainService::class.java)

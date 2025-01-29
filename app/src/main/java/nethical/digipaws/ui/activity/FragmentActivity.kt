@@ -33,7 +33,6 @@ class FragmentActivity : AppCompatActivity() {
                     fragment = AllAppsUsageFragment()
                 }
 
-
             }
             supportFragmentManager.beginTransaction()
                 .replace(
