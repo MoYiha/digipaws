@@ -8,6 +8,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import nethical.digipaws.R
 import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
+import nethical.digipaws.ui.fragments.bedtime.SetupBedtimeMode
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 
 class FragmentActivity : AppCompatActivity() {
@@ -31,6 +32,9 @@ class FragmentActivity : AppCompatActivity() {
 
                 AllAppsUsageFragment.FRAGMENT_ID -> {
                     fragment = AllAppsUsageFragment()
+                }
+                SetupBedtimeMode.FRAGMENT_ID -> {
+                    fragment = SetupBedtimeMode()
                 }
 
             }
