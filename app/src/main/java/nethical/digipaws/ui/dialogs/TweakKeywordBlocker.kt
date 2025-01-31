@@ -3,20 +3,68 @@ package nethical.digipaws.ui.dialogs
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity.RESULT_OK
+import androidx.core.app.ActivityOptionsCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.R
 import nethical.digipaws.databinding.DialogKeywordBlockerConfigBinding
 import nethical.digipaws.services.KeywordBlockerService
+import nethical.digipaws.ui.activity.SelectAppsActivity
+import nethical.digipaws.utils.SavedPreferencesLoader
 
-class TweakKeywordBlocker : BaseDialog() {
+class TweakKeywordBlocker(savedPreferencesLoader: SavedPreferencesLoader) :
+    BaseDialog(savedPreferencesLoader) {
 
     private lateinit var sharedPreferences: SharedPreferences
 
     @SuppressLint("ApplySharedPref")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialogManageKeywordBlocker = DialogKeywordBlockerConfigBinding.inflate(layoutInflater)
+
+
+        val selectIgnoredApps: ActivityResultLauncher<Intent> =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
+                    selectedApps?.let {
+                        dialogManageKeywordBlocker.ignoredKbApps.append(" (${selectedApps.size})")
+                        savedPreferencesLoader?.saveKeywordBlockerIgnoredApps(selectedApps)
+                    }
+                }
+            }
+        if (!dialogManageKeywordBlocker.cbSearchTextField.isChecked) {
+            dialogManageKeywordBlocker.ignoredKbApps.visibility = View.GONE
+        }
+        dialogManageKeywordBlocker.cbSearchTextField.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                dialogManageKeywordBlocker.ignoredKbApps.visibility = View.VISIBLE
+            } else {
+                dialogManageKeywordBlocker.ignoredKbApps.visibility = View.GONE
+            }
+        }
+
+        dialogManageKeywordBlocker.ignoredKbApps.setOnClickListener {
+
+            val intent = Intent(requireContext(), SelectAppsActivity::class.java)
+            intent.putStringArrayListExtra(
+                "PRE_SELECTED_APPS",
+                ArrayList(savedPreferencesLoader?.getKeywordBlockerIgnoredApps() ?: emptyList())
+            )
+            selectIgnoredApps.launch(
+                intent,
+                ActivityOptionsCompat.makeCustomAnimation(
+                    requireContext(),
+                    R.anim.fade_in,
+                    R.anim.fade_out
+                )
+            )
+        }
 
         // Initialize SharedPreferences
         sharedPreferences =

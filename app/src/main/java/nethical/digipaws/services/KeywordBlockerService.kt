@@ -29,11 +29,15 @@ class KeywordBlockerService : BaseBlockingService() {
 
     private val keywordBlocker = KeywordBlocker(this)
 
+    private var KbIgnoredApps: HashSet<String> = hashSetOf()
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
 
-        if (!isDelayOver(refreshCooldown) || event == null || event.packageName == "nethical.digipaws") {
+        if (!isDelayOver(refreshCooldown) || event == null || event.packageName == "nethical.digipaws" || KbIgnoredApps.contains(
+                event.packageName
+            )
+        ) {
             return
         }
         val rootnode: AccessibilityNodeInfo? = rootInActiveWindow
@@ -117,6 +121,8 @@ class KeywordBlockerService : BaseBlockingService() {
         if (keywordBlocker.isSearchAllTextFields) {
             refreshCooldown = 5000
         }
+
+        KbIgnoredApps = savedPreferencesLoader.getKeywordBlockerIgnoredApps().toHashSet()
 
     }
 

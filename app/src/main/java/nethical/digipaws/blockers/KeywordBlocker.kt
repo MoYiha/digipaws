@@ -42,6 +42,8 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
     var isSearchAllTextFields = false
 
     var recursionResultNodes: MutableList<AccessibilityNodeInfo> = mutableListOf()
+
+
     private fun containsBlockedKeyword(url: String): String? {
         // Split text by whitespace to get individual words and check each word
         val keywords = parseTextForKeywords(url)

@@ -272,6 +272,32 @@ class SavedPreferencesLoader(private val context: Context) {
         return gson.fromJson(json, type)
     }
 
+    fun saveKeywordBlockerIgnoredApps(appList: List<String>) {
+        val sharedPreferences =
+            context.getSharedPreferences("Keyword_blocker_ignored_apps", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val gson = Gson()
+
+        val json = gson.toJson(appList)
+
+        editor.putString("selected_apps", json)
+        editor.apply()
+    }
+
+    fun getKeywordBlockerIgnoredApps(): List<String> {
+        val sharedPreferences =
+            context.getSharedPreferences("Keyword_blocker_ignored_apps", Context.MODE_PRIVATE)
+        val gson = Gson()
+
+        val json = sharedPreferences.getString("selected_apps", null)
+
+        if (json.isNullOrEmpty()) return listOf()
+
+        val type =
+            object : TypeToken<List<String>>() {}.type
+        return gson.fromJson(json, type)
+    }
+
 
     fun setOverlayApps(selectedApps: Set<String>) {
         val sharedPreferences =

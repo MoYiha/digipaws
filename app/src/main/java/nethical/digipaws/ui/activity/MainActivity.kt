@@ -315,7 +315,10 @@ class MainActivity : AppCompatActivity() {
             TweakKeywordPack().show(supportFragmentManager, "tweak_keyword_pack")
         }
         binding.btnManageKeywordBlocker.setOnClickListener {
-            TweakKeywordBlocker().show(supportFragmentManager, "tweak_keyword_blocker")
+            TweakKeywordBlocker(savedPreferencesLoader).show(
+                supportFragmentManager,
+                "tweak_keyword_blocker"
+            )
         }
         binding.selectAppUsageStats.setOnClickListener {
             val intent = Intent(this, FragmentActivity::class.java)
