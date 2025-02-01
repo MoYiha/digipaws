@@ -103,35 +103,34 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <CheckBox
-                android:id="@+id/checkBox"
+                android:id="@+id/dim_brightness"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Dim the screen brightness" />
 
             <CheckBox
-                android:id="@+id/checkBox2"
+                android:id="@+id/turn_on_dnd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Turn on DND" />
 
             <CheckBox
-                android:id="@+id/checkBox3"
+                android:id="@+id/turn_on_gray_scale"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Turn on Gray Scale Mode" />
         </LinearLayout>
 
         <Button
-            android:id="@+id/button2"
+            android:id="@+id/turnon_bedtime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:layout_margin="8dp"
+            android:layout_marginTop="32dp"
             android:text="Enable"
             app:icon="@drawable/baseline_done_24" />
 

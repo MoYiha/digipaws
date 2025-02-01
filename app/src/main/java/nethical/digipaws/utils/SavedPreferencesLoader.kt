@@ -7,6 +7,7 @@ import nethical.digipaws.services.DigipawsMainService
 import nethical.digipaws.services.UsageTrackingService.AttentionSpanVideoItem
 import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.TimedActionActivity
+import nethical.digipaws.ui.fragments.bedtime.SetupBedtimeMode
 
 class SavedPreferencesLoader(private val context: Context) {
 
@@ -321,5 +322,33 @@ class SavedPreferencesLoader(private val context: Context) {
         val sharedPreferences =
             context.getSharedPreferences("grayscale", Context.MODE_PRIVATE)
         sharedPreferences.edit().putStringSet("apps", apps).apply()
+    }
+
+    fun saveBedTimeData(focusModeData: SetupBedtimeMode.BedTimeModeData) {
+        val sharedPreferences =
+            context.getSharedPreferences("bedtime_mode", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        val gson = Gson()
+
+        val json = gson.toJson(focusModeData)
+
+        editor.putString("bed_time_data", json)
+        editor.apply()
+    }
+
+
+    fun getBedTimeData(): SetupBedtimeMode.BedTimeModeData {
+
+        val sharedPreferences =
+            context.getSharedPreferences("bedtime_mode", Context.MODE_PRIVATE)
+        val gson = Gson()
+
+        val json = sharedPreferences.getString("bed_time_data", null)
+
+        if (json.isNullOrEmpty()) return SetupBedtimeMode.BedTimeModeData()
+
+        val type =
+            object : TypeToken<SetupBedtimeMode.BedTimeModeData>() {}.type
+        return gson.fromJson(json, type)
     }
 }
