@@ -2,7 +2,7 @@ package nethical.digipaws.utils
 
 import android.util.Log
 
-class GrayscaleControl {
+class ShizukuControl {
     private val commandListener = object : ShizukuRunner.CommandResultListener {
         override fun onCommandResult(output: String, done: Boolean) {
             Log.d("monochrome output: ",output)
@@ -72,6 +72,19 @@ class GrayscaleControl {
                     callback(false)
                 }
             }
+        )
+    }
+
+    fun enableScreenDim() {
+        ShizukuRunner.executeCommand(
+            "settings put system screen_brightness 0",
+            commandListener
+        )
+    }
+    fun disableScreenDim() {
+        ShizukuRunner.executeCommand(
+            "settings put system screen_brightness 180",
+            commandListener
         )
     }
 }

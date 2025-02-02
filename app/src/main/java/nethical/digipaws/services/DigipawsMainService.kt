@@ -14,7 +14,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import nethical.digipaws.Constants
 import nethical.digipaws.ui.activity.TimedActionActivity
-import nethical.digipaws.utils.GrayscaleControl
+import nethical.digipaws.utils.ShizukuControl
 import nethical.digipaws.utils.TimeTools
 import java.util.Calendar
 import java.util.Locale
@@ -37,7 +37,7 @@ class DigipawsMainService : BaseBlockingService() {
     private var launcherPackage = "nethical.digipaws"
 
     private var isAntiUninstallOn = true
-    private val grayscaleControl = GrayscaleControl()
+    private val shizukuControl = ShizukuControl()
 
     private var autoFocusData: List<TimedActionActivity.AutoTimedActionItem> = emptyList()
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -52,17 +52,17 @@ class DigipawsMainService : BaseBlockingService() {
                 when(grayScaleMode){
                     Constants.GRAYSCALE_MODE_ONLY_SELECTED -> {
                         if(selectedGrayScaleApps.contains(event.packageName)){
-                            grayscaleControl.enableGrayscale()
+                            shizukuControl.enableGrayscale()
                             Log.d("enabled","enabled")
                         }else{
-                            grayscaleControl.disableGrayscale()
+                            shizukuControl.disableGrayscale()
                         }
                     }
                     Constants.GRAYSCALE_MODE_ALL_EXCEPT_SELECTED -> {
                         if(selectedGrayScaleApps.contains(event.packageName)){
-                            grayscaleControl.disableGrayscale()
+                            shizukuControl.disableGrayscale()
                         }else{
-                            grayscaleControl.enableGrayscale()
+                            shizukuControl.enableGrayscale()
                             Log.d("enabled","enabled")
                         }
                     }

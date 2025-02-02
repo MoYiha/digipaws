@@ -286,6 +286,7 @@
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:enabled="false"
                     android:layout_marginTop="8dp"
                     android:text="Configure" />
 
@@ -297,7 +298,7 @@
                     android:layout_marginTop="8dp"
                     android:text="Authorize digipaws to access Shizuku"
                     android:textAlignment="center"
-                    android:visibility="gone"
+                    android:visibility="visible"
                     android:textColor="?attr/colorError" />
 
             </LinearLayout>

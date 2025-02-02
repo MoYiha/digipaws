@@ -400,6 +400,13 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("fragment", SetupBedtimeMode.FRAGMENT_ID)
             startActivity(intent, options.toBundle())
         }
+        binding.bedtimeStatusChip.setOnClickListener{
+            if(isShizukuBinderRecieved) {
+                if ((Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED)) {
+                    Shizuku.requestPermission(0)
+                }
+            }
+        }
 
         binding.monochromeStatusChip.setOnClickListener {
             if(!isGeneralSettingsOn){
@@ -618,6 +625,12 @@ class MainActivity : AppCompatActivity() {
                     binding.startFocusMode.isEnabled = !isFocusedModeOn
                 }
 
+                if(isShizukuBinderRecieved){
+                    val isShizukuOn = Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+                    updateChip(isShizukuOn,binding.bedtimeStatusChip,binding.bedtimeWarning)
+                    binding.setupBedtime.isEnabled = isShizukuOn
+                }
+
                 if(isGeneralSettingsOn){
                     binding.monochromeWarning.text = "Authorize digipaws to access Shizuku"
                     if(isShizukuBinderRecieved){
@@ -626,6 +639,8 @@ class MainActivity : AppCompatActivity() {
                 }else{
                     binding.monochromeWarning.text = getString(R.string.warning_general_settings)
                     binding.monochromeStatusChip.text = getString(R.string.disabled)
+
+
                 }
 
             }
@@ -641,9 +656,13 @@ class MainActivity : AppCompatActivity() {
             binding.monochromeWarning
         )
 
-
         binding.setupMonochrome.isEnabled = isShizukuOn
         binding.selectMonochromeApps.isEnabled = isShizukuOn
+
+
+        updateChip(isShizukuOn,binding.bedtimeStatusChip,binding.bedtimeWarning)
+        binding.setupBedtime.isEnabled = isShizukuOn
+
     }
 
     private fun isFirstLaunch(): Boolean {

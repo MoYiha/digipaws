@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
-            android:text="Configure Time" />
+            android:text="Turn on DND automatically between these hours" />
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -99,7 +99,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:text="Options" />
+            android:text="Additional Options (shizuku required)" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -111,12 +111,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Dim the screen brightness" />
-
-            <CheckBox
-                android:id="@+id/turn_on_dnd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Turn on DND" />
 
             <CheckBox
                 android:id="@+id/turn_on_gray_scale"

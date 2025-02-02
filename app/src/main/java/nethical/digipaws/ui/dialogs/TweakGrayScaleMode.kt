@@ -10,8 +10,7 @@ import nethical.digipaws.Constants
 import nethical.digipaws.R
 import nethical.digipaws.databinding.DialogGrayscaleBinding
 import nethical.digipaws.services.DigipawsMainService
-import nethical.digipaws.services.UsageTrackingService
-import nethical.digipaws.utils.GrayscaleControl
+import nethical.digipaws.utils.ShizukuControl
 import nethical.digipaws.utils.SavedPreferencesLoader
 
 class TweakGrayScaleMode(
@@ -51,13 +50,13 @@ class TweakGrayScaleMode(
                 when(dialogGrayscaleBinding.modeType.checkedRadioButtonId){
                     dialogGrayscaleBinding.blockAll.id -> {
                         trackerPreferences.edit().putInt("mode",Constants.GRAYSCALE_MODE_ALL).commit()
-                        val grayscaleControl = GrayscaleControl()
-                        grayscaleControl.enableGrayscale()
+                        val shizukuControl = ShizukuControl()
+                        shizukuControl.enableGrayscale()
                     }
                     dialogGrayscaleBinding.turnOff.id -> {
                         trackerPreferences.edit().putInt("mode",Constants.GRAYSCALE_MODE_OFF).commit()
-                        val grayscaleControl = GrayscaleControl()
-                        grayscaleControl.disableGrayscale()
+                        val shizukuControl = ShizukuControl()
+                        shizukuControl.disableGrayscale()
                     }
                     dialogGrayscaleBinding.blockSelected.id -> {
                         trackerPreferences.edit().putInt("mode",Constants.GRAYSCALE_MODE_ONLY_SELECTED).commit()

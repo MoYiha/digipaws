@@ -26,6 +26,12 @@ class TimeTools {
             val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
             return currentDate.format(formatter)
         }
+        fun getNextDate(): String {
+            var currentDate = LocalDate.now()
+            currentDate = currentDate.plusDays(1)
+            val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+            return currentDate.format(formatter)
+        }
         fun getPreviousDate(daysAgo:Long = 1): String {
             val previousDate = LocalDate.now().minusDays(daysAgo)
 
