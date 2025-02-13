@@ -44,8 +44,6 @@
     <string name="display_number_of_reels_scrolled">Exibir o número de rolos rolados</string>
     <string name="specify_duration_of_focus_mode_in_mins">Especifique a duração do modo de foco em minutos</string>
     <string name="block_adult_keywords">Bloquear palavras-chave adultas</string>
-    <string name="senha">Senha</string>
-    <string name="specify_cooldown_interval_in_Minutes">Especifique o intervalo de resfriamento em minutos</string>
     <string name="warning_message">Mensagem de aviso</string>
     <string name="allow_viewing_instagram_reels_sent_in_instagram_inbox">Permitir a visualização de rolos do Instagram enviados na caixa de entrada do Instagram</string>
     <string name="allow_opening_the_first_reel_in_feed">Permitir a abertura do primeiro rolo no feed</string>
