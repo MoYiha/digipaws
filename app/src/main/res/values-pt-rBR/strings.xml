@@ -57,7 +57,6 @@
     <string name="turn_on">Ativar</string>
     <string name="timed_mode_desc">Por quanto tempo você gostaria de manter o anti-desinstalação ativado?</string>
     <string name="turn_on_anti_uninstall">Ativar Anti-Desinstalação</string>
-    <string name="minutos">minutos</string>
     <string name="app_icon">app_icon</string>
 
     <string name="accessibility_permission_app_blocker">
