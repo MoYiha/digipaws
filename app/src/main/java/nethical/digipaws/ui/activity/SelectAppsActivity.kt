@@ -40,7 +40,7 @@ class SelectAppsActivity : AppCompatActivity() {
 
 
         binding.appList.layoutManager = LinearLayoutManager(this)
-        val appItemList: MutableList<AppItem> = mutableListOf()
+        var appItemList: MutableList<AppItem> = mutableListOf()
 
         binding.selectAppsMagic.setOnClickListener {
             val popupMenu = PopupMenu(this, binding.selectAppsMagic)
@@ -93,13 +93,25 @@ class SelectAppsActivity : AppCompatActivity() {
             }
         } else { // load all installed apps
             val launcherApps = getSystemService(LAUNCHER_APPS_SERVICE) as LauncherApps
-            val apps = launcherApps.getActivityList(null, Process.myUserHandle())
-                .map { it.applicationInfo }
-                .filter { it.packageName != packageName }
+            val profiles = launcherApps.profiles
+            appItemList = mutableListOf()
 
-            apps.forEach { appInfo ->
-                appItemList.add(AppItem(appInfo.packageName, appInfo))
+            for (profile in profiles) {
+                val apps = launcherApps.getActivityList(null, profile)
+                    .map { it.applicationInfo }
+                    .filter { it.packageName != packageName }
+
+                apps.forEach { appInfo ->
+                    val profileType = if (profile == Process.myUserHandle()) "" else "(Work)"
+                    val appLabel = appInfo.loadLabel(packageManager).toString()
+                    val displayName = "$appLabel $profileType"
+
+                    appItemList.add(AppItem(appInfo.packageName, appInfo, displayName))
+                }
             }
+            // Sort the app list alphabetically
+            appItemList.sortBy { it.displayName.lowercase() }
+
         }
 
         appItemList.sortBy {
@@ -134,7 +146,7 @@ class SelectAppsActivity : AppCompatActivity() {
                 filteredList.clear()
                 filteredList.addAll(
                     appItemList.filter {
-                        it.appInfo.loadLabel(packageManager).toString()
+                        it.displayName
                             .contains(query, ignoreCase = true)
                     }
                 )
@@ -177,16 +189,14 @@ class SelectAppsActivity : AppCompatActivity() {
             val appItem = apps[position]
 
             holder.appIcon.setImageDrawable(null)
-            holder.appName.text = ""
+            holder.appName.text = appItem.displayName
 
             lifecycleScope.launch(Dispatchers.IO) {
                 val packageManager = holder.itemView.context.packageManager
                 val icon = appItem.appInfo.loadIcon(packageManager)
-                val label = appItem.appInfo.loadLabel(packageManager)
 
                 withContext(Dispatchers.Main) {
                     holder.appIcon.setImageDrawable(icon)
-                    holder.appName.text = label
                 }
             }
 
@@ -219,6 +229,7 @@ class SelectAppsActivity : AppCompatActivity() {
 
     data class AppItem(
         val packageName: String,
-        val appInfo: ApplicationInfo
+        val appInfo: ApplicationInfo,
+        val displayName: String = appInfo.name
     )
 }
