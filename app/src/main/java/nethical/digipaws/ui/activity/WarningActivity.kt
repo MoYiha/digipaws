@@ -88,6 +88,10 @@ class WarningActivity : AppCompatActivity() {
                             AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN,
                             binding.minsPicker.getValue()
                         )
+                        val intent = packageManager.getLaunchIntentForPackage(it1)
+                        if (intent != null) {
+                            startActivity(intent)
+                        }
                     }
             }
 

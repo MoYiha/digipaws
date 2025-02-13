@@ -29,7 +29,7 @@ class AppBlockerService : BaseBlockingService() {
 
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if(isDelayOver(4000)){
+        if (isDelayOver(1000)) {
             val packageName = event?.packageName.toString()
             handleAppBlockerResult(appBlocker.doesAppNeedToBeBlocked(packageName), packageName)
         }
@@ -48,6 +48,8 @@ class AppBlockerService : BaseBlockingService() {
             return
         }
 
+        pressHome()
+        Thread.sleep(300)
         val dialogIntent = Intent(this, WarningActivity::class.java)
         dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         dialogIntent.putExtra("warning_message", warningScreenConfig.message)
