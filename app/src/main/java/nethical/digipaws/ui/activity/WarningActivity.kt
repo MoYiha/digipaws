@@ -66,7 +66,7 @@ class WarningActivity : AppCompatActivity() {
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
             }
-            finishActivity(0)
+            finishAffinity()
         }
         binding.btnProceed.setOnClickListener {
             if (mode == Constants.WARNING_SCREEN_MODE_VIEW_BLOCKER) {
