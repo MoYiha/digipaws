@@ -464,6 +464,10 @@ class MainActivity : AppCompatActivity() {
         binding.btnDonate.setOnClickListener {
             openUrl("https://digipaws.life/donate")
         }
+
+        binding.btnCredits.setOnClickListener {
+            openUrl("https://digipaws.life/credits")
+        }
         binding.helpReelBlocker.setOnClickListener {
             MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.about_view_blocker))
