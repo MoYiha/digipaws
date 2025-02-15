@@ -31,6 +31,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -61,6 +62,7 @@ import nethical.digipaws.ui.dialogs.TweakViewBlockerWarning
 import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.utils.SavedPreferencesLoader
+import nethical.digipaws.utils.ZipUtils
 import rikka.shizuku.Shizuku
 import rikka.shizuku.Shizuku.OnBinderReceivedListener
 import java.time.LocalDate
@@ -86,6 +88,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var addCheatHoursActivity: ActivityResultLauncher<Intent>
 
     private lateinit var addAutoFocusHoursActivity: ActivityResultLauncher<Intent>
+
+    private lateinit var directoryPicker: ActivityResultLauncher<Intent>
+
+    private lateinit var restorePicker: ActivityResultLauncher<Intent>
 
     private val savedPreferencesLoader = SavedPreferencesLoader(this)
     private lateinit var options: ActivityOptionsCompat
@@ -237,6 +243,32 @@ class MainActivity : AppCompatActivity() {
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
                 sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_FOCUS_MODE)
             }
+        // Register the directory picker
+        directoryPicker = ZipUtils.registerDirectoryPicker(this) { directoryUri ->
+            // Create the zip file in the selected directory
+            val filename = ZipUtils.createZipFileName()
+            val zipUri = createFileInDirectory(directoryUri, filename)
+            zipUri?.let {
+                ZipUtils.zipSharedPreferencesToUri(this, it)
+            }
+        }
+        restorePicker = ZipUtils.registerRestorePicker(this, {
+            sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
+            sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_CONFIG)
+            sendRefreshRequest(UsageTrackingService.INTENT_ACTION_REFRESH_USAGE_TRACKER)
+            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_FOCUS_MODE)
+            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_GRAYSCALE)
+            sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_BLOCKED_KEYWORD_LIST)
+            sendRefreshRequest(ViewBlockerService.INTENT_ACTION_REFRESH_VIEW_BLOCKER)
+            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
+            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
+
+            Toast.makeText(
+                this,
+                "Success! It may take a while to reflect updates!",
+                Toast.LENGTH_SHORT
+            ).show()
+        })
     }
 
     private fun setupClickListeners() {
@@ -468,6 +500,19 @@ class MainActivity : AppCompatActivity() {
         binding.btnCredits.setOnClickListener {
             openUrl("https://digipaws.life/credits")
         }
+        binding.btnBackup.setOnClickListener {
+            ZipUtils.showDirectoryPicker(directoryPicker)
+        }
+        binding.btnRestore.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Restore settings?")
+                .setMessage("You may loose all existing settings")
+                .setPositiveButton(getString(R.string.ok), { dialog, _ ->
+                    ZipUtils.showRestorePicker(restorePicker)
+                })
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show()
+        }
         binding.helpReelBlocker.setOnClickListener {
             MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.about_view_blocker))
@@ -607,6 +652,7 @@ class MainActivity : AppCompatActivity() {
                         appBlockerSelectCheatHours.isEnabled = false
                         btnConfigViewblockerWarning.isEnabled = false
                         startFocusMode.isEnabled = false
+                        btnRestore.isEnabled = false
                     }
                 }
                 if (isGeneralSettingsOn) {
@@ -1062,6 +1108,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    }
+    private fun createFileInDirectory(directoryUri: Uri, filename: String): Uri? {
+        return try {
+            val docTree = DocumentFile.fromTreeUri(this, directoryUri)
+            docTree?.createFile("application/zip", filename)?.uri
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     data class WarningData(
