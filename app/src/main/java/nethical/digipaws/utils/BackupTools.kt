@@ -87,7 +87,7 @@ object ZipUtils {
                 ZipInputStream(BufferedInputStream(inputStream)).use { zis ->
                     val sharedPrefsDir = File(context.filesDir.parent, "shared_prefs")
 
-                    sharedPrefsDir.delete()
+//                    sharedPrefsDir.deleteRecursively()
                     if (!sharedPrefsDir.exists()) {
                         sharedPrefsDir.mkdir() // Ensure the directory exists
                     }
@@ -102,12 +102,27 @@ object ZipUtils {
                         if (outputFile.exists()) {
                             outputFile.delete()
                         }
+                        Log.d(
+                            "Permissions",
+                            "Can read: ${sharedPrefsDir.canRead()}, Can write: ${sharedPrefsDir.canWrite()}"
+                        )
 
                         FileOutputStream(outputFile).use { outputStream ->
                             zis.copyTo(outputStream) // Efficiently copy data
                         }
 
                         zis.closeEntry()
+                        // Reload the SharedPreferences for this file
+                        if (entry.name.endsWith(".xml")) {
+                            val prefsName = entry.name.removeSuffix(".xml")
+                            val sharedPreferences =
+                                context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+
+                            // Force a reload by accessing the preferences
+                            sharedPreferences.all // This forces a read from disk
+                            Log.d("ReloadSharedPreferences", "Reloaded preferences: $prefsName")
+
+                        }
                         entry = zis.nextEntry
                     }
                 }

@@ -253,15 +253,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
         restorePicker = ZipUtils.registerRestorePicker(this, {
-            sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
-            sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_CONFIG)
-            sendRefreshRequest(UsageTrackingService.INTENT_ACTION_REFRESH_USAGE_TRACKER)
-            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_FOCUS_MODE)
-            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_GRAYSCALE)
-            sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_BLOCKED_KEYWORD_LIST)
-            sendRefreshRequest(ViewBlockerService.INTENT_ACTION_REFRESH_VIEW_BLOCKER)
-            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
-            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
+//            sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
+//            sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_CONFIG)
+//            sendRefreshRequest(UsageTrackingService.INTENT_ACTION_REFRESH_USAGE_TRACKER)
+//            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_FOCUS_MODE)
+//            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_GRAYSCALE)
+//            sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_BLOCKED_KEYWORD_LIST)
+//            sendRefreshRequest(ViewBlockerService.INTENT_ACTION_REFRESH_VIEW_BLOCKER)
+//            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
+//            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
 
             Toast.makeText(
                 this,
