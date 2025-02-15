@@ -905,8 +905,10 @@ class MainActivity : AppCompatActivity() {
         try {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             val componentName = ComponentName(this, cls)
-
             intent.putExtra(":settings:fragment_args_key", componentName.flattenToString())
+            val bundle = Bundle()
+            bundle.putString(":settings:fragment_args_key", componentName.flattenToString())
+            intent.putExtra(":settings:show_fragment_args", bundle)
             startActivity(intent, options.toBundle())
         } catch (e: Exception) {
             e.printStackTrace()
