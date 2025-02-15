@@ -5,17 +5,17 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import nethical.digipaws.Constants
 import nethical.digipaws.ui.activity.TimedActionActivity
 import nethical.digipaws.utils.GrayscaleControl
 import nethical.digipaws.utils.TimeTools
+import nethical.digipaws.utils.getCurrentKeyboardPackageName
+import nethical.digipaws.utils.getDefaultLauncherPackageName
 import java.util.Calendar
 import java.util.Locale
 
@@ -157,7 +157,7 @@ class DigipawsMainService : BaseBlockingService() {
 
     fun setupFocusMode() {
         selectedFocusModeApps = savedPreferencesLoader.getFocusModeSelectedApps().toHashSet()
-        getDefaultLauncherPackageName()?.let { launcherPackage = it }
+        getDefaultLauncherPackageName(packageManager)?.let { launcherPackage = it }
         focusModeData = savedPreferencesLoader.getFocusModeData()
 
         // As all apps wil get blocked except the selected ones, add essential packages
@@ -184,17 +184,6 @@ class DigipawsMainService : BaseBlockingService() {
     }
 
 
-    private fun getDefaultLauncherPackageName(): String? {
-        val packageManager: PackageManager = packageManager
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-        }
-
-        val resolveInfo = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return resolveInfo?.activityInfo?.packageName
-    }
-
-
     private fun traverseNodesForKeywords(
         node: AccessibilityNodeInfo?
     ) {
@@ -216,17 +205,6 @@ class DigipawsMainService : BaseBlockingService() {
             traverseNodesForKeywords(childNode)
         }
     }
-
-    fun getCurrentKeyboardPackageName(context: Context): String? {
-        val inputMethodManager =
-            context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        val currentInputMethodId = android.provider.Settings.Secure.getString(
-            context.contentResolver,
-            android.provider.Settings.Secure.DEFAULT_INPUT_METHOD
-        )
-        return currentInputMethodId?.substringBefore('/')
-    }
-
     data class FocusModeData(
         var isTurnedOn: Boolean = false,
         val endTime: Long = -1,

@@ -75,7 +75,7 @@ class PermissionsFragment : Fragment() {
         binding.btnNext.setOnClickListener {
             val sharedPreferences =
                 requireContext().getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
-            sharedPreferences.edit().putBoolean("isFirstLaunch", true).apply()
+            sharedPreferences.edit().putBoolean("isFirstLaunchComplete", true).apply()
 
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(

@@ -55,6 +55,7 @@ import nethical.digipaws.ui.activity.SelectAppsActivity
 import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
+import nethical.digipaws.utils.getDefaultLauncherPackageName
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -73,6 +74,7 @@ class AllAppsUsageFragment : Fragment() {
     private var _binding: FragmentAllAppUsageBinding? = null
     private val binding get() = _binding!!
 
+    private var ignoredPackages: MutableSet<String> = mutableSetOf()
 
     val selectIgnoredAppsLauncher =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -81,6 +83,7 @@ class AllAppsUsageFragment : Fragment() {
             selectedApps?.let {
                 val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
                 savedPreferencesLoader.saveIgnoredAppUsageTracker(it.toSet())
+                ignoredPackages.addAll(it)
             }
         }
     }
@@ -94,6 +97,7 @@ class AllAppsUsageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         if (!hasUsageStatsPermission(requireContext())) {
             makeUsageStatsPermissoinDialog()
         }
@@ -103,6 +107,12 @@ class AllAppsUsageFragment : Fragment() {
         binding.appUsageRecyclerView.adapter = adapter
 
         lifecycleScope.launch(Dispatchers.IO) {
+
+            getDefaultLauncherPackageName(requireContext().packageManager)?.let {
+                ignoredPackages.add(
+                    it
+                )
+            }
             setUsageStats()
 
             val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
@@ -237,26 +247,26 @@ class AllAppsUsageFragment : Fragment() {
         }
     }
     private fun makeUsageStatsPermissoinDialog() {
-        val dialogAccessibilityServiceInfoBinding =
+        val dialogBinding =
             DialogPermissionInfoBinding.inflate(layoutInflater)
-        dialogAccessibilityServiceInfoBinding.title.text =
+        dialogBinding.title.text =
             getString(R.string.enable_2, "Device Usage Access")
 
-        dialogAccessibilityServiceInfoBinding.desc.text =
+        dialogBinding.desc.text =
             "DigiPaws requires device usage access to monitor apps, helping you manage screen time effectively and stay focused on your goals. Rest assured, all data stays securely on your device and is never shared with anyone, ensuring your privacy is fully protected."
 
-        dialogAccessibilityServiceInfoBinding.point1.text = "Track what apps you use"
-        dialogAccessibilityServiceInfoBinding.point2.visibility = View.GONE
+        dialogBinding.point1.text = "Track what apps you use"
+        dialogBinding.point2.visibility = View.GONE
         val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setView(dialogAccessibilityServiceInfoBinding.root)
+            .setView(dialogBinding.root)
             .setCancelable(false)
             .show()
 
-        dialogAccessibilityServiceInfoBinding.btnReject.setOnClickListener {
+        dialogBinding.btnReject.setOnClickListener {
             dialog.dismiss()
             activity?.finish()
         }
-        dialogAccessibilityServiceInfoBinding.btnAccept.setOnClickListener {
+        dialogBinding.btnAccept.setOnClickListener {
             Toast.makeText(requireContext(), "Find 'Digipaws' and press enable", Toast.LENGTH_LONG)
                 .show()
             requestUsageStatsPermission(requireContext())
@@ -266,7 +276,9 @@ class AllAppsUsageFragment : Fragment() {
 
     private suspend fun setUsageStats(date : LocalDate = LocalDate.now()) {
         val usageStatsHelper = UsageStatsHelper(requireContext())
-        val list = usageStatsHelper.getForegroundStatsByDay(date)
+        val list = usageStatsHelper.getForegroundStatsByDay(date).filter {
+            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
+        }
         val totalTime = TimeTools.formatTime(calculateTotalScreenTimeInHours(list),false)
 
         withContext(Dispatchers.Main) {
@@ -275,9 +287,10 @@ class AllAppsUsageFragment : Fragment() {
                 if(list.isEmpty()){
                     Toast.makeText(requireContext(),"No data available",Toast.LENGTH_SHORT).show()
                 }
-                adapter.updateData(list)
                 updatePieChart(list)
-                binding.totalUsage.setText(totalTime)
+                binding.totalUsage.text = totalTime
+
+                adapter.updateData(list)
             } catch (e: Exception) {
                 Log.e("AppUsageFragment", "Error updating UI with stats", e)
             }
@@ -453,11 +466,11 @@ class AllAppsUsageFragment : Fragment() {
                     .setCancelable(true)
                     .setPositiveButton("Okay") { dialog, _ ->
                         val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
-                        val ignoredApps =
+                        val ignoredAppsSP =
                             savedPreferencesLoader.loadIgnoredAppUsageTracker().toMutableSet()
-                        ignoredApps.add(stats.packageName)
-
-                        savedPreferencesLoader.saveIgnoredAppUsageTracker(ignoredApps)
+                        ignoredAppsSP.add(stats.packageName)
+                        ignoredPackages.addAll(ignoredAppsSP)
+                        savedPreferencesLoader.saveIgnoredAppUsageTracker(ignoredAppsSP)
 
                         lifecycleScope.launch(Dispatchers.IO) {
                             val localDate = Instant.ofEpochMilli(selectedDate)
@@ -495,6 +508,7 @@ class AllAppsUsageFragment : Fragment() {
         @SuppressLint("NotifyDataSetChanged")
         fun updateData(newAppUsageStats: List<Stat>) {
             appUsageStats = newAppUsageStats
+
             notifyDataSetChanged()
         }
 
