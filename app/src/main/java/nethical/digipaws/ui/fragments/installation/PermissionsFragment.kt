@@ -14,12 +14,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity.POWER_SERVICE
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import nethical.digipaws.R
 import nethical.digipaws.databinding.FragmentPermissionsBinding
+import nethical.digipaws.utils.ZipUtils
+import nethical.digipaws.utils.ZipUtils.unzipSharedPreferencesFromUri
 
 
 class PermissionsFragment : Fragment() {
@@ -42,12 +45,27 @@ class PermissionsFragment : Fragment() {
             setPermissionIcon(isBackgroundPermissionGiven(), binding.bgPermIcon)
 
         }
+
+
+    private val restorePicker: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            result.data?.data?.let { uri ->
+                // Take persistent permissions if needed
+                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                activity?.contentResolver?.takePersistableUriPermission(uri, takeFlags)
+
+                unzipSharedPreferencesFromUri(requireContext(), uri)
+
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPermissionsBinding.inflate(inflater, container, false)
+
         return binding.root
     }
 
@@ -82,6 +100,10 @@ class PermissionsFragment : Fragment() {
                 data = Uri.parse("package:${requireContext().packageName}")
             }
             batteryOptimizationLauncher.launch(intent)
+        }
+
+        binding.restoreRoot.setOnClickListener {
+            ZipUtils.showRestorePicker(restorePicker)
         }
 
 

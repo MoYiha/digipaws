@@ -91,7 +91,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var directoryPicker: ActivityResultLauncher<Intent>
 
-    private lateinit var restorePicker: ActivityResultLauncher<Intent>
 
     private val savedPreferencesLoader = SavedPreferencesLoader(this)
     private lateinit var options: ActivityOptionsCompat
@@ -252,23 +251,6 @@ class MainActivity : AppCompatActivity() {
                 ZipUtils.zipSharedPreferencesToUri(this, it)
             }
         }
-        restorePicker = ZipUtils.registerRestorePicker(this, {
-//            sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
-//            sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_CONFIG)
-//            sendRefreshRequest(UsageTrackingService.INTENT_ACTION_REFRESH_USAGE_TRACKER)
-//            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_FOCUS_MODE)
-//            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_GRAYSCALE)
-//            sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_BLOCKED_KEYWORD_LIST)
-//            sendRefreshRequest(ViewBlockerService.INTENT_ACTION_REFRESH_VIEW_BLOCKER)
-//            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
-//            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
-
-            Toast.makeText(
-                this,
-                "Success! It may take a while to reflect updates!",
-                Toast.LENGTH_SHORT
-            ).show()
-        })
     }
 
     private fun setupClickListeners() {
@@ -503,16 +485,6 @@ class MainActivity : AppCompatActivity() {
         binding.btnBackup.setOnClickListener {
             ZipUtils.showDirectoryPicker(directoryPicker)
         }
-        binding.btnRestore.setOnClickListener {
-            MaterialAlertDialogBuilder(this)
-                .setTitle("Restore settings?")
-                .setMessage("You may loose all existing settings")
-                .setPositiveButton(getString(R.string.ok), { dialog, _ ->
-                    ZipUtils.showRestorePicker(restorePicker)
-                })
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show()
-        }
         binding.helpReelBlocker.setOnClickListener {
             MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.about_view_blocker))
@@ -652,7 +624,6 @@ class MainActivity : AppCompatActivity() {
                         appBlockerSelectCheatHours.isEnabled = false
                         btnConfigViewblockerWarning.isEnabled = false
                         startFocusMode.isEnabled = false
-                        btnRestore.isEnabled = false
                     }
                 }
                 if (isGeneralSettingsOn) {

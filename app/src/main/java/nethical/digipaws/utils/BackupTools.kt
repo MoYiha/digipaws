@@ -33,22 +33,6 @@ object ZipUtils {
         }
     }
 
-    fun registerRestorePicker(
-        activity: AppCompatActivity,
-        onSuccess: () -> Unit
-    ): ActivityResultLauncher<Intent> {
-        return activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            result.data?.data?.let { uri ->
-                // Take persistent permissions if needed
-                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                activity.contentResolver.takePersistableUriPermission(uri, takeFlags)
-
-                unzipSharedPreferencesFromUri(activity, uri)
-                onSuccess()
-
-            }
-        }
-    }
 
     // Function to show directory picker
     fun showDirectoryPicker(launcher: ActivityResultLauncher<Intent>) {
