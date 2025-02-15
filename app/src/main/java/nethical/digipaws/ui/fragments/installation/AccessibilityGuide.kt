@@ -1,11 +1,12 @@
 package nethical.digipaws.ui.fragments.installation
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import nethical.digipaws.R
 import nethical.digipaws.databinding.FragmentAccessibilityGuideBinding
 
 class AccessibilityGuide : Fragment() {
@@ -25,16 +26,14 @@ class AccessibilityGuide : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("CommitPrefEdits")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.next.setOnClickListener {
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(
-                    R.id.fragment_holder,
-                    PermissionsFragment()
-                ) // Replace with FragmentB
-                .addToBackStack(null)
-                .commit()
+        binding.btnNext.setOnClickListener {
+            val sharedPreferences =
+                requireContext().getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+            sharedPreferences.edit().putBoolean("isFirstLaunch", true)
+            requireActivity().finish()
         }
     }
 

@@ -14,7 +14,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -44,7 +43,6 @@ import nethical.digipaws.R
 import nethical.digipaws.databinding.ActivityMainBinding
 import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.DialogRemoveAntiUninstallBinding
-import nethical.digipaws.databinding.TermsAndConditionsDialogBinding
 import nethical.digipaws.receivers.AdminReceiver
 import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.services.DigipawsMainService
@@ -127,8 +125,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-
-        checkBackgroundRestrictions()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -146,19 +142,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (isFirstLaunch()) {
-            showTermsAndConditionsDialog()
-        }
         options = ActivityOptionsCompat.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
         setupActivityLaunchers()
         setupClickListeners()
 
         Shizuku.addBinderReceivedListenerSticky(BINDER_RECEIVED_LISTENER);
 
-
-        val intent = Intent(this, FragmentActivity::class.java)
-        intent.putExtra("fragment", WelcomeFragment.FRAGMENT_ID)
-        startActivity(intent, options.toBundle())
+        if (isFirstLaunch()) {
+            val intent = Intent(this, FragmentActivity::class.java)
+            intent.putExtra("fragment", WelcomeFragment.FRAGMENT_ID)
+            startActivity(intent, options.toBundle())
+        }
+        showDonationDialog()
     }
 
     override fun onDestroy() {
@@ -693,7 +688,7 @@ class MainActivity : AppCompatActivity() {
         binding.selectMonochromeApps.isEnabled = isShizukuOn
     }
 
-    private fun isFirstLaunch(): Boolean {
+    private fun showDonationDialog() {
         val sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
         val firstDate = sharedPreferences.getString("first_date", null)
         if (firstDate == null) {
@@ -701,6 +696,7 @@ class MainActivity : AppCompatActivity() {
             val currentDateString = LocalDate.now().toString()
             sharedPreferences.edit().putString("first_date", currentDateString).apply()
         }
+
         if (!(sharedPreferences.getBoolean("is_donation_alerted", false))) {
             // Parse the stored date string back to LocalDate
             val storedFirstDate = firstDate?.let { LocalDate.parse(it) } ?: LocalDate.now()
@@ -730,70 +726,11 @@ class MainActivity : AppCompatActivity() {
                     .show()
             }
         }
-        return sharedPreferences.getBoolean("isFirstLaunch", true)
     }
-
-    private fun setFirstLaunchCompleted() {
+    private fun isFirstLaunch(): Boolean {
         val sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putBoolean("isFirstLaunch", false).apply()
-        sharedPreferences.edit().putString("first_date", LocalDate.now().toString()).apply()
+        return sharedPreferences.getBoolean("isFirstLaunchComplete", true)
     }
-
-    private fun showTermsAndConditionsDialog() {
-        val binding =
-            TermsAndConditionsDialogBinding.inflate(layoutInflater) // Bind the dialog layout
-        val dialog = MaterialAlertDialogBuilder(this)
-            .setView(binding.root)
-            .setCancelable(false)
-            .create()
-
-
-        binding.btnContinue.isEnabled = false // Initially disable the button
-        binding.checkboxAgree.setOnCheckedChangeListener { _, isChecked ->
-            binding.btnContinue.isEnabled = isChecked
-        }
-
-        binding.tvTermsLink.setOnClickListener {
-            openUrl("https://digipaws.life/terms-and-conditions")
-        }
-
-        binding.btnContinue.setOnClickListener {
-            setFirstLaunchCompleted()
-            dialog.dismiss()
-            makeIntroDialog()
-        }
-
-        binding.btnTosReject.setOnClickListener {
-            finishAffinity()
-        }
-
-        dialog.show()
-    }
-
-    private fun makeIntroDialog() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Welcome")
-            .setMessage(
-                "Thanks for trying out DigiPaws!\n\n" +
-                        "We're still in beta and would love to hear your opinions and ideas. " +
-                        "Join us on our Discord or Telegram servers to share your feedback and help us improve DigiPaws!"
-            )
-            .setNegativeButton("Okay") { dialog, _ ->
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    if (ActivityCompat.checkSelfPermission(
-                            this, Manifest.permission.POST_NOTIFICATIONS
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    }
-                }
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .show()
-    }
-
 
     private fun updateChip(isEnabled: Boolean,statusChip: Chip,warningText:TextView) {
         if (isEnabled) {
@@ -985,36 +922,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
-    fun checkBackgroundRestrictions() {
-
-        val powerManager =
-            getSystemService(POWER_SERVICE) as PowerManager
-        val packageName = packageName
-        val i = Intent()
-        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
-            requestBackgroundPermission()
-        }
-    }
-
-    @SuppressLint("BatteryLife")
-    fun requestBackgroundPermission() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Background Permission Required")
-            .setMessage("This app needs permission to run in the background for a smoother experience. Please enable background restrictions in the settings.")
-            .setPositiveButton("Open Settings") { _, _ ->
-                val i = Intent()
-                i.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                i.data = Uri.parse("package:$packageName")
-                startActivity(i)
-
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
-    }
     private fun openAccessibilityServiceScreen(cls: Class<*>) {
         try {
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
