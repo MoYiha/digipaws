@@ -60,6 +60,7 @@ import nethical.digipaws.ui.dialogs.TweakUsageTracker
 import nethical.digipaws.ui.dialogs.TweakViewBlockerCheatHours
 import nethical.digipaws.ui.dialogs.TweakViewBlockerWarning
 import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
+import nethical.digipaws.ui.fragments.installation.WelcomeFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.ZipUtils
@@ -155,6 +156,9 @@ class MainActivity : AppCompatActivity() {
         Shizuku.addBinderReceivedListenerSticky(BINDER_RECEIVED_LISTENER);
 
 
+        val intent = Intent(this, FragmentActivity::class.java)
+        intent.putExtra("fragment", WelcomeFragment.FRAGMENT_ID)
+        startActivity(intent, options.toBundle())
     }
 
     override fun onDestroy() {
