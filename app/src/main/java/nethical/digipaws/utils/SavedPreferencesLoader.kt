@@ -49,10 +49,10 @@ class SavedPreferencesLoader(private val context: Context) {
     }
 
 
-    fun saveIgnoredAppUsageTracker(pinnedApps: Set<String>) {
+    fun saveIgnoredAppUsageTracker(ignoredApps: Set<String>) {
         val sharedPreferences =
             context.getSharedPreferences("app_usage_tracker", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putStringSet("ignored_apps", pinnedApps).apply()
+        sharedPreferences.edit().putStringSet("ignored_apps", ignoredApps).apply()
     }
 
 

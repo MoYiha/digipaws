@@ -33,9 +33,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.PieData
@@ -75,13 +73,13 @@ class AllAppsUsageFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var ignoredPackages: MutableSet<String> = mutableSetOf()
+    private lateinit var savedPreferencesLoader: SavedPreferencesLoader
 
     val selectIgnoredAppsLauncher =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
             selectedApps?.let {
-                val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
                 savedPreferencesLoader.saveIgnoredAppUsageTracker(it.toSet())
                 ignoredPackages.addAll(it)
             }
@@ -97,6 +95,7 @@ class AllAppsUsageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        savedPreferencesLoader = SavedPreferencesLoader(requireContext())
 
         if (!hasUsageStatsPermission(requireContext())) {
             makeUsageStatsPermissoinDialog()
@@ -113,6 +112,8 @@ class AllAppsUsageFragment : Fragment() {
                     it
                 )
             }
+            ignoredPackages.addAll(savedPreferencesLoader.loadIgnoredAppUsageTracker())
+
             setUsageStats()
 
             val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
@@ -135,7 +136,6 @@ class AllAppsUsageFragment : Fragment() {
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.select_ignored -> {
-                        val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
 
                         val intent = Intent(requireContext(), SelectAppsActivity::class.java)
                         intent.putStringArrayListExtra(
@@ -225,14 +225,6 @@ class AllAppsUsageFragment : Fragment() {
             }
         }
 
-        binding.appUsageRecyclerView.apply {
-            addItemDecoration(
-                DividerItemDecoration(
-                    context, OrientationHelper.VERTICAL
-                )
-            )
-            this.adapter = adapter
-        }
     }
 
     override fun onResume() {
@@ -464,7 +456,7 @@ class AllAppsUsageFragment : Fragment() {
                     .setTitle("Add to ignored packages?")
                     .setMessage("This action will cause the tracker to not display any stats from this app.")
                     .setCancelable(true)
-                    .setPositiveButton("Okay") { dialog, _ ->
+                    .setPositiveButton("Okay") { _, _ ->
                         val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
                         val ignoredAppsSP =
                             savedPreferencesLoader.loadIgnoredAppUsageTracker().toMutableSet()
