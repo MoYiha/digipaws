@@ -8,6 +8,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import nethical.digipaws.R
 import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
+import nethical.digipaws.ui.fragments.installation.AccessibilityGuide
 import nethical.digipaws.ui.fragments.installation.WelcomeFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 
@@ -36,6 +37,8 @@ class FragmentActivity : AppCompatActivity() {
                 WelcomeFragment.FRAGMENT_ID -> {
                     fragment = WelcomeFragment()
                 }
+                AccessibilityGuide.FRAGMENT_ID ->
+                    fragment = AccessibilityGuide()
             }
             supportFragmentManager.beginTransaction()
                 .replace(

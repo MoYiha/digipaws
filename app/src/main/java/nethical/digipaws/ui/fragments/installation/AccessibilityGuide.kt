@@ -1,7 +1,6 @@
 package nethical.digipaws.ui.fragments.installation
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,9 +29,6 @@ class AccessibilityGuide : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnNext.setOnClickListener {
-            val sharedPreferences =
-                requireContext().getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
-            sharedPreferences.edit().putBoolean("isFirstLaunch", true)
             requireActivity().finish()
         }
     }

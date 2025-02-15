@@ -2,6 +2,7 @@ package nethical.digipaws.ui.fragments.installation
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -54,6 +55,10 @@ class PermissionsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnNext.setOnClickListener {
+            val sharedPreferences =
+                requireContext().getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+            sharedPreferences.edit().putBoolean("isFirstLaunch", true).apply()
+
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(
                     R.id.fragment_holder,

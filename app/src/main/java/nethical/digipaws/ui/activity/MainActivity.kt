@@ -58,6 +58,7 @@ import nethical.digipaws.ui.dialogs.TweakUsageTracker
 import nethical.digipaws.ui.dialogs.TweakViewBlockerCheatHours
 import nethical.digipaws.ui.dialogs.TweakViewBlockerWarning
 import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
+import nethical.digipaws.ui.fragments.installation.AccessibilityGuide
 import nethical.digipaws.ui.fragments.installation.WelcomeFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.utils.SavedPreferencesLoader
@@ -148,7 +149,7 @@ class MainActivity : AppCompatActivity() {
 
         Shizuku.addBinderReceivedListenerSticky(BINDER_RECEIVED_LISTENER);
 
-        if (isFirstLaunch()) {
+        if (!isFirstLaunchComplete()) {
             val intent = Intent(this, FragmentActivity::class.java)
             intent.putExtra("fragment", WelcomeFragment.FRAGMENT_ID)
             startActivity(intent, options.toBundle())
@@ -727,9 +728,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun isFirstLaunch(): Boolean {
+    private fun isFirstLaunchComplete(): Boolean {
         val sharedPreferences = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
-        return sharedPreferences.getBoolean("isFirstLaunchComplete", true)
+        return sharedPreferences.getBoolean("isFirstLaunchComplete", false)
     }
 
     private fun updateChip(isEnabled: Boolean,statusChip: Chip,warningText:TextView) {
@@ -823,27 +824,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun makeShizukuInfoDialog() {
-        val dialogAccessibilityServiceInfoBinding =
+        val permissionBinding =
             DialogPermissionInfoBinding.inflate(layoutInflater)
-        dialogAccessibilityServiceInfoBinding.title.text = "Integrate Shizuku"
+        permissionBinding.title.text = "Integrate Shizuku"
 
         val dialog = MaterialAlertDialogBuilder(this)
-            .setView(dialogAccessibilityServiceInfoBinding.root)
+            .setView(permissionBinding.root)
             .show()
 
-        dialogAccessibilityServiceInfoBinding.btnAccept.text = "Download Shizuku"
-        dialogAccessibilityServiceInfoBinding.btnReject.text = "Cancel"
-        dialogAccessibilityServiceInfoBinding.desc.text = "Shizuku is a powerful Android app that allows other apps to access system-level features securely without rooting your device. It acts as a bridge, enabling apps to perform advanced tasks by running commands with elevated permissions."
+        permissionBinding.btnAccept.text = "Download Shizuku"
+        permissionBinding.btnReject.text = "Cancel"
+        permissionBinding.desc.text =
+            "Shizuku is a powerful Android app that allows other apps to access system-level features securely without rooting your device. It acts as a bridge, enabling apps to perform advanced tasks by running commands with elevated permissions."
 
-        dialogAccessibilityServiceInfoBinding.point1.text = "control of the Daltonizer."
-        dialogAccessibilityServiceInfoBinding.point2.text = "Make your phone boring."
-        dialogAccessibilityServiceInfoBinding.point3.text = "Feels like using a 90s dumbphone"
-        dialogAccessibilityServiceInfoBinding.point4.visibility = View.GONE
+        permissionBinding.point1.text = "control of the Daltonizer."
+        permissionBinding.point2.text = "Make your phone boring."
+        permissionBinding.point3.text = "Feels like using a 90s dumbphone"
+        permissionBinding.point4.visibility = View.GONE
 
-        dialogAccessibilityServiceInfoBinding.btnReject.setOnClickListener {
+        permissionBinding.btnReject.setOnClickListener {
             dialog.dismiss()
         }
-        dialogAccessibilityServiceInfoBinding.btnAccept.setOnClickListener {
+        permissionBinding.btnAccept.setOnClickListener {
             openUrl("https://shizuku.rikka.app/")
         }
             }
@@ -864,6 +866,12 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Find '$title' and press enable", Toast.LENGTH_LONG).show()
             openAccessibilityServiceScreen(cls)
             dialog.dismiss()
+        }
+        dialogAccessibilityServiceInfoBinding.btnGuide.visibility = View.VISIBLE
+        dialogAccessibilityServiceInfoBinding.btnGuide.setOnClickListener {
+            val intent = Intent(this, FragmentActivity::class.java)
+            intent.putExtra("fragment", AccessibilityGuide.FRAGMENT_ID)
+            startActivity(intent, options.toBundle())
         }
     }
 
