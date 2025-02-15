@@ -9,8 +9,10 @@ import android.util.Log
 import android.widget.RemoteViews
 import nethical.digipaws.R
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
+import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
+import nethical.digipaws.utils.getDefaultLauncherPackageName
 
 class ScreentimeWidgetProvider : AppWidgetProvider() {
 
@@ -68,7 +70,18 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
     ) {
 
         val usageStatsHelper = UsageStatsHelper(context)
-        val list = usageStatsHelper.getForegroundStatsByRelativeDay(0)
+        val ignoredPackages = mutableSetOf<String>()
+        getDefaultLauncherPackageName(context.packageManager)?.let {
+            ignoredPackages.add(
+                it
+            )
+        }
+        val savedPreferencesLoader = SavedPreferencesLoader(context)
+        ignoredPackages.addAll(savedPreferencesLoader.loadIgnoredAppUsageTracker())
+
+        val list = usageStatsHelper.getForegroundStatsByRelativeDay(0).filter {
+            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
+        }
 
         val totalScreentime = list.sumOf { it.totalTime }
         try{
@@ -111,7 +124,7 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
             )
             remoteViews.setTextViewText(textViewId, "$usage : $appName")
         } else {
-            remoteViews.setTextViewText(textViewId, "No Data Available") // Handle missing items
+            remoteViews.setTextViewText(textViewId, "") // Handle missing items
         }
     }
 
