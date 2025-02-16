@@ -51,10 +51,12 @@ class WarningActivity : AppCompatActivity() {
             }.start()
         }
 
-        // Show a dialog immediately when the activity starts
         val dialog = MaterialAlertDialogBuilder(this)
             .setView(binding.root)
             .setCancelable(isDialogCancelable)
+            .setOnCancelListener {
+                finishAffinity()
+            }
             .show()
         binding.warningMsg.text = intent.getStringExtra("warning_message")
         binding.minsPicker.setValue(intent.getIntExtra("default_cooldown", 1))
