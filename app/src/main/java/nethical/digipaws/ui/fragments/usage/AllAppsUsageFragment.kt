@@ -116,17 +116,7 @@ class AllAppsUsageFragment : Fragment() {
 
             setUsageStats()
 
-            val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
-            val stats = usageStatsManager.queryUsageStats(
-                UsageStatsManager.INTERVAL_DAILY,
-                0, System.currentTimeMillis()
-            )
-
-            // Calculate earliest available date
-            earliestDate = stats.minOfOrNull { it.firstTimeStamp } ?: System.currentTimeMillis()
-            currentDate = System.currentTimeMillis()
-            selectedDate = currentDate.coerceAtLeast(earliestDate) // Ensure valid range
-
+            findDataAvailabilityRange()
         }
         binding.openMenu.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), binding.openMenu)
@@ -227,6 +217,20 @@ class AllAppsUsageFragment : Fragment() {
 
     }
 
+    fun findDataAvailabilityRange() {
+
+        val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
+        val stats = usageStatsManager.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY,
+            0, System.currentTimeMillis()
+        )
+
+        // Calculate earliest available date
+        earliestDate = stats.minOfOrNull { it.firstTimeStamp } ?: System.currentTimeMillis()
+        currentDate = System.currentTimeMillis()
+        selectedDate = currentDate.coerceAtLeast(earliestDate) // Ensure valid range
+
+    }
     override fun onResume() {
         super.onResume()
 
@@ -236,6 +240,7 @@ class AllAppsUsageFragment : Fragment() {
                 .toLocalDate()
 
             setUsageStats(localDate)
+            findDataAvailabilityRange()
         }
     }
     private fun makeUsageStatsPermissoinDialog() {

@@ -165,6 +165,7 @@
             android:resource="@xml/shortcuts" />
 
         <receiver android:name=".ui.widgets.ReelsWidgetProvider"
+            android:label="Reel Stats"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -177,6 +178,7 @@
 
 
         <receiver android:name=".ui.widgets.ScreentimeWidgetProvider"
+            android:label="ScreenTime Stats"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
