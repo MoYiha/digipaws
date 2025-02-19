@@ -12,8 +12,8 @@ android {
         applicationId = "nethical.digipaws"
         minSdk = 26
         targetSdk = 34
-        versionCode = 19
-        versionName = "1.9-alpha"
+        versionCode = 21
+        versionName = "2.1-alpha"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
