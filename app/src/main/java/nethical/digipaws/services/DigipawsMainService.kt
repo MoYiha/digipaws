@@ -43,31 +43,36 @@ class DigipawsMainService : BaseBlockingService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         super.onAccessibilityEvent(event)
 
+        try {
+
 //        if(event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
             val currentPackageName = event?.packageName?.toString()
             // Check if the app has changed
             if (currentPackageName != null && currentPackageName != lastPackageName) {
                 lastPackageName = currentPackageName // Update the last package name
 //                Log.d("apps",selectedGrayScaleApps.toString() + "mode: " + grayScaleMode)
-                when(grayScaleMode){
+                when (grayScaleMode) {
                     Constants.GRAYSCALE_MODE_ONLY_SELECTED -> {
-                        if(selectedGrayScaleApps.contains(event.packageName)){
+                        if (selectedGrayScaleApps.contains(event.packageName)) {
                             grayscaleControl.enableGrayscale()
-                            Log.d("enabled","enabled")
-                        }else{
+                            Log.d("enabled", "enabled")
+                        } else {
                             grayscaleControl.disableGrayscale()
                         }
                     }
+
                     Constants.GRAYSCALE_MODE_ALL_EXCEPT_SELECTED -> {
-                        if(selectedGrayScaleApps.contains(event.packageName)){
+                        if (selectedGrayScaleApps.contains(event.packageName)) {
                             grayscaleControl.disableGrayscale()
-                        }else{
+                        } else {
                             grayscaleControl.enableGrayscale()
-                            Log.d("enabled","enabled")
+                            Log.d("enabled", "enabled")
                         }
                     }
                 }
             }
+        } catch (_: Exception) {
+        }
 
 //        }
         // Check if autofocus hour ongoing

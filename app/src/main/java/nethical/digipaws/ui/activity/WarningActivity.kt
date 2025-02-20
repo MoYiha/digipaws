@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.Constants
@@ -16,6 +17,7 @@ import nethical.digipaws.services.ViewBlockerService
 class WarningActivity : AppCompatActivity() {
 
     private var proceedTimer: CountDownTimer? = null
+    private var dialog: AlertDialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -51,7 +53,7 @@ class WarningActivity : AppCompatActivity() {
             }.start()
         }
 
-        val dialog = MaterialAlertDialogBuilder(this)
+        dialog = MaterialAlertDialogBuilder(this)
             .setView(binding.root)
             .setCancelable(isDialogCancelable)
             .setOnCancelListener {
@@ -61,13 +63,13 @@ class WarningActivity : AppCompatActivity() {
         binding.warningMsg.text = intent.getStringExtra("warning_message")
         binding.minsPicker.setValue(intent.getIntExtra("default_cooldown", 1))
         binding.btnCancel.setOnClickListener {
-            dialog.dismiss()
             if (mode == Constants.WARNING_SCREEN_MODE_APP_BLOCKER || isHomePressRequested) {
                 val intent = Intent(Intent.ACTION_MAIN)
                 intent.addCategory(Intent.CATEGORY_HOME)
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
             }
+            dialog?.dismiss()
             finishAffinity()
         }
         binding.btnProceed.setOnClickListener {
@@ -97,7 +99,7 @@ class WarningActivity : AppCompatActivity() {
                     }
             }
 
-            dialog.dismiss()
+            dialog?.dismiss()
             finishActivity(0)
         }
 
@@ -106,6 +108,8 @@ class WarningActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         proceedTimer?.onFinish()
+        dialog?.dismiss()  // Ensure dialog is dismissed before activity is destroyed
+
 
     }
 
