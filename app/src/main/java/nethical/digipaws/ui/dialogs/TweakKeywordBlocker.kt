@@ -23,7 +23,9 @@ class TweakKeywordBlocker(savedPreferencesLoader: SavedPreferencesLoader) :
 
     private lateinit var sharedPreferences: SharedPreferences
 
-    @SuppressLint("ApplySharedPref")
+    private var ignoredAppsSize = 0
+
+    @SuppressLint("ApplySharedPref", "SetTextI18n")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialogManageKeywordBlocker = DialogKeywordBlockerConfigBinding.inflate(layoutInflater)
 
@@ -33,7 +35,8 @@ class TweakKeywordBlocker(savedPreferencesLoader: SavedPreferencesLoader) :
                 if (result.resultCode == RESULT_OK) {
                     val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                     selectedApps?.let {
-                        dialogManageKeywordBlocker.ignoredKbApps.append(" (${selectedApps.size})")
+                        ignoredAppsSize = selectedApps.size
+                        dialogManageKeywordBlocker.ignoredKbApps.setText(dialogManageKeywordBlocker.ignoredKbApps.text.toString() + " " + "($ignoredAppsSize)")
                         savedPreferencesLoader?.saveKeywordBlockerIgnoredApps(selectedApps)
                     }
                 }
