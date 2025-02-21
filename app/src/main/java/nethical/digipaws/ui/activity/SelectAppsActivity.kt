@@ -13,23 +13,27 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.SearchView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.R
 import nethical.digipaws.data.blockers.PackageWand
 import nethical.digipaws.databinding.ActivitySelectAppsBinding
+import nethical.digipaws.databinding.DialogAddKeywordBinding
 
 class SelectAppsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySelectAppsBinding
     private lateinit var selectedAppList: HashSet<String>
 
+    private var appItemList: MutableList<AppItem> = mutableListOf()
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +45,6 @@ class SelectAppsActivity : AppCompatActivity() {
         Log.d("pre-selected-apps", selectedAppList.toString())
 
         binding.appList.layoutManager = LinearLayoutManager(this)
-        val appItemList: MutableList<AppItem> = mutableListOf()
 
         binding.selectAppsMagic.setOnClickListener {
             val popupMenu = PopupMenu(this, binding.selectAppsMagic)
@@ -66,6 +69,10 @@ class SelectAppsActivity : AppCompatActivity() {
                         }
                         val slist = sortSelectedItemsToTop(appItemList)
                         (binding.appList.adapter as ApplicationAdapter).updateData(slist)
+                        true
+                    }
+                    R.id.add_a_custom_package -> {
+                        makeAddCustomPackageDialog()
                         true
                     }
                     else -> false
@@ -236,4 +243,52 @@ class SelectAppsActivity : AppCompatActivity() {
         val appInfo: ApplicationInfo? = null,
         val displayName: String = packageName
     )
+
+    private fun makeAddCustomPackageDialog() {
+        val dialogBinding = DialogAddKeywordBinding.inflate(layoutInflater)
+        dialogBinding.wHint.hint = "com.real.android.app"
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Add a custom package")
+            .setView(dialogBinding.root)
+            .setPositiveButton(getString(R.string.add)) { dialog, _ ->
+                val packageName = dialogBinding.keywordInput.text.toString().trim()
+                if (packageName.isNotEmpty()) {
+                    // Check if package already exists in the list
+                    if (appItemList.none { it.packageName == packageName }) {
+                        try {
+                            // Try to get app info if it's installed
+                            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                            val appItem = AppItem(
+                                packageName,
+                                appInfo,
+                                appInfo.loadLabel(packageManager).toString()
+                            )
+                            appItemList.add(appItem)
+                        } catch (e: Exception) {
+                            // Add as uninstalled package if not found
+                            appItemList.add(AppItem(packageName))
+                        }
+
+                        // Update the adapter with the new sorted list
+                        val sortedList = sortSelectedItemsToTop(appItemList)
+                        val adapter = binding.appList.adapter as ApplicationAdapter
+                        adapter.updateData(sortedList)
+
+                        // Optionally add to selected list
+                        selectedAppList.add(packageName)
+
+                        Toast.makeText(this, "Added Successfully", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // Show a message if package already exists
+                        Toast.makeText(this, "Package already exists", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
 }
