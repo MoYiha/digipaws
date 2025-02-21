@@ -25,6 +25,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.content.FileProvider
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
@@ -65,6 +66,7 @@ import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.ZipUtils
 import rikka.shizuku.Shizuku
 import rikka.shizuku.Shizuku.OnBinderReceivedListener
+import java.io.File
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.Calendar
@@ -496,6 +498,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnBackup.setOnClickListener {
             ZipUtils.showDirectoryPicker(directoryPicker)
         }
+        binding.btnShareErrors.setOnClickListener {
+            shareCrashLog(this)
+        }
     }
 
     private fun openUrl(url: String) {
@@ -708,6 +713,23 @@ class MainActivity : AppCompatActivity() {
         return sharedPreferences.getBoolean("isFirstLaunchComplete", false)
     }
 
+    fun shareCrashLog(context: Context) {
+        val logFile = File(context.filesDir, "crash_log.txt")
+        if (!logFile.exists()) {
+            Toast.makeText(context, "No crash logs found", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", logFile)
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, "Crash Log")
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        context.startActivity(Intent.createChooser(intent, "Share Crash Log"))
+    }
     private fun updateChip(isEnabled: Boolean,statusChip: Chip,warningText:TextView) {
         if (isEnabled) {
             statusChip.text = getString(R.string.enabled)

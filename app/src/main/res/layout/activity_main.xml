@@ -775,6 +775,14 @@
                     android:layout_marginTop="8dp"
                     android:text="Backup Configurations" />
 
+                <Button
+                    android:id="@+id/btn_share_errors"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Share Error Log" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
