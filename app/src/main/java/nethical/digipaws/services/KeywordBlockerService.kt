@@ -12,7 +12,6 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import nethical.digipaws.blockers.KeywordBlocker
 import nethical.digipaws.data.blockers.KeywordPacks
 
@@ -31,7 +30,6 @@ class KeywordBlockerService : BaseBlockingService() {
 
     private var KbIgnoredApps: HashSet<String> = hashSetOf()
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
 
         if (!isDelayOver(refreshCooldown) || event == null || event.packageName == "nethical.digipaws" || KbIgnoredApps.contains(
