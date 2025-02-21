@@ -238,6 +238,7 @@ class SelectAppsActivity : AppCompatActivity() {
         }
     }
 
+
     data class AppItem(
         val packageName: String,
         val appInfo: ApplicationInfo? = null,
