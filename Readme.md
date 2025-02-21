@@ -19,15 +19,13 @@
 </div>
 DigiPaws is an open-source Android productivity utility designed to help users reduce screen addiction by regulating app usage through a gamified experience. The application offers two modes namely the Base mode and the Gamified mode
 
-> [!IMPORTANT]  
->This project is being re-written in kotlin with a new UI
-
 > [!CAUTION]
 > This project is experimental and not yet ready for full production. [Donate](https://digipaws.life/donate)
 
 > [!CAUTION]
-> If you are stuck and unable to uninstall the app. You can uninstall it via the safe mode. [How to enter safe mode](https://www.androidauthority.com/how-to-enter-safe-mode-android-801476/)
-
+> DigiPaws was recently removed from the Play Store for an unknown reason that Google refuses to
+> disclose or discuss upon. "We didn't like your app restricting screen usage, so go fuck yourself"
+> type shi
 
 ## Features
 
@@ -87,7 +85,7 @@ This Mode introduces a gamified experience to control screen time using various 
 quests and goals. This mode tracks your usage and configures everything accordingly as the days pass
 by.
 > [!CAUTION]
-> This mode is still in development and might take a while to release.
+> This mode is being separately being developed as an individual app now.
 
 ## Configuring
 
@@ -130,6 +128,7 @@ Developing codes for accessibility services and blockers can be exceptionally co
 - [Usage Direct](https://codeberg.org/fynngodau/usageDirect): I had an extremely tough time figuring out and fixing the app usage stats. Extremely thanks to this app for saving me.
 - [ShizuTools](https://github.com/legendsayantan/ShizuTools): [ShizukuRunner.kt](https://github.com/nethical6/digipaws/blob/kt-rewrite/app/src/main/java/nethical/digipaws/utils/ShizukuRunner.kt) has been derived from this project
 - [MPAndroidChart](https://github.com/PhilJay/MPAndroidChart): All charts and graphs were made using this library
+
 ## License
 
 DigiPaws is licensed under the [GPL 3 or later licence](LICENSE). You are free to use, modify, and distribute this software in accordance with the license.
@@ -139,6 +138,22 @@ DigiPaws is licensed under the [GPL 3 or later licence](LICENSE). You are free t
 For questions, suggestions, or feedback, please open an issue on the [GitHub repository](https://github.com/nethical6/digipaws/issues) or contact me at:
 1. Discord: @nethical
 2. Telegram: @nethicalps
+
+## Common Questions
+
+### Q: Is Digipaws safe?
+
+**A:** Yes, way safer than any closed source app blocker on play-store.
+
+### Q: Does it steal my data?
+
+**A:** No. In fact it doesn't even need the INTERNET permission to run
+
+### Q: I am unable to turn on accessibility settings. It says to enable "Restricted Settings"
+
+**A:** Try downloading the app directly from fdroid app, instead of an .apk file. Read more on this
+forum -> https://forum.f-droid.org/t/cant-activate-permissions-for-digipaws-on-android-14/30539
+
 
 ---
 

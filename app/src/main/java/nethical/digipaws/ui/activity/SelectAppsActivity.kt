@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.os.Bundle
 import android.os.Process
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,96 +30,105 @@ class SelectAppsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySelectAppsBinding
     private lateinit var selectedAppList: HashSet<String>
 
-
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySelectAppsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        selectedAppList = intent.getStringArrayListExtra("PRE_SELECTED_APPS")?.toHashSet() ?: HashSet() // get all selected apps
-
+        selectedAppList =
+            intent.getStringArrayListExtra("PRE_SELECTED_APPS")?.toHashSet() ?: HashSet()
+        Log.d("pre-selected-apps", selectedAppList.toString())
 
         binding.appList.layoutManager = LinearLayoutManager(this)
-        var appItemList: MutableList<AppItem> = mutableListOf()
+        val appItemList: MutableList<AppItem> = mutableListOf()
 
         binding.selectAppsMagic.setOnClickListener {
             val popupMenu = PopupMenu(this, binding.selectAppsMagic)
-
-            // Inflate the menu resource
             popupMenu.menuInflater.inflate(R.menu.app_wand, popupMenu.menu)
-
-            // Set click listener for menu items
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.select_social_media -> {
                         appItemList.forEach { item ->
-                            if (PackageWand.SOCIAL_MEDIA_APPS.contains(item.appInfo.packageName)) {
-                                selectedAppList.add(item.appInfo.packageName)
+                            if (PackageWand.SOCIAL_MEDIA_APPS.contains(item.packageName)) {
+                                selectedAppList.add(item.packageName)
                             }
                         }
                         val slist = sortSelectedItemsToTop(appItemList)
                         (binding.appList.adapter as ApplicationAdapter).updateData(slist)
                         true
                     }
-
                     R.id.select_productive_apps -> {
                         appItemList.forEach { item ->
-                            if (PackageWand.PRODUCTIVE_APPS.contains(item.appInfo.packageName)) {
-                                selectedAppList.add(item.appInfo.packageName)
+                            if (PackageWand.PRODUCTIVE_APPS.contains(item.packageName)) {
+                                selectedAppList.add(item.packageName)
                             }
                         }
                         val slist = sortSelectedItemsToTop(appItemList)
                         (binding.appList.adapter as ApplicationAdapter).updateData(slist)
                         true
                     }
-
                     else -> false
                 }
             }
-
-            // Show the popup menu
             popupMenu.show()
         }
-        if (intent.hasExtra("APP_LIST")) { // load only few specific apps instead of everything installed
-            val appList = intent.getStringArrayListExtra("APP_LIST")
 
+        if (intent.hasExtra("APP_LIST")) {
+            val appList = intent.getStringArrayListExtra("APP_LIST")
             appList?.forEach { packageName ->
-                appItemList.add(
-                    AppItem(
-                        packageName,
-                        packageManager.getApplicationInfo(packageName, 0)
+                try {
+                    val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                    appItemList.add(
+                        AppItem(
+                            packageName,
+                            appInfo,
+                            appInfo.loadLabel(packageManager).toString()
+                        )
                     )
-                )
+                } catch (e: Exception) {
+                    appItemList.add(AppItem(packageName))
+                }
             }
-        } else { // load all installed apps
+        } else {
             val launcherApps = getSystemService(LAUNCHER_APPS_SERVICE) as LauncherApps
             val profiles = launcherApps.profiles
-            appItemList = mutableListOf()
+            val installedPackages = mutableSetOf<String>()
 
+            // Load installed apps
             for (profile in profiles) {
                 val apps = launcherApps.getActivityList(null, profile)
                     .map { it.applicationInfo }
                     .filter { it.packageName != packageName }
-
                 apps.forEach { appInfo ->
+                    installedPackages.add(appInfo.packageName)
                     val profileType = if (profile == Process.myUserHandle()) "" else "(Work)"
                     val appLabel = appInfo.loadLabel(packageManager).toString()
                     val displayName = "$appLabel $profileType"
-
                     appItemList.add(AppItem(appInfo.packageName, appInfo, displayName))
                 }
             }
-            // Sort the app list alphabetically
+
+            // Add uninstalled apps from selectedAppList that aren't already included
+            selectedAppList.forEach { packageName ->
+                if (!installedPackages.contains(packageName)) {
+                    try {
+                        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                        appItemList.add(
+                            AppItem(
+                                packageName,
+                                appInfo,
+                                appInfo.loadLabel(packageManager).toString()
+                            )
+                        )
+                    } catch (e: Exception) {
+                        appItemList.add(AppItem(packageName))
+                    }
+                }
+            }
+
             appItemList.sortBy { it.displayName.lowercase() }
-
         }
-
-        appItemList.sortBy {
-            it.appInfo.loadLabel(packageManager).toString().lowercase()
-        }
-
-
 
         binding.confirmSelection.setOnClickListener {
             val selectedAppsArrayList = ArrayList(selectedAppList)
@@ -130,7 +140,6 @@ class SelectAppsActivity : AppCompatActivity() {
         }
 
         val sortedAppItemList = sortSelectedItemsToTop(appItemList)
-
         binding.appList.layoutManager = LinearLayoutManager(this)
         val filteredList = sortedAppItemList.toMutableList()
         binding.appList.adapter = ApplicationAdapter(filteredList, selectedAppList)
@@ -146,28 +155,22 @@ class SelectAppsActivity : AppCompatActivity() {
                 filteredList.clear()
                 filteredList.addAll(
                     appItemList.filter {
-                        it.displayName
-                            .contains(query, ignoreCase = true)
+                        it.displayName.contains(query, ignoreCase = true)
                     }
                 )
                 binding.appList.adapter?.notifyDataSetChanged()
                 return true
             }
         })
-
     }
 
     fun sortSelectedItemsToTop(appItemList: List<AppItem>): List<AppItem> {
-        val sortedAppItemList = appItemList.sortedWith(compareBy<AppItem> {
-            // First sort by selection status - false comes before true when using !
-            !selectedAppList.contains(it.appInfo.packageName)
+        return appItemList.sortedWith(compareBy<AppItem> {
+            !selectedAppList.contains(it.packageName)
         }.thenBy {
-            // Then sort alphabetically within each group
-            it.appInfo.loadLabel(packageManager).toString().lowercase()
+            it.displayName.lowercase()
         })
-        return sortedAppItemList
     }
-
 
     inner class ApplicationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val appIcon: ImageView = itemView.findViewById(R.id.app_icon)
@@ -191,25 +194,26 @@ class SelectAppsActivity : AppCompatActivity() {
             holder.appIcon.setImageDrawable(null)
             holder.appName.text = appItem.displayName
 
-            lifecycleScope.launch(Dispatchers.IO) {
-                val packageManager = holder.itemView.context.packageManager
-                val icon = appItem.appInfo.loadIcon(packageManager)
-
-                withContext(Dispatchers.Main) {
-                    holder.appIcon.setImageDrawable(icon)
+            if (appItem.appInfo != null) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val packageManager = holder.itemView.context.packageManager
+                    val icon = appItem.appInfo.loadIcon(packageManager)
+                    withContext(Dispatchers.Main) {
+                        holder.appIcon.setImageDrawable(icon)
+                    }
                 }
+            } else {
+                holder.appIcon.setImageResource(android.R.drawable.sym_def_app_icon)
             }
 
-            // Remove the previous OnCheckedChangeListener before setting a new one
             holder.checkbox.setOnCheckedChangeListener(null)
-
-            holder.checkbox.isChecked = selectedAppList.contains(appItem.appInfo.packageName)
+            holder.checkbox.isChecked = selectedAppList.contains(appItem.packageName)
 
             holder.checkbox.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    selectedAppList.add(appItem.appInfo.packageName)
+                    selectedAppList.add(appItem.packageName)
                 } else {
-                    selectedAppList.remove(appItem.appInfo.packageName)
+                    selectedAppList.remove(appItem.packageName)
                 }
             }
 
@@ -229,7 +233,7 @@ class SelectAppsActivity : AppCompatActivity() {
 
     data class AppItem(
         val packageName: String,
-        val appInfo: ApplicationInfo,
-        val displayName: String = appInfo.name
+        val appInfo: ApplicationInfo? = null,
+        val displayName: String = packageName
     )
 }
