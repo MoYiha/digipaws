@@ -100,7 +100,7 @@ class WarningActivity : AppCompatActivity() {
             }
 
             dialog?.dismiss()
-            finishActivity(0)
+            finishAffinity()
         }
 
     }
