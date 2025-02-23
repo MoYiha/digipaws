@@ -1,12 +1,13 @@
 package nethical.digipaws.services
 
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
@@ -18,30 +19,54 @@ import nethical.digipaws.ui.activity.WarningActivity
 class AppBlockerService : BaseBlockingService() {
 
     companion object {
+        /**
+         * Refreshes information about warning screen, cheat hours and blocked app list
+         */
         const val INTENT_ACTION_REFRESH_APP_BLOCKER = "nethical.digipaws.refresh.appblocker"
+
+        /**
+         * Add cooldown to an app.
+         * This broadcast should always be sent together with the following keys:
+         * selected_time: Int -> Duration of cooldown in minutes
+         * result_id : String -> Package name of app to be put into cooldown
+         */
         const val INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN =
             "nethical.digipaws.refresh.appblocker.cooldown"
     }
 
     private val appBlocker = AppBlocker()
 
+    // responsible to trigger what app user is currently using even when no events is sent
+    private val handler = Handler(Looper.getMainLooper())
+    private var updateRunnable: Runnable? = null
+
+
     private var warningScreenConfig = MainActivity.WarningData()
 
+    private var lastPackage = ""
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (isDelayOver(1000)) {
-            val packageName = event?.packageName.toString()
-            handleAppBlockerResult(appBlocker.doesAppNeedToBeBlocked(packageName), packageName)
-        }
+        val packageName = event?.packageName.toString()
+        if (lastPackage == packageName || packageName == getPackageName()) return
+
+        lastPackage = packageName
+        Log.d("AppBlockerService", "Switched to app $packageName")
+        handleAppBlockerResult(appBlocker.doesAppNeedToBeBlocked(packageName), packageName)
     }
 
 
+    private fun handleAppBlockerResult(result: AppBlocker.AppBlockerResult, packageName: String) {
+        Log.d("AppBlockerService", "$packageName result : $result")
 
-    private fun handleAppBlockerResult(result: AppBlocker.AppBlockerResult?, packageName: String) {
-        Log.d("Appblocker result", result.toString())
-        if (result == null || !result.isBlocked) return
+        if (result.cheatHoursEndTime != -1L) {
+            setUpForcedRefreshChecker(packageName, result.cheatHoursEndTime)
+        }
+        if (result.cooldownEndTime != -1L) {
+            setUpForcedRefreshChecker(packageName, result.cooldownEndTime)
+        }
 
-        lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
+        if (!result.isBlocked) return
+
 
         if(warningScreenConfig.isWarningDialogHidden){
             pressHome()
@@ -70,15 +95,6 @@ class AppBlockerService : BaseBlockingService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         setupBlocker()
-        val info = AccessibilityServiceInfo().apply {
-            eventTypes = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
-            feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
-            notificationTimeout = 100
-            flags = AccessibilityServiceInfo.DEFAULT
-        }
-        serviceInfo = info
-
-
         val filter = IntentFilter().apply {
             addAction(INTENT_ACTION_REFRESH_APP_BLOCKER)
             addAction(INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN)
@@ -98,20 +114,50 @@ class AppBlockerService : BaseBlockingService() {
                 INTENT_ACTION_REFRESH_APP_BLOCKER -> setupBlocker()
                 INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN -> {
                     val interval = intent.getIntExtra("selected_time", warningScreenConfig.timeInterval)
-                    appBlocker.putCooldownTo(
-                        intent.getStringExtra("result_id") ?: "xxxxxxxxxxxxxx",
+                    val coolPackage = intent.getStringExtra("result_id") ?: ""
+                    val cooldownUntil =
                         SystemClock.uptimeMillis() + interval
+                    appBlocker.putCooldownTo(
+                        coolPackage,
+                        cooldownUntil
                     )
+                    setUpForcedRefreshChecker(coolPackage, cooldownUntil)
+
                 }
             }
 
         }
     }
 
+    /**
+     * Setup a runnable that executes after n millis to check if a package is still being used that was allowed to be used previously
+     * as it was put into cooldown or found in cheat-minutes. Basically shows the warning dialog after cooldown is over.
+     * @param coolPackage
+     * @param endMillis
+     */
+    private fun setUpForcedRefreshChecker(coolPackage: String, endMillis: Long) {
+        if (updateRunnable != null) {
+            updateRunnable?.let { handler.removeCallbacks(it) }
+            updateRunnable = null
+        }
+        updateRunnable = Runnable {
 
+            Log.d("AppBlockerService", "Triggered Recheck for  $coolPackage")
+            if (rootInActiveWindow.packageName == coolPackage) {
+                handleAppBlockerResult(
+                    AppBlocker.AppBlockerResult(true),
+                    coolPackage
+                )
+                lastPackage = ""
+                appBlocker.removeCooldownFrom(coolPackage)
+            }
+        }
+
+        handler.postAtTime(updateRunnable!!, endMillis)
+    }
     private fun setupBlocker() {
         appBlocker.blockedAppsList = savedPreferencesLoader.loadBlockedApps().toHashSet()
-        appBlocker.refreshCheatMinutesData(savedPreferencesLoader.loadAppBlockerCheatHoursList())
+        appBlocker.refreshCheatHoursData(savedPreferencesLoader.loadAppBlockerCheatHoursList())
 
         warningScreenConfig = savedPreferencesLoader.loadAppBlockerWarningInfo()
     }

@@ -42,7 +42,7 @@ class KeywordBlockerService : BaseBlockingService() {
         Log.d("KeywordBlocker", "Searching Keywords")
         handleKeywordBlockerResult(keywordBlocker.checkIfUserGettingFreaky(rootnode, event))
 
-        lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
+        lastBackPressTimeStamp = SystemClock.uptimeMillis()
     }
 
     override fun onInterrupt() {

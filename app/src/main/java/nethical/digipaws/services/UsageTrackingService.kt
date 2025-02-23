@@ -257,7 +257,7 @@ class UsageTrackingService : BaseBlockingService() {
                 hideReelTrackingView()
             }
 
-            lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
+            lastBackPressTimeStamp = SystemClock.uptimeMillis()
 
         }
 
@@ -394,7 +394,7 @@ class UsageTrackingService : BaseBlockingService() {
             trackAttentionSpan()
 
             savedPreferencesLoader.saveReelsScrolled(reelCountData)
-            lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
+            lastBackPressTimeStamp = SystemClock.uptimeMillis()
             
             // Schedule the reset of scroll state
             handler.postDelayed({

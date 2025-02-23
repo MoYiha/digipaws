@@ -116,7 +116,7 @@ class WarningActivity : AppCompatActivity() {
     private fun sendRefreshRequest(id: String, action: String, time: Int) {
         val intent = Intent(action)
         intent.putExtra("result_id", id)
-        intent.putExtra("selected_time", time * 60000)
+        intent.putExtra("selected_time", time * 60_000)
         sendBroadcast(intent)
     }
 }

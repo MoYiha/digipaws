@@ -148,6 +148,13 @@ class TimedActionActivity : AppCompatActivity() {
                 selectedUnblockedApps
             )
 
+            if (selectedMode == MODE_APP_BLOCKER_CHEAT_HOURS) {
+                intent.putStringArrayListExtra(
+                    "APP_LIST",
+                    ArrayList(savedPreferencesLoader.loadBlockedApps())
+                )
+            }
+
             selectUnblockedAppsLauncher.launch(intent)
         }
         MaterialAlertDialogBuilder(this)

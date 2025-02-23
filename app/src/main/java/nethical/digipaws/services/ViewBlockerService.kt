@@ -50,7 +50,7 @@ class ViewBlockerService : BaseBlockingService() {
     private fun handleViewBlockerResult(result: ViewBlocker.ViewBlockerResult?) {
         if (result == null || !result.isBlocked) return
 
-        lastEventActionTakenTimeStamp = SystemClock.uptimeMillis()
+        lastBackPressTimeStamp = SystemClock.uptimeMillis()
         pressBack()
 
         if(warningScreenConfig.isWarningDialogHidden) return
