@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/Theme.Material3.DynamicColors.DayNight">
+
+    <LinearLayout
+        android:id="@android:id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_background"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/screentime_widget"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="0h 0m"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/refresh_stats_screentime"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="Refresh stats"
+            android:src="@drawable/baseline_refresh_24"
+            android:tint="?android:attr/colorAccent" />
+    </LinearLayout>
+</FrameLayout>

@@ -19,6 +19,8 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
     companion object {
         private const val TAG = "ScreentimeWidgetProvider"
         private const val ACTION_WIDGET_REFRESH = "nethical.digipaws.screentime.WIDGET_REFRESH"
+        private const val MIN_WIDTH_CELLS = 2 // Minimum width in cells to show per-app stats
+        private const val MIN_HEIGHT_CELLS = 1 // Minimum height in cells for full layout
     }
 
     override fun onUpdate(
@@ -37,29 +39,27 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-
         try {
             when (intent.action) {
-                ACTION_WIDGET_REFRESH -> handleRefresh(context, intent)
-                "android.appwidget.action.APPWIDGET_UPDATE" -> handleRefresh(context, intent)
+
+                ACTION_WIDGET_REFRESH, "android.appwidget.action.APPWIDGET_UPDATE", "android.appwidget.action.APPWIDGET_UPDATE_OPTIONS" -> {
+                    val appWidgetManager = AppWidgetManager.getInstance(context)
+                    val widgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS)
+                        ?: appWidgetManager.getAppWidgetIds(
+                            android.content.ComponentName(
+                                context,
+                                ScreentimeWidgetProvider::class.java
+                            )
+                        )
+                    widgetIds.forEach { widgetId ->
+                        updateWidget(context, appWidgetManager, widgetId)
+                    }
+                }
+
                 else -> Log.d(TAG, "Received unhandled action: ${intent.action}")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error handling widget receive", e)
-        }
-    }
-
-    private fun handleRefresh(context: Context, intent: Intent) {
-        val appWidgetManager = AppWidgetManager.getInstance(context)
-        val widgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS)
-
-        if (widgetIds == null) {
-            Log.e(TAG, "No widget IDs provided for refresh")
-            return
-        }
-
-        widgetIds.forEach { widgetId ->
-            updateWidget(context, appWidgetManager, widgetId)
         }
     }
 
@@ -68,63 +68,73 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         widgetId: Int
     ) {
-
         val usageStatsHelper = UsageStatsHelper(context)
         val ignoredPackages = mutableSetOf<String>()
-        getDefaultLauncherPackageName(context.packageManager)?.let {
-            ignoredPackages.add(
-                it
-            )
-        }
+        getDefaultLauncherPackageName(context.packageManager)?.let { ignoredPackages.add(it) }
         val savedPreferencesLoader = SavedPreferencesLoader(context)
         ignoredPackages.addAll(savedPreferencesLoader.loadIgnoredAppUsageTracker())
 
         val list = usageStatsHelper.getForegroundStatsByRelativeDay(0).filter {
             it.totalTime >= 180_000 && it.packageName !in ignoredPackages
         }
-
         val totalScreentime = list.sumOf { it.totalTime }
-        try{
-            val views = RemoteViews(context.packageName, R.layout.widget_app_stats).apply {
-                setTextViewText(R.id.screentime_widget, formatTime(totalScreentime))
-                // Loop to handle the first 3 items dynamically
-                for (i in 0..2) {
-                    val item =
-                        list.getOrNull(i) // Safely get the item, returns null if index is out of bounds
-                    if (item != null) {
-                        setAppUsageText(this, 0, list, R.id.app_1_sm, context)
-                        setAppUsageText(this, 1, list, R.id.app_2_sm, context)
-                        setAppUsageText(this, 2, list, R.id.app_3_sm, context)
-                    }
 
-                    // Set up refresh button
-                    val refreshIntent = createRefreshIntent(context, widgetId)
-                    val pendingIntent = PendingIntent.getBroadcast(
-                        context,
-                        widgetId,
-                        refreshIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    setOnClickPendingIntent(R.id.refresh_stats_screentime, pendingIntent)
+        // Get widget size in cells
+        val options = appWidgetManager.getAppWidgetOptions(widgetId)
+        val widthCells =
+            getCellsForSize(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH))
+        val heightCells =
+            getCellsForSize(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT))
+        Log.d(TAG, "Widget $widgetId size: ${widthCells}x${heightCells} cells")
+
+        try {
+            val views = if (widthCells < MIN_WIDTH_CELLS || heightCells < MIN_HEIGHT_CELLS) {
+                // Small layout (e.g., 1x1): Only total screen time
+                RemoteViews(context.packageName, R.layout.widget_app_stats_small).apply {
+                    setTextViewText(R.id.screentime_widget, formatTime(totalScreentime))
+                }
+            } else {
+                // Full layout: Total + per-app stats
+                RemoteViews(context.packageName, R.layout.widget_app_stats).apply {
+                    setTextViewText(R.id.screentime_widget, formatTime(totalScreentime))
+                    setAppUsageText(this, 0, list, R.id.app_1_sm, context)
+                    setAppUsageText(this, 1, list, R.id.app_2_sm, context)
+                    setAppUsageText(this, 2, list, R.id.app_3_sm, context)
                 }
             }
 
+            // Set refresh button for both layouts
+            val refreshIntent = createRefreshIntent(context, widgetId)
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                widgetId,
+                refreshIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.refresh_stats_screentime, pendingIntent)
+
             appWidgetManager.updateAppWidget(widgetId, views)
-        } catch (e:Exception){
+        } catch (e: Exception) {
             Log.e(TAG, "Error updating widget $widgetId", e)
         }
     }
 
-    fun setAppUsageText(remoteViews: RemoteViews,index: Int, list: List<AllAppsUsageFragment.Stat>, textViewId: Int, context: Context) {
-        val item = list.getOrNull(index) // Safely get the item
+    private fun setAppUsageText(
+        remoteViews: RemoteViews,
+        index: Int,
+        list: List<AllAppsUsageFragment.Stat>,
+        textViewId: Int,
+        context: Context
+    ) {
+        val item = list.getOrNull(index)
         if (item != null) {
-            val usage =  (TimeTools.formatTimeForWidget(item.totalTime))
+            val usage = TimeTools.formatTimeForWidget(item.totalTime)
             val appName = context.packageManager.getApplicationLabel(
                 context.packageManager.getApplicationInfo(item.packageName, 0)
             )
             remoteViews.setTextViewText(textViewId, "$usage : $appName")
         } else {
-            remoteViews.setTextViewText(textViewId, "") // Handle missing items
+            remoteViews.setTextViewText(textViewId, "")
         }
     }
 
@@ -135,16 +145,17 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
         }
     }
 
-
-    fun formatTime(timeInMillis: Long): String {
+    private fun formatTime(timeInMillis: Long): String {
         val hours = timeInMillis / (1000 * 60 * 60)
         val minutes = (timeInMillis % (1000 * 60 * 60)) / (1000 * 60)
-
         return buildString {
             if (hours > 0) append("${hours}h")
             if (minutes > 0) append(" ${minutes}m")
         }.trim()
     }
 
-
+    // Convert dp size to approximate cells (based on Android widget guidelines: ~70dp per cell)
+    private fun getCellsForSize(sizeDp: Int): Int {
+        return (sizeDp + 30) / 70 // Rough estimate; 70dp per cell + padding
+    }
 }

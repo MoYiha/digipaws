@@ -1,10 +1,11 @@
-<!-- res/xml/widget_reels_metadata.xml -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:initialLayout="@layout/widget_app_stats"
+    android:initialLayout="@layout/widget_app_stats_small"
     android:minWidth="80dp"
     android:minHeight="80dp"
     android:targetCellWidth="2"
     android:targetCellHeight="2"
+    android:minResizeWidth="10dp"
+    android:minResizeHeight="10dp"
     android:updatePeriodMillis="1800000"
     android:resizeMode="horizontal|vertical"
     android:previewLayout="@layout/widget_app_stats"
