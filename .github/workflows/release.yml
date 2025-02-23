@@ -1,11 +1,14 @@
 name: Release CI
 
 on:
+  push:
+    branches: [ "kt-rewrite" ]
+  pull_request:
+    branches: [ "kt-rewrite" ]
   workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +23,7 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
-        
+
       - name: Install Android Build Tools
         run: sdkmanager "build-tools;29.0.3"
 
@@ -30,7 +33,7 @@ jobs:
       - name: Clear build cache
         uses: gradle/gradle-build-action@v3.1.0
         with:
-          gradle-version: nightly
+          gradle-version: wrapper # Use nightly via gradlew if configured in wrapper
           arguments: clean
 
       - name: Build Lite Release APK
@@ -46,8 +49,54 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
+      - name: Get APK Info
+        id: apk_info
+        run: |
+          APK_PATH=${{ steps.sign_app_lite.outputs.signedReleaseFile }}
+          APK_NAME=$(basename "$APK_PATH")
+          APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
+          echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+
+      - name: Send Signed APK to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BETA_WEBHOOK }}
+        run: |
+          APK_PATH=${{ steps.apk_info.outputs.apk_path }}
+          APK_NAME=${{ steps.apk_info.outputs.apk_name }}
+          APK_SIZE=${{ steps.apk_info.outputs.apk_size }}
+          COMMIT_SHA=${{ github.sha }}
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/$COMMIT_SHA"
+          
+          # Format Discord message as JSON
+          MESSAGE=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "New Beta Release: $APK_NAME",
+              "description": "A new signed beta APK has been built and is ready for testing!",
+              "color": 5814783,
+              "fields": [
+                {"name": "Size", "value": "$APK_SIZE", "inline": true},
+                {"name": "Commit", "value": "[#$COMMIT_SHA]($COMMIT_URL)", "inline": false}
+              ],
+              "footer": {"text": "Built with Github Actions"},
+              "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            }],
+            "attachments": []
+          }
+          EOF
+          )
+          
+          # Upload APK and send message
+          curl -X POST \
+            -H "Content-Type: multipart/form-data" \
+            -F "payload_json=$MESSAGE" \
+            -F "file=@$APK_PATH" \
+            "$DISCORD_WEBHOOK"
+
       - name: Upload Signed Lite Release APK
         uses: actions/upload-artifact@v4
         with:
           name: lite-release-apk
-          path: app/build/outputs/apk/lite/release/*.apk
+          path: ${{ steps.sign_app_lite.outputs.signedReleaseFile }}
