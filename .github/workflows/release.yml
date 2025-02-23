@@ -85,7 +85,7 @@ jobs:
                 {"name": "Size", "value": "$APK_SIZE", "inline": true},
                 {"name": "Commit", "value": "[#$COMMIT_SHA]($COMMIT_URL)", "inline": false},
                 {"name": "Message", "value": "$COMMIT_MESSAGE", "inline": false},
-                {"Author": "[$COMMIT_AUTHOR]($AUTHOR_URL)"}
+                {"name": "Author", "value": "[$COMMIT_AUTHOR]($AUTHOR_URL)", "inline": false}
               ],
               "footer": {"text": "Built with Github Actions"},
               "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -119,12 +119,12 @@ jobs:
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/$COMMIT_SHA"
           
           # Format Telegram message (Markdown)
-          MESSAGE="**New Beta Release** %0A" # %0A = newline
-          MESSAGE+="A new signed beta APK is ready! %0A"
-          MESSAGE+="*Commit:* [$COMMIT_SHA]($COMMIT_URL) %0A"
-          MESSAGE+="*Message:* $COMMIT_MESSAGE %0A"
-          MESSAGE+="*Author:* [$COMMIT_AUTHOR]($AUTHOR_URL)%0A"
-          MESSAGE+="Built with Gradle Nightly on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          MESSAGE="**New Beta Release** \n" # %0A = newline
+          MESSAGE+="A new signed beta APK is ready! \n"
+          MESSAGE+="*Commit:* [$COMMIT_SHA]($COMMIT_URL) \n"
+          MESSAGE+="*Message:* $COMMIT_MESSAGE \n"
+          MESSAGE+="*Author:* [$COMMIT_AUTHOR]($AUTHOR_URL) \n"
+          MESSAGE+="Built with Github Actions on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
           
           # Send message with file
           curl -X POST \
