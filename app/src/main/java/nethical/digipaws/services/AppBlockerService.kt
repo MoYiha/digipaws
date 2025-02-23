@@ -143,13 +143,18 @@ class AppBlockerService : BaseBlockingService() {
         updateRunnable = Runnable {
 
             Log.d("AppBlockerService", "Triggered Recheck for  $coolPackage")
-            if (rootInActiveWindow.packageName == coolPackage) {
-                handleAppBlockerResult(
-                    AppBlocker.AppBlockerResult(true),
-                    coolPackage
-                )
-                lastPackage = ""
-                appBlocker.removeCooldownFrom(coolPackage)
+            try {
+                if (rootInActiveWindow.packageName == coolPackage) {
+                    handleAppBlockerResult(
+                        AppBlocker.AppBlockerResult(true),
+                        coolPackage
+                    )
+                    lastPackage = ""
+                    appBlocker.removeCooldownFrom(coolPackage)
+                }
+            } catch (e: Exception) {
+                Log.e("AppBlockerService", e.toString())
+                setUpForcedRefreshChecker(coolPackage, endMillis + 60_000) // recheck after a minute
             }
         }
 
