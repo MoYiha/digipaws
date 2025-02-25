@@ -5,6 +5,5 @@
     android:accessibilityFlags="flagDefault"
     android:canRetrieveWindowContent="true"
     android:canPerformGestures="true"
-    android:isAccessibilityTool="false"
     android:description="@string/accessibility_permission_keyword_blocker"
     android:label="Keyword Blocker" />

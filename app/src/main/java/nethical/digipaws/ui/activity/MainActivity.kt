@@ -242,7 +242,7 @@ class MainActivity : AppCompatActivity() {
 
         addAutoFocusHoursActivity =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
-                sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_FOCUS_MODE)
+                sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE)
             }
         // Register the directory picker
         directoryPicker = ZipUtils.registerDirectoryPicker(this) { directoryUri ->
@@ -440,7 +440,7 @@ class MainActivity : AppCompatActivity() {
             makeAccessibilityInfoDialog("Keyword Blocker", KeywordBlockerService::class.java)
         }
         binding.focusModeStatusChip.setOnClickListener {
-            makeAccessibilityInfoDialog("General Features", DigipawsMainService::class.java)
+            makeAccessibilityInfoDialog("App Blocker", AppBlockerService::class.java)
         }
         binding.appBlockerStatusChip.setOnClickListener {
             makeAccessibilityInfoDialog("App Blocker", AppBlockerService::class.java)
@@ -593,14 +593,14 @@ class MainActivity : AppCompatActivity() {
 
                 // General Settings
                 updateChip(
-                    isGeneralSettingsOn,
+                    isAppBlockerOn,
                     binding.focusModeStatusChip,
                     binding.focusModeWarning
                 )
                 binding.apply {
-                    startFocusMode.isEnabled = isGeneralSettingsOn
-                    selectFocusBlockedApps.isEnabled = isGeneralSettingsOn
-                    autoFocus.isEnabled = isGeneralSettingsOn
+                    startFocusMode.isEnabled = isAppBlockerOn
+                    selectFocusBlockedApps.isEnabled = isAppBlockerOn
+                    autoFocus.isEnabled = isAppBlockerOn
                 }
 
                 // Anti-Uninstall settings
@@ -635,7 +635,7 @@ class MainActivity : AppCompatActivity() {
                         startFocusMode.isEnabled = false
                     }
                 }
-                if (isGeneralSettingsOn) {
+                if (isAppBlockerOn) {
                     val isFocusedModeOn = savedPreferencesLoader.getFocusModeData().isTurnedOn
                     binding.selectFocusBlockedApps.isEnabled = !isFocusedModeOn
                     binding.startFocusMode.isEnabled = !isFocusedModeOn
