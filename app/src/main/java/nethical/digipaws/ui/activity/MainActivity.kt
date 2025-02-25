@@ -46,7 +46,7 @@ import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.DialogRemoveAntiUninstallBinding
 import nethical.digipaws.receivers.AdminReceiver
 import nethical.digipaws.services.AppBlockerService
-import nethical.digipaws.services.DigipawsMainService
+import nethical.digipaws.services.GeneralFeaturesService
 import nethical.digipaws.services.KeywordBlockerService
 import nethical.digipaws.services.UsageTrackingService
 import nethical.digipaws.services.ViewBlockerService
@@ -197,7 +197,7 @@ class MainActivity : AppCompatActivity() {
                     val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                     selectedApps?.let {
                         savedPreferencesLoader.saveGrayScaleApps(it.toSet())
-                        sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_GRAYSCALE)
+                        sendRefreshRequest(GeneralFeaturesService.INTENT_ACTION_REFRESH_GRAYSCALE)
                     }
                 }
             }
@@ -405,14 +405,17 @@ class MainActivity : AppCompatActivity() {
                     intent.putExtra("fragment", ChooseModeFragment.FRAGMENT_ID)
                     startActivity(intent, options.toBundle())
                 } else {
-                    makeAccessibilityInfoDialog("General Features", DigipawsMainService::class.java)
+                    makeAccessibilityInfoDialog(
+                        "General Features",
+                        GeneralFeaturesService::class.java
+                    )
                 }
             }
         }
 
         binding.monochromeStatusChip.setOnClickListener {
             if(!isGeneralSettingsOn){
-                makeAccessibilityInfoDialog("General Features", DigipawsMainService::class.java)
+                makeAccessibilityInfoDialog("General Features", GeneralFeaturesService::class.java)
                 return@setOnClickListener
             }
             if(isShizukuBinderRecieved){
@@ -525,7 +528,7 @@ class MainActivity : AppCompatActivity() {
             val isUsageTrackerOn =
                 withContext(Dispatchers.IO) { isAccessibilityServiceEnabled(UsageTrackingService::class.java) }
             isGeneralSettingsOn =
-                withContext(Dispatchers.IO) { isAccessibilityServiceEnabled(DigipawsMainService::class.java) }
+                withContext(Dispatchers.IO) { isAccessibilityServiceEnabled(GeneralFeaturesService::class.java) }
 
             val devicePolicyManager =
                 getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -972,7 +975,7 @@ class MainActivity : AppCompatActivity() {
                     )
                         .show()
                     antiUninstallInfo.edit().putBoolean("is_anti_uninstall_on", false).commit()
-                    sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
+                    sendRefreshRequest(GeneralFeaturesService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
 
                 } else {
 
@@ -999,7 +1002,7 @@ class MainActivity : AppCompatActivity() {
                         ) {
                             antiUninstallInfo.edit().putBoolean("is_anti_uninstall_on", false)
                                 .commit()
-                            sendRefreshRequest(DigipawsMainService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
+                            sendRefreshRequest(GeneralFeaturesService.INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
 
                             Snackbar.make(
                                 binding.root,

@@ -6,14 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import nethical.digipaws.Constants
 import nethical.digipaws.utils.GrayscaleControl
 import java.util.Locale
 
-class DigipawsMainService : BaseBlockingService() {
+class GeneralFeaturesService : BaseBlockingService() {
 
     companion object {
         const val INTENT_ACTION_REFRESH_ANTI_UNINSTALL = "nethical.digipaws.refresh.anti_uninstall"
@@ -32,30 +31,35 @@ class DigipawsMainService : BaseBlockingService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         super.onAccessibilityEvent(event)
 
+        if (isAntiUninstallOn) {
+            if (event?.packageName == "com.android.settings") {
+                traverseNodesForKeywords(rootInActiveWindow)
+            }
+        }
+
         try {
+            if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+                val currentPackageName = event.packageName?.toString()
+                // Check if the app has changed
+                if (currentPackageName != null && currentPackageName != lastPackageName) {
+                    lastPackageName = currentPackageName // Update the last package name
 
-//        if(event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED){
-            val currentPackageName = event?.packageName?.toString()
-            // Check if the app has changed
-            if (currentPackageName != null && currentPackageName != lastPackageName) {
-                lastPackageName = currentPackageName // Update the last package name
-//                Log.d("apps",selectedGrayScaleApps.toString() + "mode: " + grayScaleMode)
-                when (grayScaleMode) {
-                    Constants.GRAYSCALE_MODE_ONLY_SELECTED -> {
-                        if (selectedGrayScaleApps.contains(event.packageName)) {
-                            grayscaleControl.enableGrayscale()
-                            Log.d("enabled", "enabled")
-                        } else {
-                            grayscaleControl.disableGrayscale()
+                    when (grayScaleMode) {
+                        Constants.GRAYSCALE_MODE_ONLY_SELECTED -> {
+                            if (selectedGrayScaleApps.contains(event.packageName)) {
+                                grayscaleControl.enableGrayscale()
+                            } else {
+                                grayscaleControl.disableGrayscale()
+                            }
                         }
-                    }
 
-                    Constants.GRAYSCALE_MODE_ALL_EXCEPT_SELECTED -> {
-                        if (selectedGrayScaleApps.contains(event.packageName)) {
-                            grayscaleControl.disableGrayscale()
-                        } else {
-                            grayscaleControl.enableGrayscale()
-                            Log.d("enabled", "enabled")
+                        Constants.GRAYSCALE_MODE_ALL_EXCEPT_SELECTED -> {
+                            if (selectedGrayScaleApps.contains(event.packageName)) {
+                                grayscaleControl.disableGrayscale()
+                            } else {
+                                grayscaleControl.enableGrayscale()
+
+                            }
                         }
                     }
                 }
@@ -64,12 +68,6 @@ class DigipawsMainService : BaseBlockingService() {
         }
 
 
-        if (isAntiUninstallOn) {
-            Log.d("package name", event?.packageName.toString())
-            if (event?.packageName == "com.android.settings") {
-                traverseNodesForKeywords(rootInActiveWindow)
-            }
-        }
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -105,6 +103,7 @@ class DigipawsMainService : BaseBlockingService() {
     fun setupAntiUninstall() {
         val info = getSharedPreferences("anti_uninstall", Context.MODE_PRIVATE)
         isAntiUninstallOn = info.getBoolean("is_anti_uninstall_on", false)
+
     }
 
     fun setupGrayscale() {
