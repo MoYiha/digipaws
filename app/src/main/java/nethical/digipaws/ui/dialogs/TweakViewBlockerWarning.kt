@@ -39,7 +39,6 @@ class TweakViewBlockerWarning(
             val viewsToToggle = listOf(
                 binding.cbDynamicWarning,
                 binding.selectMins,
-                binding.textInputLayout2,
                 binding.info,
                 binding.proceedDelay
             )
@@ -59,7 +58,7 @@ class TweakViewBlockerWarning(
         }
 
         // Load previous data from preferences
-        val previousData = savedPreferencesLoader!!.loadAppBlockerWarningInfo()
+        val previousData = savedPreferencesLoader!!.loadViewBlockerWarningInfo()
         var proceedDelay = previousData.proceedDelayInSecs
 
         when (proceedDelay) {

@@ -29,7 +29,6 @@ class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : B
             val viewsToToggle = listOf(
                 binding.cbDynamicWarning,
                 binding.selectMins,
-                binding.textInputLayout2,
                 binding.info,
                 binding.proceedDelay
             )
