@@ -66,8 +66,13 @@ class AppBlockerService : BaseBlockingService() {
 
         lastPackage = packageName
         Log.d("AppBlockerService", "Switched to app $packageName")
+
+        val focusModeResult = focusModeBlocker.doesAppNeedToBeBlocked(packageName)
+        if (focusModeResult.isBlocked) {
+            handleFocusModeBlockerResult(focusModeResult)
+            return
+        }
         handleAppBlockerResult(appBlocker.doesAppNeedToBeBlocked(packageName), packageName)
-        handleFocusModeBlockerResult(focusModeBlocker.doesAppNeedToBeBlocked(packageName))
     }
 
 
