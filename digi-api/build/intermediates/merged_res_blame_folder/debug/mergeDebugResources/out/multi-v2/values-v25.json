@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "nethical.digipaws.api.digi-api-mergeDebugResources-26:/values-v25/values-v25.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\agupt\\.gradle\\caches\\transforms-4\\5c51f9569857dd67e71ecb4cae944eab\\transformed\\appcompat-1.6.1\\res\\values-v25\\values-v25.xml",
+                    "from": {
+                        "startLines": "2,3,4,6",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,126,209,308",
+                        "endLines": "2,3,5,7",
+                        "endColumns": "70,82,12,12",
+                        "endOffsets": "121,204,303,414"
+                    }
+                }
+            ]
+        }
+    ]
+}

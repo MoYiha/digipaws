@@ -1,0 +1,85 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="nethical.digipaws.api"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="nethical.digipaws.permission.API_V1" />
+11-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:6:5-74
+11-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:6:22-72
+12
+13    <permission
+13-->[androidx.core:core:1.9.0] C:\Users\agupt\.gradle\caches\transforms-4\cbeeb075161340cd964fa9641d49bbf5\transformed\core-1.9.0\AndroidManifest.xml:22:5-24:47
+14        android:name="nethical.digipaws.api.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+14-->[androidx.core:core:1.9.0] C:\Users\agupt\.gradle\caches\transforms-4\cbeeb075161340cd964fa9641d49bbf5\transformed\core-1.9.0\AndroidManifest.xml:23:9-81
+15        android:protectionLevel="signature" />
+15-->[androidx.core:core:1.9.0] C:\Users\agupt\.gradle\caches\transforms-4\cbeeb075161340cd964fa9641d49bbf5\transformed\core-1.9.0\AndroidManifest.xml:24:9-44
+16
+17    <uses-permission android:name="nethical.digipaws.api.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+17-->[androidx.core:core:1.9.0] C:\Users\agupt\.gradle\caches\transforms-4\cbeeb075161340cd964fa9641d49bbf5\transformed\core-1.9.0\AndroidManifest.xml:26:5-97
+17-->[androidx.core:core:1.9.0] C:\Users\agupt\.gradle\caches\transforms-4\cbeeb075161340cd964fa9641d49bbf5\transformed\core-1.9.0\AndroidManifest.xml:26:22-94
+18
+19    <application
+19-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:9:5-26:19
+20        android:allowBackup="true"
+20-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:10:9-35
+21        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+21-->[androidx.core:core:1.9.0] C:\Users\agupt\.gradle\caches\transforms-4\cbeeb075161340cd964fa9641d49bbf5\transformed\core-1.9.0\AndroidManifest.xml:28:18-86
+22        android:debuggable="true"
+23        android:extractNativeLibs="false"
+24        android:icon="@mipmap/ic_launcher"
+24-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:11:9-43
+25        android:label="@string/app_name"
+25-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:13:9-41
+26        android:roundIcon="@mipmap/ic_launcher"
+26-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:12:9-48
+27        android:supportsRtl="true"
+27-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:14:9-35
+28        android:theme="@style/AppTheme" >
+28-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:15:9-40
+29        <activity
+29-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:16:9-25:20
+30            android:name="nethical.digipaws.api.MainActivity"
+30-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:17:13-40
+31            android:exported="true" >
+31-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:18:13-36
+32            <intent-filter>
+32-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:19:13-24:29
+33                <action android:name="android.intent.action.MAIN" />
+33-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:20:17-21:65
+33-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:21:21-62
+34
+35                <category android:name="android.intent.category.LAUNCHER" />
+35-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:22:17-23:71
+35-->C:\Users\agupt\StudioProjects\digipaws\digi-api\src\main\AndroidManifest.xml:23:21-68
+36            </intent-filter>
+37        </activity>
+38
+39        <provider
+39-->[androidx.emoji2:emoji2:1.2.0] C:\Users\agupt\.gradle\caches\transforms-4\1bbb6896ebc72e7ac02be1c19023ffd1\transformed\emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+40            android:name="androidx.startup.InitializationProvider"
+40-->[androidx.emoji2:emoji2:1.2.0] C:\Users\agupt\.gradle\caches\transforms-4\1bbb6896ebc72e7ac02be1c19023ffd1\transformed\emoji2-1.2.0\AndroidManifest.xml:25:13-67
+41            android:authorities="nethical.digipaws.api.androidx-startup"
+41-->[androidx.emoji2:emoji2:1.2.0] C:\Users\agupt\.gradle\caches\transforms-4\1bbb6896ebc72e7ac02be1c19023ffd1\transformed\emoji2-1.2.0\AndroidManifest.xml:26:13-68
+42            android:exported="false" >
+42-->[androidx.emoji2:emoji2:1.2.0] C:\Users\agupt\.gradle\caches\transforms-4\1bbb6896ebc72e7ac02be1c19023ffd1\transformed\emoji2-1.2.0\AndroidManifest.xml:27:13-37
+43            <meta-data
+43-->[androidx.emoji2:emoji2:1.2.0] C:\Users\agupt\.gradle\caches\transforms-4\1bbb6896ebc72e7ac02be1c19023ffd1\transformed\emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+44                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+44-->[androidx.emoji2:emoji2:1.2.0] C:\Users\agupt\.gradle\caches\transforms-4\1bbb6896ebc72e7ac02be1c19023ffd1\transformed\emoji2-1.2.0\AndroidManifest.xml:30:17-75
+45                android:value="androidx.startup" />
+45-->[androidx.emoji2:emoji2:1.2.0] C:\Users\agupt\.gradle\caches\transforms-4\1bbb6896ebc72e7ac02be1c19023ffd1\transformed\emoji2-1.2.0\AndroidManifest.xml:31:17-49
+46            <meta-data
+46-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\agupt\.gradle\caches\transforms-4\82e10f625047e9efa23f985ad1a924ad\transformed\lifecycle-process-2.4.1\AndroidManifest.xml:31:13-33:52
+47                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+47-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\agupt\.gradle\caches\transforms-4\82e10f625047e9efa23f985ad1a924ad\transformed\lifecycle-process-2.4.1\AndroidManifest.xml:32:17-78
+48                android:value="androidx.startup" />
+48-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\agupt\.gradle\caches\transforms-4\82e10f625047e9efa23f985ad1a924ad\transformed\lifecycle-process-2.4.1\AndroidManifest.xml:33:17-49
+49        </provider>
+50    </application>
+51
+52</manifest>

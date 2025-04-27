@@ -1,0 +1,4 @@
+nethical.digipaws.api.test.digi-api-androidTest-0 C:\Users\agupt\StudioProjects\digipaws\digi-api\build\generated\res\resValues\androidTest\debug
+nethical.digipaws.api.test.digi-api-mergeDebugAndroidTestResources-1 C:\Users\agupt\StudioProjects\digipaws\digi-api\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+nethical.digipaws.api.test.digi-api-mergeDebugAndroidTestResources-2 C:\Users\agupt\StudioProjects\digipaws\digi-api\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+nethical.digipaws.api.test.digi-api-debugAndroidTest-3 C:\Users\agupt\StudioProjects\digipaws\digi-api\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
