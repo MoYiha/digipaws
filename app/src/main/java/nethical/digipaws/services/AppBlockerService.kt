@@ -116,7 +116,6 @@ class AppBlockerService : BaseBlockingService() {
     }
 
     override fun onInterrupt() {
-        TODO("Not yet implemented")
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
