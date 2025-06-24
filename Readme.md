@@ -17,7 +17,7 @@
         src="https://f-droid.org/badge/get-it-on.png" />
 </a>
 </div>
-DigiPaws is an open-source Android productivity utility designed to help users reduce screen addiction by regulating app usage through a gamified experience. The application offers two modes namely the Base mode and the Gamified mode (The gamification mode is being separated and developed as a new app.)
+DigiPaws is an open-source Android productivity utility designed to help users reduce screen addiction. The application offers two modes namely the Base mode and the Gamified mode (The gamification mode is being separated and developed as a new app knows as [questphone](https://github.com/QuestPhone/questphone))
 
 > [!CAUTION]
 > This project is experimental and not yet ready for full production. [Donate](https://digipaws.life/donate)
@@ -82,7 +82,7 @@ This Mode introduces a gamified experience to control screen time using various 
 quests and goals. This mode tracks your usage and configures everything accordingly as the days pass
 by.
 > [!CAUTION]
-> This mode is being separately being developed as an individual app now.
+> This mode is being separately being developed as an individual app now. Checkout [QuestPhone](https://github.com/QuestPhone/questphone)
 
 ## Configuring
 
