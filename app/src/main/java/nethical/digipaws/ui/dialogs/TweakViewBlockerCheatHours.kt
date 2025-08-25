@@ -43,6 +43,8 @@ class TweakViewBlockerCheatHours(savedPreferencesLoader: SavedPreferencesLoader)
         if (savedStartTimeInMinutes != -1 || savedEndTimeInMinutes != -1) {
             dialogAddToCheatHoursBinding.picker.startTimeMinutes = savedStartTimeInMinutes
             dialogAddToCheatHoursBinding.picker.endTimeMinutes = savedEndTimeInMinutes
+            dialogAddToCheatHoursBinding.fromTime.text = TimeRangePicker.Time(savedStartTimeInMinutes).toString()
+            dialogAddToCheatHoursBinding.endTime.text = TimeRangePicker.Time(savedEndTimeInMinutes).toString()
             startTimeInMins = savedStartTimeInMinutes
             endTimeInMins = savedEndTimeInMinutes
         } else {

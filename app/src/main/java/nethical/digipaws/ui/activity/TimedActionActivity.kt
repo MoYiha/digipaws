@@ -20,6 +20,7 @@ import nethical.digipaws.R
 import nethical.digipaws.databinding.ActivityAddTimedActionActivityBinding
 import nethical.digipaws.databinding.CheatHourItemBinding
 import nethical.digipaws.databinding.DialogAddTimedActionBinding
+import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
 import nl.joery.timerangepicker.TimeRangePicker
@@ -91,12 +92,18 @@ class TimedActionActivity : AppCompatActivity() {
 
         dialogAddToTimedActionBinding = DialogAddTimedActionBinding.inflate(layoutInflater)
 
-        dialogAddToTimedActionBinding.picker.startTime = TimeRangePicker.Time(6, 30)
-        dialogAddToTimedActionBinding.picker.endTime = TimeRangePicker.Time(22, 0)
+        val startTime = TimeRangePicker.Time(6, 30)
+        val endTime = TimeRangePicker.Time(22, 0)
+
+        var startTimeInMins: Int = startTime.totalMinutes
+        var endTimeInMins: Int = endTime.totalMinutes
 
         dialogAddToTimedActionBinding.picker.hourFormat = TimeRangePicker.HourFormat.FORMAT_24
-        var endTimeInMins: Int? = dialogAddToTimedActionBinding.picker.endTimeMinutes
-        var startTimeInMins: Int? = dialogAddToTimedActionBinding.picker.startTimeMinutes
+
+        dialogAddToTimedActionBinding.picker.startTimeMinutes = startTimeInMins
+        dialogAddToTimedActionBinding.picker.endTimeMinutes = endTimeInMins
+        dialogAddToTimedActionBinding.fromTime.text = startTime.toString()
+        dialogAddToTimedActionBinding.endTime.text = endTime.toString()
 
         dialogAddToTimedActionBinding.picker.setOnTouchListener { v, event ->
             // Disable ScrollView's touch interception when interacting with the picker
@@ -247,11 +254,15 @@ class TimedActionActivity : AppCompatActivity() {
 
     private fun saveList() {
         when (selectedMode) {
-            MODE_APP_BLOCKER_CHEAT_HOURS -> savedPreferencesLoader.saveAppBlockerCheatHoursList(
-                timedActionList
-            )
+            MODE_APP_BLOCKER_CHEAT_HOURS -> {
+                savedPreferencesLoader.saveAppBlockerCheatHoursList(timedActionList)
+                sendBroadcast(Intent(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER))
+            }
 
-            MODE_AUTO_FOCUS -> savedPreferencesLoader.saveAutoFocusHoursList(timedActionList)
+            MODE_AUTO_FOCUS -> {
+                savedPreferencesLoader.saveAutoFocusHoursList(timedActionList)
+                sendBroadcast(Intent(AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE))
+            }
         }
     }
 
