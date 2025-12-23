@@ -54,6 +54,7 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
         val keywords = parseTextForKeywords(url)
         keywords.forEach { word ->
             if (blockedKeyword.contains(word.lowercase())) {
+                Log.d("chcking", word )
                 return word
             }
         }
@@ -61,40 +62,52 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
     }
 
     private fun parseTextForKeywords(input: String): Set<String> {
-        // Basic word extraction for any text
-        fun extractWords(text: String): Set<String> {
-            return text.split(Regex("[^a-zA-Z0-9]+"))
+        fun extractWords(text: String): Set<String> =
+            text.split(Regex("[^a-zA-Z0-9]+"))
                 .filter { it.isNotEmpty() }
                 .map { it.lowercase(Locale.ROOT) }
                 .toSet()
-        }
 
-        // Simple URL pattern
-        val urlPattern = "([\\w-]+\\.)+[\\w-]+(/[^?#]*)?\\??([^#]*)?"
-
-        // First check if it matches URL pattern
-        val regex = Regex(urlPattern)
         val words = mutableSetOf<String>()
 
-        if (regex.find(input) != null) {
-            // Handle as URL
-            words.addAll(extractWords(input))
+        try {
+            val uri = java.net.URI(input)
 
-            // Extract query parameters specifically
-            regex.find(input)?.groups?.get(3)?.value?.let { queryParams ->
-                queryParams.split('&').forEach { param ->
-                    if ('=' in param) {
-                        val (key, value) = param.split('=', limit = 2)
-                        words.addAll(extractWords(key))
-                        words.addAll(extractWords(value))
-                    }
+            // If scheme + host exist, treat as URL
+            if (uri.host != null) {
+                val host = uri.host.lowercase(Locale.ROOT)
+
+                // Add full domain: google.com
+                words.add(host)
+
+                // Add main website name: google
+                val parts = host.split(".")
+                if (parts.size >= 2) {
+                    words.add(parts[parts.size - 2])
                 }
+
+                // Add path keywords
+                uri.path?.let { words.addAll(extractWords(it)) }
+
+                // Add query parameters
+                uri.query?.split("&")?.forEach { param ->
+                    val (key, value) = param.split("=", limit = 2).let {
+                        it[0] to it.getOrNull(1)
+                    }
+                    words.addAll(extractWords(key))
+                    value?.let { words.addAll(extractWords(it)) }
+                }
+
+                return words
             }
-        } else {
-            // Handle as plain text
-            words.addAll(extractWords(input))
+        } catch (_: Exception) {
+            // Not a valid URI → fall back to text
         }
 
+        // Plain text fallback
+        words.add(input)
+        words.addAll(extractWords(input))
+        Log.d("words", words.toString())
         return words
     }
 
@@ -145,6 +158,7 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
             // Safely handle possible nulls from searchKeywordsInWebViewTitle and displayUrlTextNode.text
             val webViewKeyword = searchKeywordsInWebViewTitle(rootNode)
             val displayText = displayUrlTextNode?.text?.toString() ?: ""
+            Log.d("displaytext",displayText)
             detectedAdultKeyword = webViewKeyword ?: (if (displayText.isNotEmpty()) containsBlockedKeyword(displayText) else null) ?: return KeywordBlockerResult()
 
         }

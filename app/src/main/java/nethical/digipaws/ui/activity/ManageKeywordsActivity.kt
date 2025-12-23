@@ -110,10 +110,10 @@ class ManageKeywordsActivity : AppCompatActivity() {
                 }
                 if (Patterns.WEB_URL.matcher(keyword).matches()) {
                     val regex = Regex("^(?:https?://)?(?:www\\.)?([\\w-]+)\\.")
-                    keyword = regex.find(keyword)?.groupValues?.get(1) ?: ""
+                    savedKeywordsList.add(regex.find(keyword)?.groupValues?.get(1) ?: "")
                     Toast.makeText(
                         this,
-                        "Cannot add links, converted and added as a word.",
+                        "WARNING: LINK BLOCKING MAY NOT WORK EVERYWHERE.",
                         Toast.LENGTH_LONG
                     ).show()
                 }
