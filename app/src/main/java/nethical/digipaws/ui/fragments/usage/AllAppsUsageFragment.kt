@@ -8,6 +8,7 @@ import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -31,6 +32,7 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,6 +42,7 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,10 +57,13 @@ import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
 import nethical.digipaws.utils.getDefaultLauncherPackageName
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.Date
+import java.util.Locale
 
 class AllAppsUsageFragment : Fragment() {
 
@@ -85,6 +91,28 @@ class AllAppsUsageFragment : Fragment() {
             }
         }
     }
+
+    private var csvDataToExport: String = ""
+
+    private val createCsvLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        uri?.let {
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    requireContext().contentResolver.openOutputStream(it)?.use { stream ->
+                        stream.write(csvDataToExport.toByteArray())
+                    }
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Data exported successfully", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("ExportCSV", "Error writing file", e)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Failed to export data", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -94,6 +122,7 @@ class AllAppsUsageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         savedPreferencesLoader = SavedPreferencesLoader(requireContext())
 
@@ -117,6 +146,35 @@ class AllAppsUsageFragment : Fragment() {
             setUsageStats()
 
             findDataAvailabilityRange()
+        }
+        binding.exportData.setOnClickListener {
+            // 1. Select Date Range
+            val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
+                .setTitleText("Select Export Range")
+                .setSelection(
+                    androidx.core.util.Pair(
+                        MaterialDatePicker.thisMonthInUtcMilliseconds(),
+                        MaterialDatePicker.todayInUtcMilliseconds()
+                    )
+                )
+                .build()
+
+            dateRangePicker.addOnPositiveButtonClickListener { selection ->
+                val startDateMs = selection.first
+                val endDateMs = selection.second
+
+                // 2. Select Export Format
+                val options = arrayOf("Daily Breakdown (Time Series)", "Total Summary", "Both")
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Select Data Format")
+                    .setSingleChoiceItems(options, 0) { dialog, which ->
+                        // 3. Generate Data based on selection
+                        generateAndExportCsv(startDateMs, endDateMs, which)
+                        dialog.dismiss()
+                    }
+                    .show()
+            }
+            dateRangePicker.show(childFragmentManager, "EXPORT_DATE_picker")
         }
         binding.openMenu.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), binding.openMenu)
@@ -410,6 +468,98 @@ class AllAppsUsageFragment : Fragment() {
         }
     }
 
+    private fun generateAndExportCsv(startMs: Long, endMs: Long, mode: Int) {
+        Toast.makeText(requireContext(), "Generating Analysis CSV...", Toast.LENGTH_SHORT).show()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val sb = StringBuilder()
+            val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
+            val pm = requireContext().packageManager
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+            // --- Headers ---
+            val header = "Date,App Name,Package Name,Category,Duration (ms),Duration (mins),Is System App,Install Date,Last Update\n"
+
+            // Helper to fetch and format a single row
+            fun processStatsForRange(start: Long, end: Long, dateLabel: String): String {
+                val rangeSb = StringBuilder()
+                // Query Usage Stats
+                val statsMap = usageStatsManager.queryAndAggregateUsageStats(start, end)
+
+                statsMap.forEach { (packageName, usageStats) ->
+                    if (usageStats.totalTimeInForeground > 0) {
+                        var appName = packageName
+                        var category = "Undefined"
+                        var isSystem = "No"
+                        var installDate = "N/A"
+                        var lastUpdate = "N/A"
+
+                        try {
+                            val appInfo = pm.getApplicationInfo(packageName, 0)
+                            val pkgInfo = pm.getPackageInfo(packageName, 0)
+
+                            // Sanitize name for CSV
+                            appName = appInfo.loadLabel(pm).toString().replace(",", " ")
+                            isSystem = if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0) "Yes" else "No"
+                            installDate = dateFormat.format(Date(pkgInfo.firstInstallTime))
+                            lastUpdate = dateFormat.format(Date(pkgInfo.lastUpdateTime))
+
+                            category = when (appInfo.category) {
+                                ApplicationInfo.CATEGORY_GAME -> "Game"
+                                ApplicationInfo.CATEGORY_SOCIAL -> "Social"
+                                ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
+                                ApplicationInfo.CATEGORY_VIDEO -> "Video"
+                                ApplicationInfo.CATEGORY_AUDIO -> "Audio"
+                                else -> "Other"
+                            }
+                        } catch (e: Exception) { /* App likely uninstalled */ }
+
+                        val minutes = usageStats.totalTimeInForeground / 1000 / 60
+
+
+                        rangeSb.append("$dateLabel,$appName,$packageName,$category,${usageStats.totalTimeInForeground},$minutes,$isSystem,$installDate,$lastUpdate\n")
+                    }
+                }
+                return rangeSb.toString()
+            }
+
+            // --- Mode 0 or 2: Daily Breakdown ---
+            if (mode == 0 || mode == 2) {
+                sb.append("--- DAILY BREAKDOWN ---\n")
+                sb.append(header)
+
+                // Convert to LocalDates to iterate
+                val startInstant = Instant.ofEpochMilli(startMs).atZone(ZoneId.systemDefault()).toLocalDate()
+                val endInstant = Instant.ofEpochMilli(endMs).atZone(ZoneId.systemDefault()).toLocalDate()
+
+                var current = startInstant
+                // Loop through every day in the range
+                while (!current.isAfter(endInstant)) {
+                    val dayStart = current.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    val dayEnd = current.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+                    sb.append(processStatsForRange(dayStart, dayEnd, current.toString()))
+                    current = current.plusDays(1)
+                }
+                sb.append("\n")
+            }
+
+            // --- Mode 1 or 2: Total Summary ---
+            if (mode == 1 || mode == 2) {
+                sb.append("--- TOTAL SUMMARY (${dateFormat.format(Date(startMs))} to ${dateFormat.format(Date(endMs))}) ---\n")
+                sb.append(header)
+                sb.append(processStatsForRange(startMs, endMs, "TOTAL RANGE"))
+            }
+
+            csvDataToExport = sb.toString()
+
+            withContext(Dispatchers.Main) {
+                val name = "UsageData_${dateFormat.format(Date(startMs))}.csv"
+                createCsvLauncher.launch(name)
+            }
+        }
+    }
     private fun resizeIcon(icon: Drawable, width: Int, height: Int): Drawable {
         // Convert Drawable to Bitmap
         val bitmap = if (icon is BitmapDrawable) {
