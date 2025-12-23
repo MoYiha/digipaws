@@ -10,6 +10,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import nethical.digipaws.Constants
 import nethical.digipaws.utils.GrayscaleControl
+import nethical.digipaws.utils.getCurrentKeyboardPackageName
 import java.util.Locale
 
 class GeneralFeaturesService : BaseBlockingService() {
@@ -28,6 +29,7 @@ class GeneralFeaturesService : BaseBlockingService() {
     private var isAntiUninstallOn = true
     private val grayscaleControl = GrayscaleControl()
 
+    private var ignoredGrayScalePackages: List<String> = listOf()
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         super.onAccessibilityEvent(event)
 
@@ -41,7 +43,7 @@ class GeneralFeaturesService : BaseBlockingService() {
             if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
                 val currentPackageName = event.packageName?.toString()
                 // Check if the app has changed
-                if (currentPackageName != null && currentPackageName != lastPackageName) {
+                if (currentPackageName != null && currentPackageName != lastPackageName &&  !ignoredGrayScalePackages.contains(currentPackageName)) {
                     lastPackageName = currentPackageName // Update the last package name
 
                     when (grayScaleMode) {
@@ -73,7 +75,6 @@ class GeneralFeaturesService : BaseBlockingService() {
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onServiceConnected() {
         super.onServiceConnected()
-
         val filter = IntentFilter().apply {
             addAction(INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
             addAction(INTENT_ACTION_REFRESH_GRAYSCALE)
@@ -107,6 +108,8 @@ class GeneralFeaturesService : BaseBlockingService() {
     }
 
     fun setupGrayscale() {
+        ignoredGrayScalePackages = listOf( getCurrentKeyboardPackageName(this)?: "com.google.android.inputmethod.latin",
+        "com.android.systemui")
         selectedGrayScaleApps = savedPreferencesLoader.loadGrayScaleApps().toHashSet()
         val sp = getSharedPreferences("grayscale", MODE_PRIVATE)
         grayScaleMode = sp.getInt("mode",Constants.GRAYSCALE_MODE_ONLY_SELECTED)
