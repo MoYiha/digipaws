@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
+import nethical.digipaws.blockers.BrowserBlocker
 import nethical.digipaws.blockers.KeywordBlocker
 import nethical.digipaws.data.blockers.KeywordPacks
 
@@ -27,7 +28,7 @@ class KeywordBlockerService : BaseBlockingService() {
     }
 
     private val keywordBlocker = KeywordBlocker(this)
-
+    private val browserBlocker = BrowserBlocker(this)
     private var KbIgnoredApps: HashSet<String> = hashSetOf()
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -44,7 +45,7 @@ class KeywordBlockerService : BaseBlockingService() {
         val rootnode: AccessibilityNodeInfo? = rootInActiveWindow
         Log.d("KeywordBlocker", "Searching Keywords")
         handleKeywordBlockerResult(keywordBlocker.checkIfUserGettingFreaky(rootnode, event))
-
+        handleBrowserBlockerResult(browserBlocker.isAppBrowser(event))
         lastEventTimeStamp = SystemClock.uptimeMillis()
 
     }
@@ -91,6 +92,15 @@ class KeywordBlockerService : BaseBlockingService() {
         }
     }
 
+    private fun handleBrowserBlockerResult(isBlocked: Boolean){
+        if (!isBlocked) return
+        Toast.makeText(
+            this,
+            "Unsupported Browser Blocked",
+            Toast.LENGTH_LONG
+        ).show()
+        pressHome()
+    }
 
     private fun setupBlockedWords() {
         val keywords = savedPreferencesLoader.loadBlockedKeywords().toMutableSet()
@@ -106,6 +116,8 @@ class KeywordBlockerService : BaseBlockingService() {
         val sp = getSharedPreferences("keyword_blocker_configs", Context.MODE_PRIVATE)
 
         keywordBlocker.isSearchAllTextFields = sp.getBoolean("search_all_text_fields", false)
+        browserBlocker.isTurnedOn = sp.getBoolean("is_block_all_other_browsers", false)
+
         keywordBlocker.redirectUrl =
             sp.getString("redirect_url", "https://www.youtube.com/watch?v=x31tDT-4fQw&t=1s")
                 .toString()

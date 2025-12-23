@@ -76,6 +76,9 @@ class TweakKeywordBlocker(savedPreferencesLoader: SavedPreferencesLoader) :
         // Load current preferences into dialog
         dialogManageKeywordBlocker.cbSearchTextField.isChecked =
             sharedPreferences.getBoolean("search_all_text_fields", false)
+
+        dialogManageKeywordBlocker.blockAllOtherBrowsers.isChecked =
+            sharedPreferences.getBoolean("is_block_all_other_browsers", false)
         dialogManageKeywordBlocker.redirectUrl.setText(
             sharedPreferences.getString(
                 "redirect_url",
@@ -98,6 +101,7 @@ class TweakKeywordBlocker(savedPreferencesLoader: SavedPreferencesLoader) :
                         "redirect_url",
                         dialogManageKeywordBlocker.redirectUrl.text.toString()
                     )
+                    putBoolean("is_block_all_other_browsers",dialogManageKeywordBlocker.blockAllOtherBrowsers.isChecked)
                     commit() // Save changes immediately
                 }
 
