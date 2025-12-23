@@ -50,6 +50,9 @@
             android:name=".ui.activity.SelectAppsActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activity.SelectAppBlockerApps"
+            android:exported="false" />
+        <activity
             android:name=".ui.activity.MainActivity"
             android:exported="true">
             <intent-filter>

@@ -278,7 +278,7 @@ class MainActivity : AppCompatActivity() {
 
         }
         binding.selectBlockedApps.setOnClickListener {
-            val intent = Intent(this, SelectAppsActivity::class.java)
+            val intent = Intent(this, SelectAppBlockerApps::class.java)
             intent.putStringArrayListExtra(
                 "PRE_SELECTED_APPS",
                 ArrayList(savedPreferencesLoader.loadBlockedApps())
