@@ -1,13 +1,18 @@
 package nethical.digipaws.ui.activity
 
 import android.annotation.SuppressLint
+import android.app.AppOpsManager
+import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.os.Process
+import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -22,6 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,6 +36,7 @@ import nethical.digipaws.data.blockers.PackageWand
 import nethical.digipaws.databinding.ActivitySelectAppsBinding
 import nethical.digipaws.databinding.DialogAddKeywordBinding
 import nethical.digipaws.databinding.DialogSetBlockedAppsTimerangeBinding
+import nethical.digipaws.utils.SavedPreferencesLoader
 import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
@@ -54,10 +61,11 @@ class SelectAppBlockerApps : AppCompatActivity() {
         binding = ActivitySelectAppsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if(!hasUsageStatsPermission(this)) requestUsageStatsPermission(this)
         // Unpack Intent
-        selectedAppList = intent.getStringArrayListExtra("PRE_SELECTED_APPS")?.toHashSet() ?: HashSet()
-        val preSelectedConfigs = intent.getSerializableExtra("PRE_SELECTED_USAGE_CONFIGS") as? HashMap<String, AppUsageConfig>
-        if (preSelectedConfigs != null) appUsageConfigs = preSelectedConfigs
+        val sp = SavedPreferencesLoader(this)
+        appUsageConfigs = sp.loadBlockedApps()
+        selectedAppList = appUsageConfigs.keys.toHashSet()
 
         binding.appList.layoutManager = LinearLayoutManager(this)
 
@@ -68,13 +76,13 @@ class SelectAppBlockerApps : AppCompatActivity() {
         setupConfirmButton()
     }
 
-    // --- SETUP & HELPERS ---
     private fun setupConfirmButton() {
         binding.confirmSelection.setOnClickListener {
+            val gson = Gson()
             val resultIntent = intent.apply {
-                putStringArrayListExtra("SELECTED_APPS", ArrayList(selectedAppList))
-                putExtra("USAGE_CONFIGS", appUsageConfigs)
+                putExtra("USAGE_CONFIGS", gson.toJson(appUsageConfigs))
             }
+
             setResult(RESULT_OK, resultIntent)
             finish()
         }
@@ -114,7 +122,30 @@ class SelectAppBlockerApps : AppCompatActivity() {
         val adapter = binding.appList.adapter as? ApplicationAdapter
         allAppsSelected = adapter?.apps?.all { selectedAppList.contains(it.packageName) } == true
     }
+    fun hasUsageStatsPermission(context: Context): Boolean {
+        val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOpsManager.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            appOpsManager.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
 
+    fun requestUsageStatsPermission(context: Context) {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.startActivity(intent)
+    }
     private fun askForUsageTime(
         title: String,
         existingConfig: AppUsageConfig? = null,
@@ -478,4 +509,4 @@ data class AppUsageConfig(
     var isDailyUniform: Boolean = true,
     var uniformLimit: Long = 0,
     val dailyLimits: LongArray = LongArray(7) { 0 } // 0=Sunday
-) : Serializable
+)

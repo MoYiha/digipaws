@@ -1,10 +1,10 @@
 package nethical.digipaws.utils
 
-
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.CountDownTimer
+import android.util.Log
 import androidx.core.app.NotificationCompat
 
 class NotificationTimerManager(private val context: Context) {
@@ -19,6 +19,7 @@ class NotificationTimerManager(private val context: Context) {
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     }
 
+    private var timerId = ""
     init {
         createNotificationChannel()
     }
@@ -40,49 +41,43 @@ class NotificationTimerManager(private val context: Context) {
         totalMillis: Long,
         isCountdown: Boolean = true,
         onTickCallback: ((Long) -> Unit)? = null,
-        onFinishCallback: (() -> Unit)? = null
+        onFinishCallback: (() -> Unit)? = null,
+        timerIdU: String = "focusMode"
     ) {
-        // Cancel any existing timer
-        countDownTimer?.cancel()
+        if(timerId != timerIdU) {
+            countDownTimer?.cancel()
 
-        countDownTimer = object : CountDownTimer(totalMillis, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                val displayMillis =
-                    if (isCountdown) millisUntilFinished else totalMillis - millisUntilFinished
+            countDownTimer = object : CountDownTimer(totalMillis, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    val displayMillis =
+                        if (isCountdown) millisUntilFinished else totalMillis - millisUntilFinished
+                    updateNotificationUI("Timer", displayMillis) // Use default title
+                    onTickCallback?.invoke(displayMillis)
+                }
 
-                // Update notification with current timer value
-                updateTimerNotification(displayMillis)
-
-                // Optional tick callback
-                onTickCallback?.invoke(displayMillis)
-            }
-
-            override fun onFinish() {
-                // Remove the notification when timer completes
-                notificationManager.cancel(NOTIFICATION_ID)
-
-                // Optional finish callback
-                onFinishCallback?.invoke()
-            }
-        }.start()
+                override fun onFinish() {
+                    notificationManager.cancel(NOTIFICATION_ID)
+                    onFinishCallback?.invoke()
+                    timerId = timerIdU
+                }
+            }.start()
+            timerId = timerIdU
+        }
     }
 
-    private fun updateTimerNotification(remainingMillis: Long) {
-        // Convert milliseconds to hours, minutes, seconds
+    private fun updateNotificationUI(title: String, remainingMillis: Long) {
         val hours = remainingMillis / 3600000
         val minutes = (remainingMillis % 3600000) / 60000
         val seconds = (remainingMillis % 60000) / 1000
-
-        // Format time display
         val timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle("Timer")
+            .setContentTitle(title) // Dynamic Title (App Name)
             .setContentText(timeString)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(android.R.drawable.ic_dialog_info) // Replace with your app icon
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true)  // Makes notification persistent
-            .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true) // Crucial: Prevents flickering/noise on updates
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
 
@@ -92,5 +87,7 @@ class NotificationTimerManager(private val context: Context) {
     fun stopTimer() {
         countDownTimer?.cancel()
         notificationManager.cancel(NOTIFICATION_ID)
+        timerId = ""
+        Log.d("notifications","cancelling notifications")
     }
 }

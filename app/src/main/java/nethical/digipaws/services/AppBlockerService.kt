@@ -17,6 +17,8 @@ import nethical.digipaws.blockers.AppBlocker
 import nethical.digipaws.blockers.FocusModeBlocker
 import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.WarningActivity
+import nethical.digipaws.utils.NotificationTimerManager
+import nethical.digipaws.utils.UsageStatsHelper
 import nethical.digipaws.utils.getCurrentKeyboardPackageName
 import nethical.digipaws.utils.getDefaultLauncherPackageName
 
@@ -45,7 +47,7 @@ class AppBlockerService : BaseBlockingService() {
     }
 
     private var appBlockerWarning = MainActivity.WarningData()
-    private val appBlocker = AppBlocker()
+    private lateinit var appBlocker : AppBlocker
 
     private val focusModeBlocker = FocusModeBlocker()
 
@@ -56,10 +58,14 @@ class AppBlockerService : BaseBlockingService() {
 
     private var updateRunnable: Runnable? = null
 
-
+    private lateinit var notificationManager: NotificationTimerManager
 
     private var lastPackage = ""
 
+    override fun onCreate() {
+        appBlocker = AppBlocker(this)
+        super.onCreate()
+    }
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val packageName = event?.packageName.toString()
         if (lastPackage == packageName || packageName == getPackageName()) return
@@ -79,16 +85,23 @@ class AppBlockerService : BaseBlockingService() {
     private fun handleAppBlockerResult(result: AppBlocker.AppBlockerResult, packageName: String) {
         Log.d("AppBlockerService", "$packageName result : $result")
 
+        if(packageName == "com.android.systemui") return // to allow notification panel to be used
         if (result.cheatHoursEndTime != -1L) {
             setUpForcedRefreshChecker(packageName, result.cheatHoursEndTime)
         }
         if (result.cooldownEndTime != -1L) {
             setUpForcedRefreshChecker(packageName, result.cooldownEndTime)
         }
+        if(result.usageLimitReached == false && result.remainingUsage != 0L){
+            notificationManager.startTimer(result.remainingUsage, timerIdU = packageName)
+            setUpForcedRefreshChecker(packageName, result.remainingUsage + SystemClock.uptimeMillis())
+        }else{
+            notificationManager.stopTimer()
+        }
 
         if (!result.isBlocked) return
 
-
+        notificationManager.stopTimer()
         if (appBlockerWarning.isWarningDialogHidden) {
             pressHome()
             lastPackage = ""
@@ -127,7 +140,7 @@ class AppBlockerService : BaseBlockingService() {
         super.onServiceConnected()
         setupAppBlocker()
         setupFocusMode()
-
+        notificationManager = NotificationTimerManager(this)
         val filter = IntentFilter().apply {
             addAction(INTENT_ACTION_REFRESH_FOCUS_MODE)
             addAction(INTENT_ACTION_REFRESH_APP_BLOCKER)
@@ -176,6 +189,7 @@ class AppBlockerService : BaseBlockingService() {
             updateRunnable?.let { handler.removeCallbacks(it) }
             updateRunnable = null
         }
+        Log.d("setting up recheck",coolPackage)
         updateRunnable = Runnable {
 
             Log.d("AppBlockerService", "Triggered Recheck for  $coolPackage")
@@ -197,9 +211,9 @@ class AppBlockerService : BaseBlockingService() {
         handler.postAtTime(updateRunnable!!, endMillis)
     }
     private fun setupAppBlocker() {
-        appBlocker.blockedAppsList = savedPreferencesLoader.loadBlockedApps().toHashSet()
+        appBlocker.blockedAppsList = savedPreferencesLoader.loadBlockedApps()
+        Log.d("blocked Apps List updated",appBlocker.blockedAppsList.toString())
         appBlocker.refreshCheatHoursData(savedPreferencesLoader.loadAppBlockerCheatHoursList())
-
         appBlockerWarning = savedPreferencesLoader.loadAppBlockerWarningInfo()
     }
 

@@ -182,9 +182,10 @@ class MainActivity : AppCompatActivity() {
         selectBlockedAppsLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == RESULT_OK) {
-                    val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
-                    selectedApps?.let {
-                        savedPreferencesLoader.saveBlockedApps(it.toSet())
+                    val selectedAppsWithUsage = result.data?.getStringExtra("USAGE_CONFIGS")
+                    Log.d("updated blocked apps",selectedAppsWithUsage.toString())
+                    selectedAppsWithUsage?.let {
+                        savedPreferencesLoader.saveBlockedApps(it)
                         sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
                     }
                 }
@@ -279,10 +280,6 @@ class MainActivity : AppCompatActivity() {
         }
         binding.selectBlockedApps.setOnClickListener {
             val intent = Intent(this, SelectAppBlockerApps::class.java)
-            intent.putStringArrayListExtra(
-                "PRE_SELECTED_APPS",
-                ArrayList(savedPreferencesLoader.loadBlockedApps())
-            )
             selectBlockedAppsLauncher.launch(intent, options)
         }
         binding.selectBlockedKeywords.setOnClickListener {

@@ -158,7 +158,7 @@ class TimedActionActivity : AppCompatActivity() {
             if (selectedMode == MODE_APP_BLOCKER_CHEAT_HOURS) {
                 intent.putStringArrayListExtra(
                     "APP_LIST",
-                    ArrayList(savedPreferencesLoader.loadBlockedApps())
+                    ArrayList(savedPreferencesLoader.loadBlockedApps().keys)
                 )
             }
 

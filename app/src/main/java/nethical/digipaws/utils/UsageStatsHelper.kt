@@ -205,11 +205,5 @@ class UsageStatsHelper(private val context: Context) {
         }
     }
 
-    fun getDefaultLauncherPackageName(context: Context): String? {
-        val intent = Intent(Intent.ACTION_MAIN).apply {
-            addCategory(Intent.CATEGORY_HOME)
-        }
-        val resolveInfo = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        return resolveInfo?.activityInfo?.packageName
-    }
+
 }

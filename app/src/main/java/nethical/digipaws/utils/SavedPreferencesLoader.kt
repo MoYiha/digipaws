@@ -1,10 +1,12 @@
 package nethical.digipaws.utils
 
+import android.R.attr.type
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import nethical.digipaws.blockers.FocusModeBlocker
 import nethical.digipaws.services.UsageTrackingService.AttentionSpanVideoItem
+import nethical.digipaws.ui.activity.AppUsageConfig
 import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.TimedActionActivity
 
@@ -23,10 +25,32 @@ class SavedPreferencesLoader(private val context: Context) {
         return sharedPreferences.getStringSet("ignored_apps", emptySet()) ?: emptySet()
     }
 
-    fun loadBlockedApps(): Set<String> {
+    fun loadBlockedApps(): HashMap<String, AppUsageConfig> {
+        val str = loadBlockedAppsRaw()
+        val gson = Gson()
+        val type = object : TypeToken<HashMap<String, AppUsageConfig>>() {}.type
+        return gson.fromJson( str,type)
+    }
+    fun loadBlockedAppsRaw(): String {
         val sharedPreferences =
             context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-        return sharedPreferences.getStringSet("blocked_apps", emptySet()) ?: emptySet()
+        //migrations from older versions
+        if(sharedPreferences.contains("blocked_apps")){
+            val blockedApps = sharedPreferences.getStringSet("blocked_apps",setOf())
+            val newList = mutableMapOf<String, AppUsageConfig>()
+            blockedApps?.forEach {
+                newList[it] = AppUsageConfig(
+                    true,
+                    0,
+                )
+            }
+            val gson = Gson()
+            val json  = gson.toJson(blockedApps)
+            saveBlockedApps(json)
+            sharedPreferences.edit().remove("blocked_apps").apply()
+            return json
+        }
+        return sharedPreferences.getString("blocked_apps_with_time", "{}") ?: "{}"
     }
 
     fun loadBlockedKeywords(): Set<String> {
@@ -42,10 +66,10 @@ class SavedPreferencesLoader(private val context: Context) {
     }
 
 
-    fun saveBlockedApps(pinnedApps: Set<String>) {
+    fun saveBlockedApps(usageConfigs: String) {
         val sharedPreferences =
             context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putStringSet("blocked_apps", pinnedApps).apply()
+        sharedPreferences.edit().putString("blocked_apps_with_time", usageConfigs).apply()
     }
 
 
