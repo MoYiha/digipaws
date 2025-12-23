@@ -473,31 +473,29 @@ class AllAppsUsageFragment : Fragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             val sb = StringBuilder()
-            val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
+            val usageStatsHelper = UsageStatsHelper(requireContext())
             val pm = requireContext().packageManager
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
-            // --- Headers ---
-            val header = "Date,App Name,Package Name,Category,Duration (ms),Duration (mins),Is System App,Install Date,Last Update\n"
+            val header = "Date,App Name,Package Name,Category,Duration (ms),Duration (mins),Is System App,Install Date,Last Update,Start Times\n"
 
             // Helper to fetch and format a single row
             fun processStatsForRange(start: Long, end: Long, dateLabel: String): String {
                 val rangeSb = StringBuilder()
                 // Query Usage Stats
-                val statsMap = usageStatsManager.queryAndAggregateUsageStats(start, end)
+                val statsMap = usageStatsHelper.getForegroundStatsByTimestamps(start, end)
 
-                statsMap.forEach { (packageName, usageStats) ->
-                    if (usageStats.totalTimeInForeground > 0) {
-                        var appName = packageName
+                statsMap.forEach { it ->
+                    if (it.totalTime > 0) {
+                        var appName = it.packageName
                         var category = "Undefined"
                         var isSystem = "No"
                         var installDate = "N/A"
                         var lastUpdate = "N/A"
 
                         try {
-                            val appInfo = pm.getApplicationInfo(packageName, 0)
-                            val pkgInfo = pm.getPackageInfo(packageName, 0)
+                            val appInfo = pm.getApplicationInfo(it.packageName, 0)
+                            val pkgInfo = pm.getPackageInfo(it.packageName, 0)
 
                             // Sanitize name for CSV
                             appName = appInfo.loadLabel(pm).toString().replace(",", " ")
@@ -515,10 +513,10 @@ class AllAppsUsageFragment : Fragment() {
                             }
                         } catch (e: Exception) { /* App likely uninstalled */ }
 
-                        val minutes = usageStats.totalTimeInForeground / 1000 / 60
+                        val minutes = it.totalTime / 1000 / 60
 
 
-                        rangeSb.append("$dateLabel,$appName,$packageName,$category,${usageStats.totalTimeInForeground},$minutes,$isSystem,$installDate,$lastUpdate\n")
+                        rangeSb.append("$dateLabel,$appName,${it.packageName},$category,${it.totalTime},$minutes,$isSystem,$installDate,$lastUpdate\n,${it.startTimes}\n")
                     }
                 }
                 return rangeSb.toString()
