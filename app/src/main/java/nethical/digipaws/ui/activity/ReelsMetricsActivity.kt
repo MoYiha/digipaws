@@ -29,7 +29,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.R
-import nethical.digipaws.databinding.ActivityUsageMetricsBinding
+import nethical.digipaws.databinding.ReelStatsBinding
+import nethical.digipaws.databinding.ReelsUsageMetricsBinding
 import nethical.digipaws.services.UsageTrackingService
 import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
@@ -40,9 +41,9 @@ import java.io.IOException
 import kotlin.properties.Delegates
 
 
-class UsageMetricsActivity : AppCompatActivity() {
+class ReelsMetricsActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityUsageMetricsBinding
+    private lateinit var binding: ReelsUsageMetricsBinding
     private var savedPreferencesLoader = SavedPreferencesLoader(this)
 
 
@@ -54,7 +55,7 @@ class UsageMetricsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding = ActivityUsageMetricsBinding.inflate(layoutInflater)
+        binding = ReelsUsageMetricsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

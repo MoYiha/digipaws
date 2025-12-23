@@ -38,7 +38,7 @@
             android:name=".ui.activity.FragmentActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.activity.UsageMetricsActivity"
+            android:name=".ui.activity.ReelsMetricsActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activity.TimedActionActivity"

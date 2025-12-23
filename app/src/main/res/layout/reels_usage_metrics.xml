@@ -13,7 +13,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:orientation="vertical"
-        tools:context=".ui.activity.UsageMetricsActivity">
+        tools:context=".ui.activity.ReelsMetricsActivity">
 
 
         <LinearLayout
