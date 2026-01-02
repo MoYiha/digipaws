@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.SystemClock
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -107,6 +108,10 @@ class ViewBlockerService : BaseBlockingService() {
 
         }
         serviceInfo = info
+        var displayMetrics: DisplayMetrics = resources.displayMetrics
+
+        viewBlocker.screenHeight = displayMetrics.heightPixels
+        viewBlocker.screenWidth = displayMetrics.widthPixels
 
         val filter = IntentFilter().apply {
             addAction(INTENT_ACTION_REFRESH_VIEW_BLOCKER)

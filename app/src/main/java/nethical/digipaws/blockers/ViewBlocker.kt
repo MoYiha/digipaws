@@ -1,9 +1,11 @@
 package nethical.digipaws.blockers
 
+import android.graphics.Rect
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityNodeInfo
 import nethical.digipaws.utils.TimeTools
 import java.util.Calendar
+
 
 class ViewBlocker : BaseBlocker() {
     companion object {
@@ -31,7 +33,8 @@ class ViewBlocker : BaseBlocker() {
 
     }
     private val cooldownViewIdsList = mutableMapOf<String, Long>()
-
+    var screenWidth: Int = 0
+    var screenHeight: Int = 0
 
     var isIGInboxReelAllowed = false
     var isFirstReelInFeedAllowed = false
@@ -97,7 +100,11 @@ class ViewBlocker : BaseBlocker() {
     private fun isViewOpened(rootNode: AccessibilityNodeInfo, viewId: String): Boolean {
         val viewNode =
             findElementById(rootNode, viewId)
-        return viewNode != null
+        val nodeRect = Rect()
+        viewNode?.getBoundsInScreen(nodeRect)
+        val isOffScreenLeft = nodeRect.right <= 0
+        val isOffScreenRight = nodeRect.left >= screenWidth
+        return (viewNode != null && !isOffScreenLeft && !isOffScreenRight)
     }
 
     private fun isCheatHourActive(): Boolean {
