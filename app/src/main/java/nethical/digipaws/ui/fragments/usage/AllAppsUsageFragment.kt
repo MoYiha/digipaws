@@ -595,7 +595,14 @@ class AllAppsUsageFragment : Fragment() {
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(stats: Stat, packageManager: PackageManager) {
-            val appInfo = packageManager.getApplicationInfo(stats.packageName, 0)
+            val appInfo = try {
+                 packageManager.getApplicationInfo(stats.packageName, 0)
+            } catch (e: Exception){
+                binding.appIcon.setImageResource(R.drawable.baseline_warning_24)
+                binding.appName.text = stats.packageName
+                binding.appUsage.text = TimeTools.formatTime(stats.totalTime)
+                return
+            }
             binding.root.setOnClickListener{
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.fade_in,R.anim.fade_out)
