@@ -59,7 +59,7 @@ class FragmentActivity : AppCompatActivity() {
                     val fragment = when (item.itemId) {
                         R.id.nav_usage -> AllAppsUsageFragment()
                         R.id.nav_focus -> nethical.digipaws.ui.fragments.main.FocusFragment()
-                        R.id.nav_reducers -> nethical.digipaws.ui.fragments.main.ReducersFragment()
+                        R.id.nav_reducers -> nethical.digipaws.ui.fragments.reducers.ReducersFragment()
                         R.id.nav_info -> nethical.digipaws.ui.fragments.main.InfoFragment()
                         else -> AllAppsUsageFragment()
                     }
