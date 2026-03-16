@@ -32,8 +32,8 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -56,7 +56,6 @@ import nethical.digipaws.ui.activity.SelectAppsActivity
 import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
-import nethical.digipaws.utils.getDefaultLauncherPackageName
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -71,48 +70,59 @@ class AllAppsUsageFragment : Fragment() {
         const val FRAGMENT_ID = "all_app_usage"
     }
 
-    private var selectedDate:Long = System.currentTimeMillis()
-    private var currentDate:Long = selectedDate
-    private var earliestDate:Long = selectedDate
+    private var selectedDate: Long = System.currentTimeMillis()
+    private var currentDate: Long = selectedDate
+    private var earliestDate: Long = selectedDate
 
     private var _binding: FragmentAllAppUsageBinding? = null
     private val binding get() = _binding!!
 
-    private var ignoredPackages: MutableSet<String> = mutableSetOf()
+    private lateinit var viewModel: AllAppsUsageViewModel
     private lateinit var savedPreferencesLoader: SavedPreferencesLoader
 
     val selectIgnoredAppsLauncher =
-    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
-            selectedApps?.let {
-                savedPreferencesLoader.saveIgnoredAppUsageTracker(it.toSet())
-                ignoredPackages.addAll(it)
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
+                selectedApps?.let {
+                    savedPreferencesLoader.saveIgnoredAppUsageTracker(it.toSet())
+                    viewModel.ignoredPackages.addAll(it)
+                    viewModel.reload()
+                }
             }
         }
-    }
 
     private var csvDataToExport: String = ""
 
-    private val createCsvLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
-        uri?.let {
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    requireContext().contentResolver.openOutputStream(it)?.use { stream ->
-                        stream.write(csvDataToExport.toByteArray())
-                    }
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Data exported successfully", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: Exception) {
-                    Log.e("ExportCSV", "Error writing file", e)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Failed to export data", Toast.LENGTH_SHORT).show()
+    private val createCsvLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+            uri?.let {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        requireContext().contentResolver.openOutputStream(it)?.use { stream ->
+                            stream.write(csvDataToExport.toByteArray())
+                        }
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Data exported successfully",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ExportCSV", "Error writing file", e)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Failed to export data",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             }
         }
-    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -123,69 +133,49 @@ class AllAppsUsageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         savedPreferencesLoader = SavedPreferencesLoader(requireContext())
+        viewModel = ViewModelProvider(this)[AllAppsUsageViewModel::class.java]
 
         if (!hasUsageStatsPermission(requireContext())) {
             makeUsageStatsPermissoinDialog()
         }
 
+        // Setup RecyclerView
         val adapter = AppUsageAdapter(emptyList())
         binding.appUsageRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.appUsageRecyclerView.adapter = adapter
 
-        lifecycleScope.launch(Dispatchers.IO) {
+        // Setup PieChart
+        setupPieChart()
 
-            getDefaultLauncherPackageName(requireContext().packageManager)?.let {
-                ignoredPackages.add(
-                    it
-                )
-            }
-            ignoredPackages.addAll(savedPreferencesLoader.loadIgnoredAppUsageTracker())
+        // Observe ViewModel
+        observeViewModel(adapter)
 
-            setUsageStats()
-
-            findDataAvailabilityRange()
+        // Setup week navigation
+        binding.btnPrevWeek.setOnClickListener {
+            viewModel.goToPreviousWeek()
         }
-        binding.exportData.setOnClickListener {
-            // 1. Select Date Range
-            val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
-                .setTitleText("Select Export Range")
-                .setSelection(
-                    androidx.core.util.Pair(
-                        MaterialDatePicker.thisMonthInUtcMilliseconds(),
-                        MaterialDatePicker.todayInUtcMilliseconds()
-                    )
-                )
-                .build()
-
-            dateRangePicker.addOnPositiveButtonClickListener { selection ->
-                val startDateMs = selection.first
-                val endDateMs = selection.second
-
-                // 2. Select Export Format
-                val options = arrayOf("Daily Breakdown (Time Series)", "Total Summary", "Both")
-                MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Select Data Format")
-                    .setSingleChoiceItems(options, 0) { dialog, which ->
-                        // 3. Generate Data based on selection
-                        generateAndExportCsv(startDateMs, endDateMs, which)
-                        dialog.dismiss()
-                    }
-                    .show()
-            }
-            dateRangePicker.show(childFragmentManager, "EXPORT_DATE_picker")
+        binding.btnNextWeek.setOnClickListener {
+            viewModel.goToNextWeek()
         }
+
+        // Setup bar graph tap listener
+        binding.weeklyBarGraph.setOnDaySelectedListener { dayData ->
+            val index = viewModel.weeklyData.value?.indexOf(dayData) ?: return@setOnDaySelectedListener
+            viewModel.selectDay(index)
+            selectedDate = dayData.dateMillis
+        }
+
+        // Menu
         binding.openMenu.setOnClickListener {
             val popupMenu = PopupMenu(requireContext(), binding.openMenu)
             popupMenu.menuInflater.inflate(R.menu.usage_tracker_options, popupMenu.menu)
 
-            // Handle menu item clicks
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.select_ignored -> {
-
-                        val intent = Intent(requireContext(), SelectAppsActivity::class.java)
+                        val intent =
+                            Intent(requireContext(), SelectAppsActivity::class.java)
                         intent.putStringArrayListExtra(
                             "PRE_SELECTED_APPS",
                             ArrayList(savedPreferencesLoader.loadIgnoredAppUsageTracker())
@@ -201,15 +191,48 @@ class AllAppsUsageFragment : Fragment() {
                         true
                     }
 
-                    R.id.add_shortcut_usage_tracker -> {
+                    R.id.export_as_csv -> {
 
-                        val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
-                            action = Intent.ACTION_CREATE_SHORTCUT
+                        val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
+                            .setTitleText("Select Export Range")
+                            .setSelection(
+                                androidx.core.util.Pair(
+                                    MaterialDatePicker.thisMonthInUtcMilliseconds(),
+                                    MaterialDatePicker.todayInUtcMilliseconds()
+                                )
+                            )
+                            .build()
+
+                        dateRangePicker.addOnPositiveButtonClickListener { selection ->
+                            val startDateMs = selection.first
+                            val endDateMs = selection.second
+
+                            val options =
+                                arrayOf("Daily Breakdown (Time Series)", "Total Summary", "Both")
+                            MaterialAlertDialogBuilder(requireContext())
+                                .setTitle("Select Data Format")
+                                .setSingleChoiceItems(options, 0) { dialog, which ->
+                                    generateAndExportCsv(startDateMs, endDateMs, which)
+                                    dialog.dismiss()
+                                }
+                                .show()
                         }
+                        dateRangePicker.show(childFragmentManager, "EXPORT_DATE_picker")
+                        true
+                    }
+
+                    R.id.add_shortcut_usage_tracker -> {
+                        val intent =
+                            Intent(requireContext(), FragmentActivity::class.java).apply {
+                                action = Intent.ACTION_CREATE_SHORTCUT
+                            }
 
                         intent.putExtra("fragment", FRAGMENT_ID)
                         val shortcutInfo =
-                            ShortcutInfoCompat.Builder(requireContext(), "digipaws_usage_tracker")
+                            ShortcutInfoCompat.Builder(
+                                requireContext(),
+                                "digipaws_usage_tracker"
+                            )
                                 .setShortLabel("Usage Stats")
                                 .setLongLabel("Usage Stats")
                                 .setIntent(intent)
@@ -220,7 +243,6 @@ class AllAppsUsageFragment : Fragment() {
                                     )
                                 )
                                 .build()
-
 
                         val supported =
                             ShortcutManagerCompat.isRequestPinShortcutSupported(requireContext())
@@ -256,51 +278,101 @@ class AllAppsUsageFragment : Fragment() {
             }
 
             popupMenu.show()
-
-        }
-        binding.selectDate.setOnClickListener {
-            showDatePickerDialog(selectedDate, earliestDate, currentDate) { newDate ->
-                selectedDate = newDate
-                binding.selectDate.text = TimeTools.formatDate(newDate)
-                val localDate = Instant.ofEpochMilli(newDate)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-
-                lifecycleScope.launch(Dispatchers.IO) {
-                    setUsageStats(localDate)
-                }
-
-            }
         }
 
+        // Initialize ViewModel data
+        viewModel.initialize()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            findDataAvailabilityRange()
+        }
+    }
+
+    private fun setupPieChart() {
+        binding.pieChart.apply {
+            description.isEnabled = false
+            isRotationEnabled = false
+            isDrawHoleEnabled = true
+            holeRadius = 85f
+            transparentCircleRadius = 88f
+            setTransparentCircleColor(
+                MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorSurfaceContainerHigh,
+                    Color.WHITE
+                )
+            )
+            setTransparentCircleAlpha(120)
+            setHoleColor(
+                MaterialColors.getColor(
+                    context,
+                    com.google.android.material.R.attr.colorSurfaceContainerHigh,
+                    Color.WHITE
+                )
+            )
+            legend.isEnabled = false
+            setDrawEntryLabels(false)
+            setDrawCenterText(false) // We use our own overlay TextViews
+        }
+    }
+
+    private fun observeViewModel(adapter: AppUsageAdapter) {
+        viewModel.weeklyData.observe(viewLifecycleOwner) { data ->
+            val selectedIdx = viewModel.selectedDayIndex.value ?: 6
+            binding.weeklyBarGraph.setData(data, selectedIdx)
+        }
+
+        viewModel.selectedDayIndex.observe(viewLifecycleOwner) { index ->
+            binding.weeklyBarGraph.setSelectedIndex(index)
+        }
+
+        viewModel.selectedDayStats.observe(viewLifecycleOwner) { stats ->
+            adapter.updateData(stats)
+            updatePieChart(stats)
+        }
+
+        viewModel.totalTime.observe(viewLifecycleOwner) { totalMs ->
+            binding.totalUsage.text = TimeTools.formatTimeForWidget(totalMs)
+        }
+
+        viewModel.comparisonText.observe(viewLifecycleOwner) { text ->
+            binding.comparisonText.text = text
+            binding.comparisonText.visibility = if (text.isNullOrEmpty()) View.GONE else View.VISIBLE
+        }
+
+        viewModel.weekRangeLabel.observe(viewLifecycleOwner) { label ->
+            binding.tvWeekRange.text = label
+        }
+
+        viewModel.canGoNext.observe(viewLifecycleOwner) { canGo ->
+            binding.btnNextWeek.alpha = if (canGo) 1f else 0.3f
+            binding.btnNextWeek.isEnabled = canGo
+        }
+
+        viewModel.dateSublabel.observe(viewLifecycleOwner) { label ->
+            binding.dateSublabel.text = label
+        }
     }
 
     fun findDataAvailabilityRange() {
-
         val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
         val stats = usageStatsManager.queryUsageStats(
             UsageStatsManager.INTERVAL_DAILY,
             0, System.currentTimeMillis()
         )
 
-        // Calculate earliest available date
         earliestDate = stats.minOfOrNull { it.firstTimeStamp } ?: System.currentTimeMillis()
         currentDate = System.currentTimeMillis()
-        selectedDate = currentDate.coerceAtLeast(earliestDate) // Ensure valid range
-
+        selectedDate = currentDate.coerceAtLeast(earliestDate)
     }
+
     override fun onResume() {
         super.onResume()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            val localDate = Instant.ofEpochMilli(selectedDate)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-
-            setUsageStats(localDate)
-            findDataAvailabilityRange()
+        if (::viewModel.isInitialized) {
+            viewModel.reload()
         }
     }
+
     private fun makeUsageStatsPermissoinDialog() {
         val dialogBinding =
             DialogPermissionInfoBinding.inflate(layoutInflater)
@@ -322,70 +394,26 @@ class AllAppsUsageFragment : Fragment() {
             activity?.finish()
         }
         dialogBinding.btnAccept.setOnClickListener {
-            Toast.makeText(requireContext(), "Find 'Digipaws' and press enable", Toast.LENGTH_LONG)
+            Toast.makeText(
+                requireContext(),
+                "Find 'Digipaws' and press enable",
+                Toast.LENGTH_LONG
+            )
                 .show()
             requestUsageStatsPermission(requireContext())
             dialog.dismiss()
         }
     }
 
-    private suspend fun setUsageStats(date : LocalDate = LocalDate.now()) {
-        val usageStatsHelper = UsageStatsHelper(requireContext())
-        val list = usageStatsHelper.getForegroundStatsByDay(date).filter {
-            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
-        }
-        val totalTime = TimeTools.formatTime(calculateTotalScreenTimeInHours(list),false)
-
-        withContext(Dispatchers.Main) {
-            try {
-                val adapter = binding.appUsageRecyclerView.adapter as AppUsageAdapter
-                if(list.isEmpty()){
-                    Toast.makeText(requireContext(),"No data available",Toast.LENGTH_SHORT).show()
-                }
-                updatePieChart(list)
-                binding.totalUsage.text = totalTime
-
-                adapter.updateData(list)
-            } catch (e: Exception) {
-                Log.e("AppUsageFragment", "Error updating UI with stats", e)
-            }
-        }
-    }
-
-    private fun calculateTotalScreenTimeInHours(stats: List<Stat>): Long {
-        val totalTimeInMillis = stats.sumOf { it.totalTime }
-
-        return totalTimeInMillis
-    }
-
-    private fun showDatePickerDialog(
-        selectedDate: Long,
-        startDate: Long,
-        endDate: Long,
-        onDateSelected: (Long) -> Unit
-    ) {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = selectedDate
-
-        val datePicker = DatePickerDialog(
-            requireContext(),
-            { _, year, month, dayOfMonth ->
-                val pickedCalendar = Calendar.getInstance()
-                pickedCalendar.set(year, month, dayOfMonth)
-                onDateSelected(pickedCalendar.timeInMillis)
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        )
-
-        // Restrict the selectable date range
-        datePicker.datePicker.minDate = startDate
-        datePicker.datePicker.maxDate = endDate
-        datePicker.show()
-    }
-
     private fun updatePieChart(statsList: List<Stat>) {
+        binding.pieLegend.removeAllViews()
+
+        if (statsList.isEmpty()) {
+            binding.pieChart.clear()
+            binding.pieChart.invalidate()
+            return
+        }
+
         val sortedStats = statsList.sortedByDescending { it.totalTime }
         val topApps = sortedStats.take(3)
 
@@ -393,78 +421,92 @@ class AllAppsUsageFragment : Fragment() {
             .sumOf { it.totalTime }
 
         val entries = mutableListOf<PieEntry>()
-        val pm = requireContext().packageManager
         topApps.forEach { stats ->
-            val appInfo = pm.getApplicationInfo(stats.packageName,0)
-            val icon = appInfo.loadIcon(pm)
-            val usageTime = stats.totalTime
-
-            entries.add(PieEntry(usageTime.toFloat(),resizeIcon(icon,25,25)))
+            entries.add(PieEntry(stats.totalTime.toFloat()))
         }
 
         if (othersTime > 0) {
-            entries.add(PieEntry(othersTime.toFloat(), ""))
+            entries.add(PieEntry(othersTime.toFloat()))
         }
+
+        val colorPrimary = MaterialColors.getColor(
+            requireView(),
+            com.google.android.material.R.attr.colorPrimary
+        )
+        val colorSecondary = MaterialColors.getColor(
+            requireView(),
+            com.google.android.material.R.attr.colorSecondary
+        )
+        val colorTertiary = MaterialColors.getColor(
+            requireView(),
+            com.google.android.material.R.attr.colorTertiary
+        )
+        val colorSurfaceVariant = MaterialColors.getColor(
+            requireView(),
+            com.google.android.material.R.attr.colorSurfaceVariant
+        )
+
+        val sliceColors = listOf(colorPrimary, colorSecondary, colorTertiary, colorSurfaceVariant)
+
         val pieDataSet = PieDataSet(entries, "").apply {
-            colors = listOf(
-                // Material Blue 500
-                Color.parseColor("#2196F3"),
-
-                // Material Red 500
-                Color.parseColor("#F44336"),
-
-                // Material Green 500
-                Color.parseColor("#4CAF50"),
-
-                // Material Yellow 500
-                requireContext().getColor(R.color.md_theme_inverseSurface)
-            )
-
-
-            // Add spacing between slices
+            colors = sliceColors
             sliceSpace = 3f
-
             setDrawValues(false)
-
-            // Increase selection shift
-            selectionShift = 10f
-
-            setGradientColor(
-                MaterialColors.getColor(
-                    requireContext(),
-                    com.google.android.material.R.attr.colorPrimaryContainer,
-                    Color.LTGRAY
-                ),
-                MaterialColors.getColor(
-                    requireContext(),
-                    com.google.android.material.R.attr.colorSecondaryContainer,
-                    Color.DKGRAY
-                )
-            )
+            setDrawIcons(false)
+            selectionShift = 5f
         }
 
         val pieData = PieData(pieDataSet)
 
         binding.pieChart.apply {
             data = pieData
-            description.isEnabled = false
-            isRotationEnabled = true
-
-            // Center hole styling
-            isDrawHoleEnabled = true
-            holeRadius = 85f
-            transparentCircleRadius = 0f  // Remove transparent circle
-            setHoleColor(MaterialColors.getColor(context, com.google.android.material.R.attr.colorSurface, Color.WHITE))
-
-            legend.isEnabled = false
-
-            // External labels styling
-            setDrawEntryLabels(true)  // Disable internal labels
-            animateY(1200, Easing.EaseInOutQuart)
-
-
-            //Todo: Add external labels
+            animateY(800, Easing.EaseInOutQuart)
             invalidate()
+        }
+
+        // Build legend: colored dot + app name
+        val pm = requireContext().packageManager
+        val density = resources.displayMetrics.density
+
+        topApps.forEachIndexed { index, stat ->
+            val itemLayout = android.widget.LinearLayout(requireContext()).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding((8 * density).toInt(), 0, (8 * density).toInt(), 0)
+            }
+
+            // Colored dot
+            val dot = android.view.View(requireContext()).apply {
+                val size = (7 * density).toInt()
+                layoutParams = android.widget.LinearLayout.LayoutParams(size, size)
+                val drawable = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(sliceColors.getOrElse(index) { colorSurfaceVariant })
+                }
+                background = drawable
+            }
+            itemLayout.addView(dot)
+
+            // App name only (no icon — keeps legend compact)
+            try {
+                val appInfo = pm.getApplicationInfo(stat.packageName, 0)
+                val nameView = android.widget.TextView(requireContext()).apply {
+                    text = appInfo.loadLabel(pm)
+                    setTextColor(MaterialColors.getColor(requireView(), com.google.android.material.R.attr.colorOnSurfaceVariant))
+                    textSize = 11f
+                    maxLines = 1
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        marginStart = (5 * density).toInt()
+                    }
+                }
+                itemLayout.addView(nameView)
+            } catch (_: Exception) { }
+
+            binding.pieLegend.addView(itemLayout)
         }
     }
 
@@ -477,12 +519,11 @@ class AllAppsUsageFragment : Fragment() {
             val pm = requireContext().packageManager
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-            val header = "Date,App Name,Package Name,Category,Duration (ms),Duration (mins),Is System App,Install Date,Last Update,Start Times\n"
+            val header =
+                "Date,App Name,Package Name,Category,Duration (ms),Duration (mins),Is System App,Install Date,Last Update,Start Times\n"
 
-            // Helper to fetch and format a single row
             fun processStatsForRange(start: Long, end: Long, dateLabel: String): String {
                 val rangeSb = StringBuilder()
-                // Query Usage Stats
                 val statsMap = usageStatsHelper.getForegroundStatsByTimestamps(start, end)
 
                 statsMap.forEach { it ->
@@ -497,11 +538,14 @@ class AllAppsUsageFragment : Fragment() {
                             val appInfo = pm.getApplicationInfo(it.packageName, 0)
                             val pkgInfo = pm.getPackageInfo(it.packageName, 0)
 
-                            // Sanitize name for CSV
-                            appName = appInfo.loadLabel(pm).toString().replace(",", " ")
-                            isSystem = if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0) "Yes" else "No"
-                            installDate = dateFormat.format(Date(pkgInfo.firstInstallTime))
-                            lastUpdate = dateFormat.format(Date(pkgInfo.lastUpdateTime))
+                            appName =
+                                appInfo.loadLabel(pm).toString().replace(",", " ")
+                            isSystem =
+                                if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0) "Yes" else "No"
+                            installDate =
+                                dateFormat.format(Date(pkgInfo.firstInstallTime))
+                            lastUpdate =
+                                dateFormat.format(Date(pkgInfo.lastUpdateTime))
 
                             category = when (appInfo.category) {
                                 ApplicationInfo.CATEGORY_GAME -> "Game"
@@ -511,10 +555,10 @@ class AllAppsUsageFragment : Fragment() {
                                 ApplicationInfo.CATEGORY_AUDIO -> "Audio"
                                 else -> "Other"
                             }
-                        } catch (e: Exception) { /* App likely uninstalled */ }
+                        } catch (e: Exception) { /* App likely uninstalled */
+                        }
 
                         val minutes = it.totalTime / 1000 / 60
-
 
                         rangeSb.append("$dateLabel,$appName,${it.packageName},$category,${it.totalTime},$minutes,$isSystem,$installDate,$lastUpdate\n,${it.startTimes}\n")
                     }
@@ -522,20 +566,21 @@ class AllAppsUsageFragment : Fragment() {
                 return rangeSb.toString()
             }
 
-            // --- Mode 0 or 2: Daily Breakdown ---
             if (mode == 0 || mode == 2) {
                 sb.append("--- DAILY BREAKDOWN ---\n")
                 sb.append(header)
 
-                // Convert to LocalDates to iterate
-                val startInstant = Instant.ofEpochMilli(startMs).atZone(ZoneId.systemDefault()).toLocalDate()
-                val endInstant = Instant.ofEpochMilli(endMs).atZone(ZoneId.systemDefault()).toLocalDate()
+                val startInstant =
+                    Instant.ofEpochMilli(startMs).atZone(ZoneId.systemDefault()).toLocalDate()
+                val endInstant =
+                    Instant.ofEpochMilli(endMs).atZone(ZoneId.systemDefault()).toLocalDate()
 
                 var current = startInstant
-                // Loop through every day in the range
                 while (!current.isAfter(endInstant)) {
-                    val dayStart = current.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                    val dayEnd = current.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    val dayStart =
+                        current.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    val dayEnd = current.atTime(23, 59, 59).atZone(ZoneId.systemDefault())
+                        .toInstant().toEpochMilli()
 
                     sb.append(processStatsForRange(dayStart, dayEnd, current.toString()))
                     current = current.plusDays(1)
@@ -543,9 +588,14 @@ class AllAppsUsageFragment : Fragment() {
                 sb.append("\n")
             }
 
-            // --- Mode 1 or 2: Total Summary ---
             if (mode == 1 || mode == 2) {
-                sb.append("--- TOTAL SUMMARY (${dateFormat.format(Date(startMs))} to ${dateFormat.format(Date(endMs))}) ---\n")
+                sb.append(
+                    "--- TOTAL SUMMARY (${dateFormat.format(Date(startMs))} to ${
+                        dateFormat.format(
+                            Date(endMs)
+                        )
+                    }) ---\n"
+                )
                 sb.append(header)
                 sb.append(processStatsForRange(startMs, endMs, "TOTAL RANGE"))
             }
@@ -558,8 +608,8 @@ class AllAppsUsageFragment : Fragment() {
             }
         }
     }
+
     private fun resizeIcon(icon: Drawable, width: Int, height: Int): Drawable {
-        // Convert Drawable to Bitmap
         val bitmap = if (icon is BitmapDrawable) {
             icon.bitmap
         } else {
@@ -574,12 +624,10 @@ class AllAppsUsageFragment : Fragment() {
             bitmap
         }
 
-        // Calculate the target size in pixels (assuming density is needed)
         val density = Resources.getSystem().displayMetrics.density
         val targetWidth = (width * density).toInt()
         val targetHeight = (height * density).toInt()
 
-        // Create scaled bitmap
         val scaledBitmap = Bitmap.createScaledBitmap(
             bitmap,
             targetWidth,
@@ -587,7 +635,6 @@ class AllAppsUsageFragment : Fragment() {
             true
         )
 
-        // Convert back to Drawable
         return BitmapDrawable(Resources.getSystem(), scaledBitmap)
     }
 
@@ -596,16 +643,17 @@ class AllAppsUsageFragment : Fragment() {
 
         fun bind(stats: Stat, packageManager: PackageManager) {
             val appInfo = try {
-                 packageManager.getApplicationInfo(stats.packageName, 0)
-            } catch (e: Exception){
+                packageManager.getApplicationInfo(stats.packageName, 0)
+            } catch (e: Exception) {
                 binding.appIcon.setImageResource(R.drawable.baseline_warning_24)
                 binding.appName.text = stats.packageName
-                binding.appUsage.text = TimeTools.formatTime(stats.totalTime)
+                binding.appUsage.text = TimeTools.formatTimeForWidget(stats.totalTime)
+                binding.appCategory.text = "APP"
                 return
             }
-            binding.root.setOnClickListener{
+            binding.root.setOnClickListener {
                 activity?.supportFragmentManager?.beginTransaction()
-                    ?.setCustomAnimations(R.anim.fade_in,R.anim.fade_out)
+                    ?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                     ?.replace(R.id.fragment_holder, AppUsageBreakdown(stats))
                     ?.addToBackStack(null)
                     ?.commit()
@@ -617,30 +665,25 @@ class AllAppsUsageFragment : Fragment() {
                     .setMessage("This action will cause the tracker to not display any stats from this app.")
                     .setCancelable(true)
                     .setPositiveButton("Okay") { _, _ ->
-                        val savedPreferencesLoader = SavedPreferencesLoader(requireContext())
+                        val savedPreferencesLoader =
+                            SavedPreferencesLoader(requireContext())
                         val ignoredAppsSP =
-                            savedPreferencesLoader.loadIgnoredAppUsageTracker().toMutableSet()
+                            savedPreferencesLoader.loadIgnoredAppUsageTracker()
+                                .toMutableSet()
                         ignoredAppsSP.add(stats.packageName)
-                        ignoredPackages.addAll(ignoredAppsSP)
+                        viewModel.ignoredPackages.addAll(ignoredAppsSP)
                         savedPreferencesLoader.saveIgnoredAppUsageTracker(ignoredAppsSP)
-
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            val localDate = Instant.ofEpochMilli(selectedDate)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-
-                            setUsageStats(localDate)
-                        }
+                        viewModel.reload()
                     }
                     .setNegativeButton("Cancel", null)
                     .show()
                 true
             }
 
-            // Load app icon and label on the main thread
             binding.appIcon.setImageDrawable(appInfo.loadIcon(packageManager))
             binding.appName.text = appInfo.loadLabel(packageManager)
-            binding.appUsage.text = TimeTools.formatTime(stats.totalTime)
+            binding.appUsage.text = TimeTools.formatTimeForWidget(stats.totalTime)
+            binding.appCategory.text = viewModel.getAppCategory(stats.packageName)
         }
     }
 
@@ -649,7 +692,8 @@ class AllAppsUsageFragment : Fragment() {
     ) : RecyclerView.Adapter<AppUsageViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppUsageViewHolder {
-            val binding = AppUsageItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            val binding =
+                AppUsageItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             return AppUsageViewHolder(binding)
         }
 
@@ -660,7 +704,6 @@ class AllAppsUsageFragment : Fragment() {
         @SuppressLint("NotifyDataSetChanged")
         fun updateData(newAppUsageStats: List<Stat>) {
             appUsageStats = newAppUsageStats
-
             notifyDataSetChanged()
         }
 
@@ -698,4 +741,8 @@ class AllAppsUsageFragment : Fragment() {
         val startTimes: List<ZonedDateTime>
     )
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

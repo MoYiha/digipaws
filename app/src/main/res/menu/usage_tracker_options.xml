@@ -6,4 +6,8 @@
     <item
         android:id="@+id/add_shortcut_usage_tracker"
         android:title="Add Shotcut to Homescreen" />
+
+    <item
+        android:id="@+id/export_as_csv"
+        android:title="Export Data as CSV" />
 </menu>

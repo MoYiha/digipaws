@@ -25,26 +25,28 @@ class FragmentActivity : AppCompatActivity() {
         }
 
         var fragment: Fragment? = null
-        if (intent.getStringExtra("fragment") != null) {
-            when (intent.getStringExtra("fragment")) {
-                ChooseModeFragment.FRAGMENT_ID -> {
-                    fragment = ChooseModeFragment()
-                }
-                AllAppsUsageFragment.FRAGMENT_ID -> {
-                    fragment = AllAppsUsageFragment()
-                }
-                WelcomeFragment.FRAGMENT_ID -> {
-                    fragment = WelcomeFragment()
-                }
-                AccessibilityGuide.FRAGMENT_ID ->
-                    fragment = AccessibilityGuide()
+        val selectedFragment = intent.getStringExtra("fragment") ?: AllAppsUsageFragment.FRAGMENT_ID
+        when (selectedFragment) {
+            ChooseModeFragment.FRAGMENT_ID -> {
+                fragment = ChooseModeFragment()
             }
-            supportFragmentManager.beginTransaction()
-                .replace(
-                    R.id.fragment_holder,
-                    fragment!!
-                ) // Add or replace the fragment in the container
-                .commit() // Commit the transaction
+
+            AllAppsUsageFragment.FRAGMENT_ID -> {
+                fragment = AllAppsUsageFragment()
+            }
+
+            WelcomeFragment.FRAGMENT_ID -> {
+                fragment = WelcomeFragment()
+            }
+
+            AccessibilityGuide.FRAGMENT_ID ->
+                fragment = AccessibilityGuide()
         }
+        supportFragmentManager.beginTransaction()
+            .replace(
+                R.id.fragment_holder,
+                fragment!!
+            ) // Add or replace the fragment in the container
+            .commit() // Commit the transaction
     }
 }
