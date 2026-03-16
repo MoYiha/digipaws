@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_usage"
+        android:icon="@drawable/ic_usage"
+        android:title="Usage" />
+    <item
+        android:id="@+id/nav_focus"
+        android:icon="@drawable/ic_focus"
+        android:title="Focus" />
+    <item
+        android:id="@+id/nav_reducers"
+        android:icon="@drawable/ic_reducers"
+        android:title="Reducers" />
+    <item
+        android:id="@+id/nav_info"
+        android:icon="@drawable/ic_info"
+        android:title="Info" />
+</menu>

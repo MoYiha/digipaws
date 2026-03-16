@@ -24,29 +24,54 @@ class FragmentActivity : AppCompatActivity() {
             insets
         }
 
-        var fragment: Fragment? = null
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
+
         val selectedFragment = intent.getStringExtra("fragment") ?: AllAppsUsageFragment.FRAGMENT_ID
+        
         when (selectedFragment) {
-            ChooseModeFragment.FRAGMENT_ID -> {
-                fragment = ChooseModeFragment()
+            ChooseModeFragment.FRAGMENT_ID,
+            WelcomeFragment.FRAGMENT_ID,
+            AccessibilityGuide.FRAGMENT_ID -> {
+                // Hide bottom nav for these standalone fragments
+                bottomNav.visibility = android.view.View.GONE
+                
+                val fragment = when (selectedFragment) {
+                    ChooseModeFragment.FRAGMENT_ID -> ChooseModeFragment()
+                    WelcomeFragment.FRAGMENT_ID -> WelcomeFragment()
+                    else -> AccessibilityGuide()
+                }
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_holder, fragment)
+                    .commit()
             }
-
-            AllAppsUsageFragment.FRAGMENT_ID -> {
-                fragment = AllAppsUsageFragment()
+            else -> {
+                // Show bottom nav for main fragments
+                bottomNav.visibility = android.view.View.VISIBLE
+                
+                if (savedInstanceState == null) {
+                    bottomNav.selectedItemId = R.id.nav_usage
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_holder, AllAppsUsageFragment())
+                        .commit()
+                }
+                
+                bottomNav.setOnItemSelectedListener { item ->
+                    val fragment = when (item.itemId) {
+                        R.id.nav_usage -> AllAppsUsageFragment()
+                        R.id.nav_focus -> nethical.digipaws.ui.fragments.main.FocusFragment()
+                        R.id.nav_reducers -> nethical.digipaws.ui.fragments.main.ReducersFragment()
+                        R.id.nav_info -> nethical.digipaws.ui.fragments.main.InfoFragment()
+                        else -> AllAppsUsageFragment()
+                    }
+                    
+                    supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                        .replace(R.id.fragment_holder, fragment)
+                        .commit()
+                    
+                    true
+                }
             }
-
-            WelcomeFragment.FRAGMENT_ID -> {
-                fragment = WelcomeFragment()
-            }
-
-            AccessibilityGuide.FRAGMENT_ID ->
-                fragment = AccessibilityGuide()
         }
-        supportFragmentManager.beginTransaction()
-            .replace(
-                R.id.fragment_holder,
-                fragment!!
-            ) // Add or replace the fragment in the container
-            .commit() // Commit the transaction
     }
 }
