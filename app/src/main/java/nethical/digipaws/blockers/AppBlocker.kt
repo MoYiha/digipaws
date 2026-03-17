@@ -20,6 +20,13 @@ import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
 import java.util.Calendar
 import androidx.core.content.edit
+import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import nethical.digipaws.data.models.AppBlockingType
+import nethical.digipaws.utils.DataStoreManager
 
 
 data class WarningData(
@@ -145,7 +152,25 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
     fun setupAppBlocker(service: BaseBlockingService) {
         this.service = service
         notificationManager = NotificationTimerManager(service)
-        blockedAppsList = service.savedPreferencesLoader.loadBlockedApps()
+        val dataStoreManager = DataStoreManager(service)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStoreManager.settings.collect { settings ->
+                val tempBlockedApps = mutableMapOf<String, AppUsageConfig>()
+                settings.blockedAppGroups.forEach {  group ->
+                    if(!group.isActive) return@forEach
+                    if(group.blockingType == AppBlockingType.Usage ){
+                        val settings = Gson().fromJson<AppUsageConfig>(group.setting, AppUsageConfig::class.java)
+                        group.selectedPackages.forEach {
+                            tempBlockedApps[it] = settings
+                        }
+
+                    }
+                }
+                blockedAppsList = HashMap(tempBlockedApps)
+            }
+        }
+
         Log.d("blocked Apps List updated",blockedAppsList.toString())
         refreshCheatHoursData(service.savedPreferencesLoader.loadAppBlockerCheatHoursList())
         appBlockerWarning = service.savedPreferencesLoader.loadAppBlockerWarningInfo()

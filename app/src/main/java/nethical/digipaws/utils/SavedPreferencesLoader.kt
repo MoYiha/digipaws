@@ -348,4 +348,5 @@ class SavedPreferencesLoader(private val context: Context) {
             context.getSharedPreferences("grayscale", Context.MODE_PRIVATE)
         sharedPreferences.edit().putStringSet("apps", apps).apply()
     }
+
 }
