@@ -6,6 +6,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.Constants
 import nethical.digipaws.R
 import nethical.digipaws.blockers.FocusModeBlocker
+import nethical.digipaws.blockers.FocusModeData
 import nethical.digipaws.databinding.DialogFocusModeBinding
 import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.utils.NotificationTimerManager
@@ -60,13 +61,13 @@ class StartFocusMode(savedPreferencesLoader: SavedPreferencesLoader,private val 
                 println("The minute millis is: $totalMinsMillis")
                 println("The hours millis is: $totalHoursMillis")
                 savedPreferencesLoader?.saveFocusModeData(
-                    FocusModeBlocker.FocusModeData(
+                    FocusModeData(
                         true,
                         System.currentTimeMillis() + totalMillis,
                         selectedMode!!
                     )
                 )
-                sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE)
+                sendRefreshRequest(FocusModeBlocker.INTENT_ACTION_REFRESH_FOCUS_MODE)
                 val timer = NotificationTimerManager(requireContext())
                 // TODO: add notification permission check
                 timer.startTimer(totalMillis.toLong())

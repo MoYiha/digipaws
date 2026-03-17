@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.Constants
 import nethical.digipaws.R
+import nethical.digipaws.blockers.AppBlocker
 import nethical.digipaws.databinding.DialogWarningOverlayBinding
 import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.services.ViewBlockerService
@@ -99,7 +100,7 @@ class WarningActivity : AppCompatActivity() {
                     ?.let { it1 ->
                         sendRefreshRequest(
                             it1,
-                            AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN,
+                            AppBlocker.INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN,
                             binding.minsPicker.getValue()
                         )
                         val intent = packageManager.getLaunchIntentForPackage(it1)

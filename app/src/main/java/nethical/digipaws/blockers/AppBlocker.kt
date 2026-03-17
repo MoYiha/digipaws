@@ -1,33 +1,183 @@
 package nethical.digipaws.blockers
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
+import android.view.accessibility.AccessibilityEvent
+import androidx.core.content.ContextCompat.startActivity
+import nethical.digipaws.Constants
+import nethical.digipaws.services.BaseBlockingService
 import nethical.digipaws.ui.activity.AppUsageConfig
+import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.TimedActionActivity
+import nethical.digipaws.ui.activity.WarningActivity
+import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
 import java.util.Calendar
+import androidx.core.content.edit
+
+
+data class WarningData(
+    val message: String = "You can setup a custom message to appear here!",
+    val timeInterval: Int = 120000, // default cooldown period
+    val isDynamicIntervalSettingAllowed: Boolean = false,
+    val isProceedDisabled: Boolean = false,
+    val isWarningDialogHidden: Boolean = false, // perform back/home action directly without showing warning screen
+    val proceedDelayInSecs: Int = 15
+)
 
 class AppBlocker(private val context: Context) : BaseBlocker() {
 
+    companion object {
+
+        /**
+         * Refreshes information about warning screen, cheat hours and blocked app list
+         */
+        const val INTENT_ACTION_REFRESH_APP_BLOCKER = "nethical.digipaws.refresh.appblocker"
+
+        /**
+         * Add cooldown to an app.
+         * This broadcast should always be sent together with the following keys:
+         * selected_time: Int -> Duration of cooldown in minutes
+         * result_id : String -> Package name of app to be put into cooldown
+         */
+        const val INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN =
+            "nethical.digipaws.refresh.appblocker.cooldown"
+
+    }
     private val prefs: SharedPreferences = context.getSharedPreferences("app_blocker_prefs", Context.MODE_PRIVATE)
 
-    // package-name -> end-time-in-real-time-millis
+    /**
+     * stores what blocked apps have been allowed by the user to be used and until when
+     * package-name -> end-time-in-real-time-millis
+     */
     private var cooldownAppsList: MutableMap<String, Long> = mutableMapOf()
 
-    // package-name -> [(start-time, end-time), ...]
+    /**
+     * stores info about cheat hours i.e list of apps allowed to be used without restrictions for x minutes
+     * package-name -> [(start-time, end-time), ...]
+     */
     private var cheatHours: MutableMap<String, List<Pair<Int, Int>>> = mutableMapOf()
 
-    // package-name -> AppUsageConfig
+    /**
+     * Stores general simple general list of block apps with their configs
+     */
     var blockedAppsList: HashMap<String, AppUsageConfig> = hashMapOf()
 
 
     private var usageStats = UsageStatsHelper(context)
 
+
+    private var lastPackage = ""
+    private lateinit var service : BaseBlockingService
+
+
+    // responsible to trigger a recheck for what app user is currently using even when no event is received. Used in putting the usage recheck logic into
+    // cooldown for an app and later when the cooldown duration is over, trigger a recheck
+    private val handler = Handler(Looper.getMainLooper())
+    private var updateRunnable: Runnable? = null
+    private var appBlockerWarning = WarningData()
+
+    private lateinit var notificationManager: NotificationTimerManager
     init {
         loadPersistedData()
     }
+
+
+    /**
+     * Check if app needs to be blocked and perform necessary actions
+     *
+     * @param event
+     * @return
+     */
+    fun doAppBlockerCheck(event: AccessibilityEvent?){
+
+        val packageName = event?.packageName.toString()
+        if (lastPackage == packageName || packageName == service.packageName || packageName == "com.android.systemui") return
+
+        lastPackage = packageName
+
+        // check if a blocked apps previously allowed to be used for some time has expired
+        if (cooldownAppsList.containsKey(packageName)) {
+            if (cooldownAppsList[packageName]!! < System.currentTimeMillis()) {
+                removeCooldownFrom(packageName)
+            } else {
+                // app is still under cooldown so we let it to be used
+                return
+            }
+        }
+
+        // check if app is under cheat-hours
+        val endCheatMillis = getEndTimeInMillis(packageName)
+        if (endCheatMillis != null) {
+            setUpForcedRefreshChecker(packageName,endCheatMillis)
+        }
+
+        // Check if app is in blocked list and has exceeded usage limit
+        if (blockedAppsList.contains(packageName)) {
+
+            val config = blockedAppsList[packageName]!!
+            val currentUsage = usageStats.getForegroundStatsByRelativeDay(0)
+                .firstOrNull { it.packageName == packageName }?.totalTime ?: 0L
+            val usageLimit = getUsageLimitForToday(config) * 60_000L
+
+            val remainingUsage = ((usageLimit - currentUsage))
+            if ( currentUsage >= usageLimit) {
+                // App has exceeded its usage limit
+                notificationManager.stopTimer()
+                showWarningScreen(packageName)
+            } else {
+                // App is in blocked list but hasn't exceeded usage limit yet
+                notificationManager.startTimer(remainingUsage, timerIdU = packageName)
+                setUpForcedRefreshChecker(packageName,remainingUsage + SystemClock.uptimeMillis())
+                return
+            }
+        }
+        notificationManager.stopTimer()
+    }
+
+
+    fun setupAppBlocker(service: BaseBlockingService) {
+        this.service = service
+        notificationManager = NotificationTimerManager(service)
+        blockedAppsList = service.savedPreferencesLoader.loadBlockedApps()
+        Log.d("blocked Apps List updated",blockedAppsList.toString())
+        refreshCheatHoursData(service.savedPreferencesLoader.loadAppBlockerCheatHoursList())
+        appBlockerWarning = service.savedPreferencesLoader.loadAppBlockerWarningInfo()
+    }
+
+    fun handlePutCooldownIntentBroadcast(intent: Intent){
+        val interval =
+            intent.getIntExtra("selected_time", appBlockerWarning.timeInterval)
+        val coolPackage = intent.getStringExtra("result_id") ?: ""
+        val cooldownUntil =
+            SystemClock.uptimeMillis() + interval
+        putCooldownTo(
+            coolPackage,
+            cooldownUntil
+        )
+        setUpForcedRefreshChecker(coolPackage, cooldownUntil)
+    }
+
+    /**
+     * Get the usage limit for today based on config
+     */
+    private fun getUsageLimitForToday(config: AppUsageConfig): Long {
+        return if (config.isDailyUniform) {
+            config.uniformLimit
+        } else {
+            val calendar = Calendar.getInstance()
+            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1 // 0=Sunday
+            config.dailyLimits[dayOfWeek]
+        }
+    }
+
+
 
     /**
      * Load persisted data from SharedPreferences
@@ -47,89 +197,15 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
      * Persist cooldown data
      */
     private fun persistCooldownData() {
-        val editor = prefs.edit()
-        editor.putStringSet("cooldown_keys", cooldownAppsList.keys)
-        cooldownAppsList.forEach { (packageName, endTime) ->
-            editor.putLong("cooldown_$packageName", endTime)
-        }
-        editor.apply()
-    }
-
-
-    /**
-     * Check if app needs to be blocked
-     *
-     * @param packageName
-     * @return
-     */
-    fun doesAppNeedToBeBlocked(packageName: String): AppBlockerResult {
-
-        if (cooldownAppsList.containsKey(packageName)) {
-            // check if app has surpassed the cooldown period (using real time)
-            if (cooldownAppsList[packageName]!! < System.currentTimeMillis()) {
-                removeCooldownFrom(packageName)
-            } else {
-                // app is still under cooldown
-                return AppBlockerResult(
-                    isBlocked = false,
-                    cooldownEndTime = cooldownAppsList[packageName]!!
-                )
+        prefs.edit {
+            putStringSet("cooldown_keys", cooldownAppsList.keys)
+            cooldownAppsList.forEach { (packageName, endTime) ->
+                putLong("cooldown_$packageName", endTime)
             }
         }
-
-        // check if app is under cheat-hours
-        val endCheatMillis = getEndTimeInMillis(packageName)
-        if (endCheatMillis != null) {
-            return AppBlockerResult(isBlocked = false, cheatHoursEndTime = endCheatMillis)
-        }
-
-        // Check if app is in blocked list and has exceeded usage limit
-        if (blockedAppsList.contains(packageName)) {
-
-            val config = blockedAppsList[packageName]!!
-            val currentUsage = usageStats.getForegroundStatsByRelativeDay(0)
-                .firstOrNull { it.packageName == packageName }?.totalTime ?: 0L
-            val usageLimit = getUsageLimitForToday(config) * 60_000L
-
-            val remainingUsage = ((usageLimit - currentUsage))
-            if ( currentUsage >= usageLimit) {
-                // App has exceeded its usage limit
-                return AppBlockerResult(
-                    isBlocked = true,
-                    usageLimitReached = true,
-                    remainingUsage = remainingUsage,
-                    usageLimit = usageLimit
-                )
-            } else {
-                // App is in blocked list but hasn't exceeded usage limit yet
-                return AppBlockerResult(
-                    isBlocked = false,
-                    usageLimitReached = false,
-                    remainingUsage = remainingUsage,
-                    usageLimit = usageLimit
-                )
-            }
-        }
-
-        return AppBlockerResult(isBlocked = false)
     }
 
-    /**
-     * Get the usage limit for today based on config
-     */
-    private fun getUsageLimitForToday(config: AppUsageConfig): Long {
-        return if (config.isDailyUniform) {
-            config.uniformLimit
-        } else {
-            val calendar = Calendar.getInstance()
-            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1 // 0=Sunday
-            config.dailyLimits[dayOfWeek]
-        }
-    }
-
-
-
-    fun putCooldownTo(packageName: String, endTime: Long) {
+    private fun putCooldownTo(packageName: String, endTime: Long) {
         // Store as real time (System.currentTimeMillis() + duration)
         val realTimeEnd = System.currentTimeMillis() + endTime
         cooldownAppsList[packageName] = realTimeEnd
@@ -137,7 +213,7 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
         Log.d("cooldownAppsList", cooldownAppsList.toString())
     }
 
-    fun removeCooldownFrom(packageName: String) {
+    private fun removeCooldownFrom(packageName: String) {
         cooldownAppsList.remove(packageName)
         val editor = prefs.edit()
         editor.remove("cooldown_$packageName")
@@ -148,10 +224,8 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
     }
 
     /**
-     * Check if the package is currently under cheat hours.
-     *
      * @param packageName The app package name.
-     * @return Returns null if the app is not under cheat hours, or the timestamp (real time millis) when it ends.
+     * @return Returns null if the app is not under cheat hours, or the timestamp (real time millis) when it ends if it is.
      */
     private fun getEndTimeInMillis(packageName: String): Long? {
         if (cheatHours[packageName] == null) return null
@@ -186,7 +260,7 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
         return null
     }
 
-    fun refreshCheatHoursData(cheatList: List<TimedActionActivity.AutoTimedActionItem>) {
+    private fun refreshCheatHoursData(cheatList: List<TimedActionActivity.AutoTimedActionItem>) {
         cheatHours.clear()
         cheatList.forEach { item ->
             val startTime = item.startTimeInMins
@@ -214,21 +288,52 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
     }
 
     /**
-     * App blocker check result
-     *
-     * @property isBlocked
-     * @property cheatHoursEndTime specifies when cheat-hour ends (real time). returns -1 if not in cheat-hour
-     * @property cooldownEndTime specifies when cooldown ends (real time). returns -1 if not in cooldown
-     * @property usageLimitReached indicates if the app has reached its usage limit
-     * @property remainingUsage remaining usage time in milliseconds
-     * @property usageLimit usage limit in milliseconds
+     * Setup a runnable that executes after n millis to check if a package is still being used that was allowed to be used previously
+     * as it was put into cooldown or found in cheat-minutes. Basically shows the warning dialog after cooldown is over.
+     * @param coolPackage
+     * @param endMillis
      */
-    data class AppBlockerResult(
-        val isBlocked: Boolean,
-        val cheatHoursEndTime: Long = -1L,
-        val cooldownEndTime: Long = -1L,
-        val usageLimitReached: Boolean = false,
-        val remainingUsage: Long = 0L,
-        val usageLimit: Long = 0L
-    )
+    private fun setUpForcedRefreshChecker(coolPackage: String, endMillis: Long) {
+        if (updateRunnable != null) {
+            updateRunnable?.let { handler.removeCallbacks(it) }
+            updateRunnable = null
+        }
+        Log.d("setting up recheck",coolPackage)
+        updateRunnable = Runnable {
+
+            Log.d("AppBlockerService", "Triggered Recheck for  $coolPackage")
+            try {
+                if (service.rootInActiveWindow.packageName == coolPackage) {
+                    removeCooldownFrom(coolPackage)
+
+                    showWarningScreen(coolPackage)
+                    lastPackage = ""
+                }
+            } catch (e: Exception) {
+                Log.e("AppBlockerService", e.toString())
+                setUpForcedRefreshChecker(coolPackage, endMillis + 60_000) // recheck after a minute
+            }
+        }
+
+        handler.postAtTime(updateRunnable!!, endMillis)
+    }
+
+    private fun showWarningScreen(packageName: String){
+        notificationManager.stopTimer()
+
+        service.pressHome()
+        lastPackage = ""
+
+        if (appBlockerWarning.isWarningDialogHidden) {
+            return
+        }
+
+        Thread.sleep(300)
+        val dialogIntent = Intent(service, WarningActivity::class.java)
+        dialogIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        dialogIntent.putExtra("mode", Constants.WARNING_SCREEN_MODE_APP_BLOCKER)
+        dialogIntent.putExtra("result_id", packageName)
+        service.startActivity(dialogIntent)
+    }
+
 }

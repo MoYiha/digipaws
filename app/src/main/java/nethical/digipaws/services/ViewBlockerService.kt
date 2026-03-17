@@ -14,6 +14,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import nethical.digipaws.Constants
 import nethical.digipaws.blockers.ViewBlocker
+import nethical.digipaws.blockers.WarningData
 import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.WarningActivity
 
@@ -27,7 +28,7 @@ class ViewBlockerService : BaseBlockingService() {
     }
 
     private val viewBlocker = ViewBlocker()
-    private var warningScreenConfig = MainActivity.WarningData()
+    private var warningScreenConfig = WarningData()
     private var lastEventTimeStamp = 0L
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {

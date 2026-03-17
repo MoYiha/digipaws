@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.R
+import nethical.digipaws.blockers.AppBlocker
+import nethical.digipaws.blockers.FocusModeBlocker
 import nethical.digipaws.databinding.ActivityAddTimedActionActivityBinding
 import nethical.digipaws.databinding.CheatHourItemBinding
 import nethical.digipaws.databinding.DialogAddTimedActionBinding
@@ -256,12 +258,12 @@ class TimedActionActivity : AppCompatActivity() {
         when (selectedMode) {
             MODE_APP_BLOCKER_CHEAT_HOURS -> {
                 savedPreferencesLoader.saveAppBlockerCheatHoursList(timedActionList)
-                sendBroadcast(Intent(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER))
+                sendBroadcast(Intent(AppBlocker.INTENT_ACTION_REFRESH_APP_BLOCKER))
             }
 
             MODE_AUTO_FOCUS -> {
                 savedPreferencesLoader.saveAutoFocusHoursList(timedActionList)
-                sendBroadcast(Intent(AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE))
+                sendBroadcast(Intent(FocusModeBlocker.INTENT_ACTION_REFRESH_FOCUS_MODE))
             }
         }
     }

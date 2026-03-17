@@ -5,6 +5,8 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import nethical.digipaws.blockers.FocusModeBlocker
+import nethical.digipaws.blockers.FocusModeData
+import nethical.digipaws.blockers.WarningData
 import nethical.digipaws.services.UsageTrackingService.AttentionSpanVideoItem
 import nethical.digipaws.ui.activity.AppUsageConfig
 import nethical.digipaws.ui.activity.MainActivity
@@ -135,7 +137,7 @@ class SavedPreferencesLoader(private val context: Context) {
         return gson.fromJson(json, type)
     }
 
-    fun saveAppBlockerWarningInfo(warningData: MainActivity.WarningData) {
+    fun saveAppBlockerWarningInfo(warningData: WarningData) {
         val sharedPreferences = context.getSharedPreferences("warning_data", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val gson = Gson()
@@ -146,19 +148,19 @@ class SavedPreferencesLoader(private val context: Context) {
         editor.apply()
     }
 
-    fun loadAppBlockerWarningInfo(): MainActivity.WarningData {
+    fun loadAppBlockerWarningInfo(): WarningData {
         val sharedPreferences = context.getSharedPreferences("warning_data", Context.MODE_PRIVATE)
         val gson = Gson()
 
         val json = sharedPreferences.getString("app_blocker", null)
 
-        if (json.isNullOrEmpty()) return MainActivity.WarningData()
+        if (json.isNullOrEmpty()) return WarningData()
 
-        val type = object : TypeToken<MainActivity.WarningData>() {}.type
+        val type = object : TypeToken<WarningData>() {}.type
         return gson.fromJson(json, type)
     }
 
-    fun saveViewBlockerWarningInfo(warningData: MainActivity.WarningData) {
+    fun saveViewBlockerWarningInfo(warningData: WarningData) {
         val sharedPreferences = context.getSharedPreferences("warning_data", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val gson = Gson()
@@ -177,15 +179,15 @@ class SavedPreferencesLoader(private val context: Context) {
         edit.apply()
     }
 
-    fun loadViewBlockerWarningInfo(): MainActivity.WarningData {
+    fun loadViewBlockerWarningInfo(): WarningData {
         val sharedPreferences = context.getSharedPreferences("warning_data", Context.MODE_PRIVATE)
         val gson = Gson()
 
         val json = sharedPreferences.getString("view_blocker", null)
 
-        if (json.isNullOrEmpty()) return MainActivity.WarningData()
+        if (json.isNullOrEmpty()) return WarningData()
 
-        val type = object : TypeToken<MainActivity.WarningData>() {}.type
+        val type = object : TypeToken<WarningData>() {}.type
         return gson.fromJson(json, type)
     }
 
@@ -242,7 +244,7 @@ class SavedPreferencesLoader(private val context: Context) {
         return gson.fromJson(json, type)
     }
 
-    fun saveFocusModeData(focusModeData: FocusModeBlocker.FocusModeData) {
+    fun saveFocusModeData(focusModeData: FocusModeData) {
         val sharedPreferences =
             context.getSharedPreferences("focus_mode", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
@@ -255,7 +257,7 @@ class SavedPreferencesLoader(private val context: Context) {
     }
 
 
-    fun getFocusModeData(): FocusModeBlocker.FocusModeData {
+    fun getFocusModeData(): FocusModeData {
 
         val sharedPreferences =
             context.getSharedPreferences("focus_mode", Context.MODE_PRIVATE)
@@ -263,10 +265,10 @@ class SavedPreferencesLoader(private val context: Context) {
 
         val json = sharedPreferences.getString("focus_mode", null)
 
-        if (json.isNullOrEmpty()) return FocusModeBlocker.FocusModeData()
+        if (json.isNullOrEmpty()) return FocusModeData()
 
         val type =
-            object : TypeToken<FocusModeBlocker.FocusModeData>() {}.type
+            object : TypeToken<FocusModeData>() {}.type
         return gson.fromJson(json, type)
     }
 

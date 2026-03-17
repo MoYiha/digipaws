@@ -41,6 +41,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.Constants
 import nethical.digipaws.R
+import nethical.digipaws.blockers.AppBlocker
+import nethical.digipaws.blockers.FocusModeBlocker
 import nethical.digipaws.databinding.ActivityMainBinding
 import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.DialogRemoveAntiUninstallBinding
@@ -186,7 +188,7 @@ class MainActivity : AppCompatActivity() {
                     Log.d("updated blocked apps",selectedAppsWithUsage.toString())
                     selectedAppsWithUsage?.let {
                         savedPreferencesLoader.saveBlockedApps(it)
-                        sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
+                        sendRefreshRequest(AppBlocker.INTENT_ACTION_REFRESH_APP_BLOCKER)
                     }
                 }
             }
@@ -238,12 +240,12 @@ class MainActivity : AppCompatActivity() {
 
         addCheatHoursActivity =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
-                sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
+                sendRefreshRequest(AppBlocker.INTENT_ACTION_REFRESH_APP_BLOCKER)
             }
 
         addAutoFocusHoursActivity =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
-                sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_FOCUS_MODE)
+                sendRefreshRequest(FocusModeBlocker.INTENT_ACTION_REFRESH_FOCUS_MODE)
             }
         // Register the directory picker
         directoryPicker = ZipUtils.registerDirectoryPicker(this) { directoryUri ->
@@ -1043,15 +1045,6 @@ class MainActivity : AppCompatActivity() {
             null
         }
     }
-
-    data class WarningData(
-        val message: String = "You can setup a custom message to appear here!",
-        val timeInterval: Int = 120000, // default cooldown period
-        val isDynamicIntervalSettingAllowed: Boolean = false,
-        val isProceedDisabled: Boolean = false,
-        val isWarningDialogHidden: Boolean = false, // perform back/home action directly without showing warning screen
-        val proceedDelayInSecs: Int = 15
-    )
 
 
 }

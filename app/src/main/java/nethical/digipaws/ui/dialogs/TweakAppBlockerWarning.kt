@@ -7,6 +7,8 @@ import android.util.Log
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.R
+import nethical.digipaws.blockers.AppBlocker
+import nethical.digipaws.blockers.WarningData
 import nethical.digipaws.databinding.DialogTweakBlockerWarningBinding
 import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.ui.activity.MainActivity
@@ -84,7 +86,7 @@ class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : B
             .setPositiveButton(getString(R.string.save)) { dialog, _ ->
                 val selectedMinInMs = binding.selectMins.getValue() * 60000
                 savedPreferencesLoader.saveAppBlockerWarningInfo(
-                    MainActivity.WarningData(
+                    WarningData(
                         binding.warningMsgEdit.text.toString(),
                         selectedMinInMs,
                         binding.cbDynamicWarning.isChecked,
@@ -93,7 +95,7 @@ class TweakAppBlockerWarning(savedPreferencesLoader: SavedPreferencesLoader) : B
                         proceedDelay
                     )
                 )
-                sendRefreshRequest(AppBlockerService.INTENT_ACTION_REFRESH_APP_BLOCKER)
+                sendRefreshRequest(AppBlocker.INTENT_ACTION_REFRESH_APP_BLOCKER)
                 dialog.dismiss()
             }
             .setCancelable(false)
