@@ -35,15 +35,28 @@ class GsonSerializer<T>(
 class DataStoreManager(private val context: Context) {
     private val gson = Gson()
 
+    companion object {
+        @Volatile
+        private var INSTANCE: androidx.datastore.core.DataStore<Settings>? = null
+
+        fun getSettingsDataStore(context: Context, gson: Gson): androidx.datastore.core.DataStore<Settings> {
+            return INSTANCE ?: synchronized(this) {
+                val instance = MultiProcessDataStoreFactory.create(
+                    serializer = GsonSerializer(
+                        gson = gson,
+                        type = Settings::class.java,
+                        defaultValue = Settings()
+                    ),
+                    produceFile = { File(context.applicationContext.filesDir, "datastore/settings.json") }
+                )
+                INSTANCE = instance
+                instance
+            }
+        }
+    }
+
     // One DataStore for everything
-    private val settingsDataStore = MultiProcessDataStoreFactory.create(
-        serializer = GsonSerializer(
-            gson = gson,
-            type = Settings::class.java,
-            defaultValue = Settings()
-        ),
-        produceFile = { File(context.filesDir, "datastore/settings.json") }
-    )
+    private val settingsDataStore = getSettingsDataStore(context, gson)
 
     // Access the flow exactly like before
     val settings = settingsDataStore.data

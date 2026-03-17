@@ -7,21 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.switchmaterial.SwitchMaterial
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import nethical.digipaws.R
 import nethical.digipaws.data.models.AppBlockingType
 import nethical.digipaws.data.models.AppGroup
 import nethical.digipaws.ui.activity.FragmentActivity
-import nethical.digipaws.utils.DataStoreManager
-import nethical.digipaws.utils.SavedPreferencesLoader
 
 class AppBlockerGroupsFragment : Fragment() {
 
@@ -34,7 +34,7 @@ class AppBlockerGroupsFragment : Fragment() {
     private lateinit var fabAddGroup: FloatingActionButton
     private lateinit var toolbar: MaterialToolbar
 
-    private var groups: MutableList<AppGroup> = mutableListOf()
+    private val viewModel: AppBlockerSettingViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,13 +47,11 @@ class AppBlockerGroupsFragment : Fragment() {
         fabAddGroup = view.findViewById(R.id.fab_add_group)
         toolbar = view.findViewById(R.id.toolbar)
 
-
         toolbar.setNavigationOnClickListener {
             requireActivity().finish()
         }
 
         fabAddGroup.setOnClickListener {
-            // Navigate to Create App Group
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
                 putExtra("fragment", CreateAppGroupFragment.FRAGMENT_ID)
             }
@@ -65,30 +63,24 @@ class AppBlockerGroupsFragment : Fragment() {
         return view
     }
 
-    override fun onResume() {
-        super.onResume()
-        CoroutineScope(Dispatchers.IO).launch {
-            loadGroups()
-        }
-    }
-
-    private suspend fun loadGroups() {
-        val dataStoreManager = DataStoreManager(requireContext())
-        dataStoreManager.settings.collect { settings ->
-            withContext(Dispatchers.Main) {
-
-                if (groups.isEmpty()) {
-                    tvEmptyState.visibility = View.VISIBLE
-                    rvGroups.visibility = View.GONE
-                } else {
-                    tvEmptyState.visibility = View.GONE
-                    rvGroups.visibility = View.VISIBLE
-                    rvGroups.adapter = AppGroupAdapter(groups)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.groups.collectLatest { groups ->
+                    if (groups.isEmpty()) {
+                        tvEmptyState.visibility = View.VISIBLE
+                        rvGroups.visibility = View.GONE
+                    } else {
+                        tvEmptyState.visibility = View.GONE
+                        rvGroups.visibility = View.VISIBLE
+                        rvGroups.adapter = AppGroupAdapter(groups)
+                    }
                 }
             }
         }
     }
-
 
     inner class AppGroupAdapter(private val groupList: List<AppGroup>) :
         RecyclerView.Adapter<AppGroupAdapter.ViewHolder>() {
@@ -116,12 +108,7 @@ class AppBlockerGroupsFragment : Fragment() {
             holder.switchActive.isChecked = group.isActive
             
             holder.switchActive.setOnCheckedChangeListener { _, isChecked ->
-                val updatedGroup = group.copy(isActive = isChecked)
-                groups[position] = updatedGroup
-                val dataStoreManager = DataStoreManager(requireContext())
-                CoroutineScope(Dispatchers.IO).launch {
-                    dataStoreManager.updateGroups(groups)
-                }
+                viewModel.updateGroupActiveState(position, isChecked)
             }
             
             holder.itemView.setOnClickListener {

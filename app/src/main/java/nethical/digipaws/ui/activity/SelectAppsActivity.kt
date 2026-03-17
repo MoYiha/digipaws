@@ -36,6 +36,10 @@ class SelectAppsActivity : AppCompatActivity() {
     private var appItemList: MutableList<AppItem> = mutableListOf()
     @SuppressLint("NotifyDataSetChanged")
 
+    /**
+     * list of packages that wont be showed in the selection screen
+     */
+    private var ignoredApps = hashSetOf<String>()
     //change selectAll's text from "Select all" to "Clear all" and vice-versa
     private var allAppsSelected = false
     private fun updateSelectAllButton() {
@@ -61,6 +65,10 @@ class SelectAppsActivity : AppCompatActivity() {
         setContentView(binding.root)
         selectedAppList =
             intent.getStringArrayListExtra("PRE_SELECTED_APPS")?.toHashSet() ?: HashSet()
+
+        ignoredApps = intent.getStringArrayListExtra("IGNORED_APPS")?.toHashSet() ?: HashSet()
+        ignoredApps.add(packageName) // also remove digipaws app from the list
+
         Log.d("pre-selected-apps", selectedAppList.toString())
 
         binding.appList.layoutManager = LinearLayoutManager(this)
@@ -141,7 +149,7 @@ class SelectAppsActivity : AppCompatActivity() {
             for (profile in profiles) {
                 val apps = launcherApps.getActivityList(null, profile)
                     .map { it.applicationInfo }
-                    .filter { it.packageName != packageName }
+                    .filter { ignoredApps.contains(it.packageName) }
                 apps.forEach { appInfo ->
                     installedPackages.add(appInfo.packageName)
                     val profileType = if (profile == Process.myUserHandle()) "" else "(Work)"

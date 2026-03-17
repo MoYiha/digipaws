@@ -108,29 +108,21 @@ class CreateAppGroupFragment : Fragment() {
 
             val isUsageBased = rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
             val blockingType = if (isUsageBased) AppBlockingType.Usage else AppBlockingType.Timed
-            val dataStoreManager = DataStoreManager(requireContext())
 
-            CoroutineScope(Dispatchers.IO).launch {
-                dataStoreManager.settings.collect {
-                    val existingGroups = it.blockedAppGroups.toMutableList()
-
-                    val newGroup = AppGroup(
-                        id = UUID.randomUUID().toString(),
-                        name = name,
-                        selectedPackages = selectedApps.toList(),
-                        blockingType = blockingType,
-                        isActive = true,
-                        setting = if(isUsageBased){
-                            Gson().toJson(viewModel.currentConfig)
-                        } else {
-                            ""
-                        }
-                    )
-
-                    existingGroups.add(newGroup)
-                    dataStoreManager.updateGroups(existingGroups)
+            val newGroup = AppGroup(
+                id = UUID.randomUUID().toString(),
+                name = name,
+                selectedPackages = selectedApps.toList(),
+                blockingType = blockingType,
+                isActive = true,
+                setting = if(isUsageBased){
+                    Gson().toJson(viewModel.currentConfig)
+                } else {
+                    ""
                 }
-            }
+            )
+
+            viewModel.addGroup(newGroup)
 
             Toast.makeText(requireContext(), "Group saved successfully", Toast.LENGTH_SHORT).show()
             requireActivity().finish()
