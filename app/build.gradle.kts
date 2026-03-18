@@ -1,3 +1,5 @@
+import java.util.Locale
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -102,4 +104,29 @@ dependencies {
     implementation(libs.mpandroidchart)
     implementation(libs.timerangepicker)
 
+}
+androidComponents {
+    onVariants { variant ->
+        val variantName = variant.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+        tasks.register("installAndGrantAccessibility$variantName") {
+            group = "install"
+            description = "Installs the app, grants Accessibility permission, and launches it"
+            dependsOn("install$variantName")
+            
+            doLast {
+                val adbPath = sdkComponents.adb.get().asFile.absolutePath
+                val appId = "nethical.digipaws"
+                
+                // Grant Accessibility Permission
+                exec {
+                    commandLine(adbPath, "shell", "settings", "put", "secure", "enabled_accessibility_services", "$appId/$appId.services.AppBlockerService")
+                }
+                
+                // Launch MainActivity
+                exec {
+                    commandLine(adbPath, "shell", "am", "start", "-n", "$appId/$appId.ui.activity.MainActivity")
+                }
+            }
+        }
+    }
 }
