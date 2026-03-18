@@ -8,11 +8,9 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import androidx.core.content.ContextCompat.startActivity
 import nethical.digipaws.Constants
 import nethical.digipaws.services.BaseBlockingService
 import nethical.digipaws.ui.activity.AppUsageConfig
-import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.TimedActionActivity
 import nethical.digipaws.ui.activity.WarningActivity
 import nethical.digipaws.utils.NotificationTimerManager
@@ -23,13 +21,13 @@ import androidx.core.content.edit
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import nethical.digipaws.data.models.AppBlockingType
 import nethical.digipaws.utils.DataStoreManager
 
 
-data class WarningData(
+data class AppBlockerWarningScreenConfig(
     val message: String = "You can setup a custom message to appear here!",
     val timeInterval: Int = 120000, // default cooldown period
     val isDynamicIntervalSettingAllowed: Boolean = false,
@@ -88,7 +86,8 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
     // cooldown for an app and later when the cooldown duration is over, trigger a recheck
     private val handler = Handler(Looper.getMainLooper())
     private var updateRunnable: Runnable? = null
-    private var appBlockerWarning = WarningData()
+
+    private var appBlockerWarningScrnConfgs = HashMap<String, AppBlockerWarningScreenConfig>()
 
     private lateinit var notificationManager: NotificationTimerManager
     init {
@@ -155,31 +154,37 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
         val dataStoreManager = DataStoreManager(service)
 
         CoroutineScope(Dispatchers.IO).launch {
-            dataStoreManager.settings.collect { settings ->
+            dataStoreManager.settings.collectLatest { settings ->
                 val tempBlockedApps = mutableMapOf<String, AppUsageConfig>()
+                val warningScrnConfigs = mutableMapOf<String, AppBlockerWarningScreenConfig>()
                 settings.blockedAppGroups.forEach {  group ->
                     if(!group.isActive) return@forEach
                     if(group.blockingType == AppBlockingType.Usage ){
                         val settings = Gson().fromJson<AppUsageConfig>(group.setting, AppUsageConfig::class.java)
                         group.selectedPackages.forEach {
                             tempBlockedApps[it] = settings
+                            warningScrnConfigs[it] = group.warningScreenConfig
                         }
 
                     }
                 }
                 blockedAppsList = HashMap(tempBlockedApps)
+                appBlockerWarningScrnConfgs = HashMap(warningScrnConfigs)
+                Log.d("blocked Apps List updated",blockedAppsList.toString())
+
             }
         }
 
-        Log.d("blocked Apps List updated",blockedAppsList.toString())
         refreshCheatHoursData(service.savedPreferencesLoader.loadAppBlockerCheatHoursList())
-        appBlockerWarning = service.savedPreferencesLoader.loadAppBlockerWarningInfo()
     }
 
     fun handlePutCooldownIntentBroadcast(intent: Intent){
-        val interval =
-            intent.getIntExtra("selected_time", appBlockerWarning.timeInterval)
         val coolPackage = intent.getStringExtra("result_id") ?: ""
+
+        val interval =
+            intent.getIntExtra("selected_time",
+                appBlockerWarningScrnConfgs[coolPackage]?.timeInterval ?: 10
+            )
         val cooldownUntil =
             SystemClock.uptimeMillis() + interval
         putCooldownTo(
@@ -349,7 +354,7 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
         service.pressHome()
         lastPackage = ""
 
-        if (appBlockerWarning.isWarningDialogHidden) {
+        if (appBlockerWarningScrnConfgs[packageName]?.isWarningDialogHidden == true) {
             return
         }
 
@@ -358,6 +363,7 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
         dialogIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         dialogIntent.putExtra("mode", Constants.WARNING_SCREEN_MODE_APP_BLOCKER)
         dialogIntent.putExtra("result_id", packageName)
+        dialogIntent.putExtra("warning_config",Gson().toJson(appBlockerWarningScrnConfgs[packageName]))
         service.startActivity(dialogIntent)
     }
 

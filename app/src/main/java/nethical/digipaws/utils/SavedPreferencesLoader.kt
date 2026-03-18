@@ -1,15 +1,12 @@
 package nethical.digipaws.utils
 
-import android.R.attr.type
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import nethical.digipaws.blockers.FocusModeBlocker
 import nethical.digipaws.blockers.FocusModeData
-import nethical.digipaws.blockers.WarningData
+import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
 import nethical.digipaws.services.UsageTrackingService.AttentionSpanVideoItem
 import nethical.digipaws.ui.activity.AppUsageConfig
-import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.ui.activity.TimedActionActivity
 
 class SavedPreferencesLoader(private val context: Context) {
@@ -137,35 +134,35 @@ class SavedPreferencesLoader(private val context: Context) {
         return gson.fromJson(json, type)
     }
 
-    fun saveAppBlockerWarningInfo(warningData: WarningData) {
+    fun saveAppBlockerWarningInfo(appBlockerWarningScreenConfig: AppBlockerWarningScreenConfig) {
         val sharedPreferences = context.getSharedPreferences("warning_data", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val gson = Gson()
 
-        val json = gson.toJson(warningData)
+        val json = gson.toJson(appBlockerWarningScreenConfig)
 
         editor.putString("app_blocker", json)
         editor.apply()
     }
 
-    fun loadAppBlockerWarningInfo(): WarningData {
+    fun loadAppBlockerWarningInfo(): AppBlockerWarningScreenConfig {
         val sharedPreferences = context.getSharedPreferences("warning_data", Context.MODE_PRIVATE)
         val gson = Gson()
 
         val json = sharedPreferences.getString("app_blocker", null)
 
-        if (json.isNullOrEmpty()) return WarningData()
+        if (json.isNullOrEmpty()) return AppBlockerWarningScreenConfig()
 
-        val type = object : TypeToken<WarningData>() {}.type
+        val type = object : TypeToken<AppBlockerWarningScreenConfig>() {}.type
         return gson.fromJson(json, type)
     }
 
-    fun saveViewBlockerWarningInfo(warningData: WarningData) {
+    fun saveViewBlockerWarningInfo(appBlockerWarningScreenConfig: AppBlockerWarningScreenConfig) {
         val sharedPreferences = context.getSharedPreferences("warning_data", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         val gson = Gson()
 
-        val json = gson.toJson(warningData)
+        val json = gson.toJson(appBlockerWarningScreenConfig)
 
         editor.putString("view_blocker", json)
         editor.apply()
@@ -179,15 +176,15 @@ class SavedPreferencesLoader(private val context: Context) {
         edit.apply()
     }
 
-    fun loadViewBlockerWarningInfo(): WarningData {
+    fun loadViewBlockerWarningInfo(): AppBlockerWarningScreenConfig {
         val sharedPreferences = context.getSharedPreferences("warning_data", Context.MODE_PRIVATE)
         val gson = Gson()
 
         val json = sharedPreferences.getString("view_blocker", null)
 
-        if (json.isNullOrEmpty()) return WarningData()
+        if (json.isNullOrEmpty()) return AppBlockerWarningScreenConfig()
 
-        val type = object : TypeToken<WarningData>() {}.type
+        val type = object : TypeToken<AppBlockerWarningScreenConfig>() {}.type
         return gson.fromJson(json, type)
     }
 

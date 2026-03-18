@@ -123,6 +123,17 @@
                 app:iconTint="?attr/colorOnSurfaceVariant"
                 app:cornerRadius="16dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/configure_warning_screen"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="Configure Warning Screen"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:backgroundTint="?attr/colorSurfaceVariant"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_reducers"
+                app:iconTint="?attr/colorOnSurfaceVariant" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

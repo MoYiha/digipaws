@@ -11,10 +11,9 @@ import android.view.View
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.R
-import nethical.digipaws.blockers.WarningData
+import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
 import nethical.digipaws.databinding.DialogTweakBlockerWarningBinding
 import nethical.digipaws.services.ViewBlockerService
-import nethical.digipaws.ui.activity.MainActivity
 import nethical.digipaws.utils.AnimTools.Companion.animateVisibility
 import nethical.digipaws.utils.SavedPreferencesLoader
 
@@ -103,7 +102,7 @@ class TweakViewBlockerWarning(
 
                 // Save data using SavedPreferencesLoader
                 savedPreferencesLoader.saveViewBlockerWarningInfo(
-                    WarningData(
+                    AppBlockerWarningScreenConfig(
                         binding.warningMsgEdit.text.toString(),
                         selectedMinInMs,
                         binding.cbDynamicWarning.isChecked,

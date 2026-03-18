@@ -1,5 +1,6 @@
 package nethical.digipaws.ui.activity
 
+import android.R.attr.mode
 import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -7,9 +8,11 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.gson.Gson
 import nethical.digipaws.Constants
 import nethical.digipaws.R
 import nethical.digipaws.blockers.AppBlocker
+import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
 import nethical.digipaws.databinding.DialogWarningOverlayBinding
 import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.services.ViewBlockerService
@@ -22,16 +25,13 @@ class WarningActivity : AppCompatActivity() {
     private var dialog: AlertDialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val savedPreferencesLoader = SavedPreferencesLoader(this)
 
 
         val mode = intent.getIntExtra("mode", 0)
-        val warningScreenConfig = if (mode == Constants.WARNING_SCREEN_MODE_VIEW_BLOCKER) {
-            savedPreferencesLoader.loadViewBlockerWarningInfo()
-        } else {
-            savedPreferencesLoader.loadAppBlockerWarningInfo()
 
-        }
+        val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(intent.getStringExtra("warning_config"),
+            AppBlockerWarningScreenConfig::class.java)
+
         val binding = DialogWarningOverlayBinding.inflate(layoutInflater)
         val isHomePressRequested = intent.getBooleanExtra("is_press_home", false)
         binding.minsPicker.setValue(3)

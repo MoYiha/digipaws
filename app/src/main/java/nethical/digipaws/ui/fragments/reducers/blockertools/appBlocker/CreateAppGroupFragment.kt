@@ -5,28 +5,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import nethical.digipaws.R
+import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppBlockingType
 import nethical.digipaws.data.models.AppGroup
+import nethical.digipaws.databinding.FragmentCreateAppGroupBinding
 import nethical.digipaws.ui.activity.SelectAppsActivity
-import nethical.digipaws.utils.DataStoreManager
-import nethical.digipaws.utils.SavedPreferencesLoader
 import java.util.UUID
 class CreateAppGroupFragment : Fragment() {
 
@@ -34,12 +24,9 @@ class CreateAppGroupFragment : Fragment() {
         const val FRAGMENT_ID = "create_app_group"
     }
 
-    private lateinit var etGroupName: TextInputEditText
-    private lateinit var btnSelectApps: MaterialButton
-    private lateinit var rgBlockingType: RadioGroup
-    private lateinit var btnConfigureSettings: MaterialButton
-    private lateinit var fabSaveGroup: ExtendedFloatingActionButton
-    private lateinit var toolbar: MaterialToolbar
+    private var _binding: FragmentCreateAppGroupBinding? = null
+    // This property is only valid between onCreateView and onDestroyView.
+    private val binding get() = _binding!!
 
     private var selectedApps: ArrayList<String> = arrayListOf()
     private val viewModel: AppBlockerSettingViewModel by activityViewModels()
@@ -51,53 +38,53 @@ class CreateAppGroupFragment : Fragment() {
             val apps = result.data?.getStringArrayListExtra("SELECTED_APPS")
             if (apps != null) {
                 selectedApps = apps
-                btnSelectApps.text = "Select Apps (${selectedApps.size})"
+                binding.btnSelectApps.text = "Select Apps (${selectedApps.size})"
             }
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_create_app_group, container, false)
-        etGroupName = view.findViewById(R.id.et_group_name)
-        btnSelectApps = view.findViewById(R.id.btn_select_apps)
-        rgBlockingType = view.findViewById(R.id.rg_blocking_type)
-        btnConfigureSettings = view.findViewById(R.id.btn_configure_settings)
-        fabSaveGroup = view.findViewById(R.id.fab_save_group)
-        toolbar = view.findViewById(R.id.toolbar)
+    ): View {
+        _binding = FragmentCreateAppGroupBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        toolbar.setNavigationOnClickListener {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.toolbar.setNavigationOnClickListener {
             requireActivity().finish()
         }
 
-        btnSelectApps.setOnClickListener {
+        binding.btnSelectApps.setOnClickListener {
             val intent = Intent(requireContext(), SelectAppsActivity::class.java)
             intent.putStringArrayListExtra("PRE_SELECTED_APPS", selectedApps)
             selectAppsLauncher.launch(intent)
         }
 
-        btnConfigureSettings.setOnClickListener {
-            val isUsageBased = rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
+        binding.btnConfigureSettings.setOnClickListener {
+            val isUsageBased = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
 
             if (isUsageBased) {
                 UsageBasedSettingsFragment().show(parentFragmentManager, UsageBasedSettingsFragment.FRAGMENT_ID)
-
-
             } else {
                 TimeBasedSettingsFragment().show(parentFragmentManager, UsageBasedSettingsFragment.FRAGMENT_ID)
             }
         }
+        binding.configureWarningScreen.setOnClickListener {
+            AppBlockerWarningConfigFragment().show(parentFragmentManager,
+                AppBlockerWarningConfigFragment.FRAGMENT_ID)
+        }
 
-        fabSaveGroup.setOnClickListener {
-            val name = etGroupName.text.toString().trim()
+
+        binding.fabSaveGroup.setOnClickListener {
+            val name = binding.etGroupName.text.toString().trim()
             if (name.isEmpty()) {
-                etGroupName.error = "Please enter a group name"
+                binding.etGroupName.error = "Please enter a group name"
                 return@setOnClickListener
             }
             
@@ -106,7 +93,7 @@ class CreateAppGroupFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val isUsageBased = rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
+            val isUsageBased = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
             val blockingType = if (isUsageBased) AppBlockingType.Usage else AppBlockingType.Timed
 
             val newGroup = AppGroup(
@@ -116,10 +103,11 @@ class CreateAppGroupFragment : Fragment() {
                 blockingType = blockingType,
                 isActive = true,
                 setting = if(isUsageBased){
-                    Gson().toJson(viewModel.currentConfig)
+                    Gson().toJson(viewModel.currentUsageConfig)
                 } else {
                     ""
-                }
+                },
+                warningScreenConfig = viewModel.warningScrnConfig
             )
 
             viewModel.addGroup(newGroup)
@@ -127,7 +115,5 @@ class CreateAppGroupFragment : Fragment() {
             Toast.makeText(requireContext(), "Group saved successfully", Toast.LENGTH_SHORT).show()
             requireActivity().finish()
         }
-
-        return view
     }
 }

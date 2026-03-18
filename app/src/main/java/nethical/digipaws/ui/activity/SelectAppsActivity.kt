@@ -149,7 +149,7 @@ class SelectAppsActivity : AppCompatActivity() {
             for (profile in profiles) {
                 val apps = launcherApps.getActivityList(null, profile)
                     .map { it.applicationInfo }
-                    .filter { ignoredApps.contains(it.packageName) }
+                    .filter { !ignoredApps.contains(it.packageName) }
                 apps.forEach { appInfo ->
                     installedPackages.add(appInfo.packageName)
                     val profileType = if (profile == Process.myUserHandle()) "" else "(Work)"

@@ -1,15 +1,16 @@
 package nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker
 
+import android.app.Dialog
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import nethical.digipaws.databinding.AppBlockerUsageLimitItemBinding
 import nethical.digipaws.databinding.FragmentAppBlockerUsageSettingsBinding
-import java.util.concurrent.TimeUnit
 
 class UsageBasedSettingsFragment() : BottomSheetDialogFragment() {
 
@@ -39,13 +40,10 @@ class UsageBasedSettingsFragment() : BottomSheetDialogFragment() {
             saveConfig()
             dismiss()
         }
-        binding.discardSettings.setOnClickListener {
-            dismiss()
-        }
     }
 
     private fun loadConfig() {
-        val config = viewModel.currentConfig
+        val config = viewModel.currentUsageConfig
         if (config.isDailyUniform) {
             val uniformRow = rowBindings[0]
             uniformRow.daySwitch.isChecked = true
@@ -150,24 +148,24 @@ class UsageBasedSettingsFragment() : BottomSheetDialogFragment() {
      */
     fun saveConfig() {
         val uniformRow = rowBindings[0]
-        viewModel.currentConfig.isDailyUniform = uniformRow.daySwitch.isChecked
+        viewModel.currentUsageConfig.isDailyUniform = uniformRow.daySwitch.isChecked
 
-        if (viewModel.currentConfig.isDailyUniform) {
-            viewModel.currentConfig.uniformLimit = calculateMinutes(uniformRow)
+        if (viewModel.currentUsageConfig.isDailyUniform) {
+            viewModel.currentUsageConfig.uniformLimit = calculateMinutes(uniformRow)
             // Optional: zero out individual days to keep data clean
-            viewModel.currentConfig.dailyLimits.fill(0)
+            viewModel.currentUsageConfig.dailyLimits.fill(0)
         } else {
-            viewModel.currentConfig.uniformLimit = 0
+            viewModel.currentUsageConfig.uniformLimit = 0
 
             // Map our UI indices to your DailyLimits array (where 0 = Sunday)
             // UI mapping: Monday(1), Tuesday(2), Wednesday(3), Thursday(4), Friday(5), Saturday(6), Sunday(7)
-            viewModel.currentConfig.dailyLimits[1] = calculateMinutes(rowBindings[1]) // Monday
-            viewModel.currentConfig.dailyLimits[2] = calculateMinutes(rowBindings[2]) // Tuesday
-            viewModel.currentConfig.dailyLimits[3] = calculateMinutes(rowBindings[3]) // Wednesday
-            viewModel.currentConfig.dailyLimits[4] = calculateMinutes(rowBindings[4]) // Thursday
-            viewModel.currentConfig.dailyLimits[5] = calculateMinutes(rowBindings[5]) // Friday
-            viewModel.currentConfig.dailyLimits[6] = calculateMinutes(rowBindings[6]) // Saturday
-            viewModel.currentConfig.dailyLimits[0] = calculateMinutes(rowBindings[7]) // Sunday
+            viewModel.currentUsageConfig.dailyLimits[1] = calculateMinutes(rowBindings[1]) // Monday
+            viewModel.currentUsageConfig.dailyLimits[2] = calculateMinutes(rowBindings[2]) // Tuesday
+            viewModel.currentUsageConfig.dailyLimits[3] = calculateMinutes(rowBindings[3]) // Wednesday
+            viewModel.currentUsageConfig.dailyLimits[4] = calculateMinutes(rowBindings[4]) // Thursday
+            viewModel.currentUsageConfig.dailyLimits[5] = calculateMinutes(rowBindings[5]) // Friday
+            viewModel.currentUsageConfig.dailyLimits[6] = calculateMinutes(rowBindings[6]) // Saturday
+            viewModel.currentUsageConfig.dailyLimits[0] = calculateMinutes(rowBindings[7]) // Sunday
         }
     }
 
@@ -189,6 +187,13 @@ class UsageBasedSettingsFragment() : BottomSheetDialogFragment() {
         rowBindings.clear()
     }
 
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        // This magic line forces the Bottom Sheet window to resize when the keyboard opens
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        return dialog
+    }
 
     companion object {
         const val FRAGMENT_ID = "TimeBasedSettingsBottomSheet"
