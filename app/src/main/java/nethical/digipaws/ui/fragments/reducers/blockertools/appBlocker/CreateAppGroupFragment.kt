@@ -105,7 +105,7 @@ class CreateAppGroupFragment : Fragment() {
                 setting = if(isUsageBased){
                     Gson().toJson(viewModel.currentUsageConfig)
                 } else {
-                    ""
+                    Gson().toJson(viewModel.currentTimeConfig)
                 },
                 warningScreenConfig = viewModel.warningScrnConfig
             )

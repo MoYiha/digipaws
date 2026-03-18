@@ -1,25 +1,21 @@
 package nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker
 
-import android.R.attr.action
 import android.app.Application
-import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import nethical.digipaws.blockers.AppBlocker
 import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppGroup
 import nethical.digipaws.ui.activity.AppUsageConfig
+import nethical.digipaws.ui.activity.AppTimeConfig
 import nethical.digipaws.utils.DataStoreManager
 
 class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(application) {
     var currentUsageConfig: AppUsageConfig = AppUsageConfig()
+    var currentTimeConfig: AppTimeConfig = AppTimeConfig()
     var warningScrnConfig: AppBlockerWarningScreenConfig = AppBlockerWarningScreenConfig()
 
     private val dataStoreManager = DataStoreManager(application)
@@ -37,9 +33,6 @@ class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(ap
     fun updateGroups(newGroups: List<AppGroup>) {
         viewModelScope.launch {
             dataStoreManager.updateGroups(newGroups)
-            withContext(Dispatchers.Main) {
-                sendAppBlockerRefreshBroadcast()
-            }
         }
     }
     
@@ -54,9 +47,5 @@ class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(ap
             updatedGroups[index] = updatedGroups[index].copy(isActive = isActive)
             updateGroups(updatedGroups)
         }
-    }
-    fun sendAppBlockerRefreshBroadcast(){
-        val intent = Intent(AppBlocker.INTENT_ACTION_REFRESH_APP_BLOCKER)
-        application.sendBroadcast(intent)
     }
 }
