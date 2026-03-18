@@ -47,6 +47,8 @@ class FragmentActivity : AppCompatActivity() {
                     CreateAppGroupFragment.FRAGMENT_ID -> CreateAppGroupFragment()
                     else -> AccessibilityGuide()
                 }
+                fragment.arguments = intent.extras
+
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.fragment_holder, fragment)
                     .commit()

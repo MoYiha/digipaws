@@ -41,6 +41,21 @@ class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(ap
         updateGroups(updatedGroups)
     }
 
+    fun updateGroupById(updatedGroup: AppGroup) {
+        val updatedGroups = _groups.value.toMutableList()
+        val index = updatedGroups.indexOfFirst { it.id == updatedGroup.id }
+        if (index != -1) {
+            updatedGroups[index] = updatedGroup
+            updateGroups(updatedGroups)
+        }
+    }
+
+    fun deleteGroup(groupId: String) {
+        val updatedGroups = _groups.value.toMutableList()
+        updatedGroups.removeAll { it.id == groupId }
+        updateGroups(updatedGroups)
+    }
+
     fun updateGroupActiveState(index: Int, isActive: Boolean) {
         val updatedGroups = _groups.value.toMutableList()
         if (index in updatedGroups.indices) {

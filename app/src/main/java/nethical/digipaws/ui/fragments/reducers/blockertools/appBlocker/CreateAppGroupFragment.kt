@@ -10,12 +10,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 import com.google.gson.Gson
 import nethical.digipaws.R
 import nethical.digipaws.data.models.AppBlockingType
 import nethical.digipaws.data.models.AppGroup
 import nethical.digipaws.databinding.FragmentCreateAppGroupBinding
 import nethical.digipaws.ui.activity.SelectAppsActivity
+import nethical.digipaws.ui.activity.AppUsageConfig
+import nethical.digipaws.ui.activity.AppTimeConfig
+import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
 import java.util.UUID
 class CreateAppGroupFragment : Fragment() {
 
@@ -59,6 +65,49 @@ class CreateAppGroupFragment : Fragment() {
             requireActivity().finish()
         }
 
+        var isEditing = false
+        var existingGroup: AppGroup? = null
+        val groupId = arguments?.getString("group_id")
+
+        if (groupId != null) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.groups.collectLatest { groups ->
+                    val group = groups.find { it.id == groupId }
+                    if (group != null && !isEditing) {
+                        isEditing = true
+                        existingGroup = group
+                        binding.toolbar.title = "Edit App Group"
+                        binding.etGroupName.setText(group.name)
+                        selectedApps = ArrayList(group.selectedPackages)
+                        binding.btnSelectApps.text = "Select Apps (${selectedApps.size})"
+
+                        if (group.blockingType == AppBlockingType.Usage) {
+                            binding.rgBlockingType.check(R.id.rb_usage_based)
+                            viewModel.currentUsageConfig = Gson().fromJson(group.setting, AppUsageConfig::class.java)
+                        } else {
+                            binding.rgBlockingType.check(R.id.rb_time_based)
+                            viewModel.currentTimeConfig = Gson().fromJson(group.setting, AppTimeConfig::class.java)
+                        }
+                        viewModel.warningScrnConfig = group.warningScreenConfig ?: AppBlockerWarningScreenConfig()
+
+                        binding.toolbar.menu.clear()
+                        val deleteItem = binding.toolbar.menu.add(0, 1001, 0, "Delete")
+                        deleteItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+                        binding.toolbar.setOnMenuItemClickListener { item ->
+                            if (item.itemId == 1001) {
+                                viewModel.deleteGroup(group.id)
+                                Toast.makeText(requireContext(), "Group deleted", Toast.LENGTH_SHORT).show()
+                                requireActivity().finish()
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         binding.btnSelectApps.setOnClickListener {
             val intent = Intent(requireContext(), SelectAppsActivity::class.java)
             intent.putStringArrayListExtra("PRE_SELECTED_APPS", selectedApps)
@@ -95,12 +144,16 @@ class CreateAppGroupFragment : Fragment() {
             val isUsageBased = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
             val blockingType = if (isUsageBased) AppBlockingType.Usage else AppBlockingType.Timed
 
+            val savedGroupId = arguments?.getString("group_id")
+            val isEditingRecord = savedGroupId != null
+            val targetExistingGroup = viewModel.groups.value.find { it.id == savedGroupId }
+
             val newGroup = AppGroup(
-                id = UUID.randomUUID().toString(),
+                id = if (isEditingRecord && targetExistingGroup != null) targetExistingGroup.id else UUID.randomUUID().toString(),
                 name = name,
                 selectedPackages = selectedApps.toList(),
                 blockingType = blockingType,
-                isActive = true,
+                isActive = if (isEditingRecord && targetExistingGroup != null) targetExistingGroup.isActive else true,
                 setting = if(isUsageBased){
                     Gson().toJson(viewModel.currentUsageConfig)
                 } else {
@@ -109,7 +162,11 @@ class CreateAppGroupFragment : Fragment() {
                 warningScreenConfig = viewModel.warningScrnConfig
             )
 
-            viewModel.addGroup(newGroup)
+            if (isEditingRecord && targetExistingGroup != null) {
+                viewModel.updateGroupById(newGroup)
+            } else {
+                viewModel.addGroup(newGroup)
+            }
 
             Toast.makeText(requireContext(), "Group saved successfully", Toast.LENGTH_SHORT).show()
             requireActivity().finish()

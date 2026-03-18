@@ -112,7 +112,11 @@ class AppBlockerGroupsFragment : Fragment() {
             }
             
             holder.itemView.setOnClickListener {
-                // Future edit implementation
+                val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                    putExtra("fragment", CreateAppGroupFragment.FRAGMENT_ID)
+                    putExtra("group_id", group.id)
+                }
+                startActivity(intent)
             }
         }
 
