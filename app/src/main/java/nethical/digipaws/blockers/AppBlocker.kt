@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import nethical.digipaws.data.models.AppBlockingType
+import nethical.digipaws.ui.activity.AppTimeConfig
 import nethical.digipaws.utils.DataStoreManager
 
 
@@ -64,15 +65,11 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
     private var cooldownAppsList: MutableMap<String, Long> = mutableMapOf()
 
     /**
-     * stores info about cheat hours i.e list of apps allowed to be used without restrictions for x minutes
-     * package-name -> [(start-time, end-time), ...]
-     */
-    private var cheatHours: MutableMap<String, List<Pair<Int, Int>>> = mutableMapOf()
-
-    /**
      * Stores general simple general list of block apps with their configs
      */
     var blockedAppsList: HashMap<String, AppUsageConfig> = hashMapOf()
+
+    var timeBlockedAppsList: HashMap<String, AppTimeConfig> = hashMapOf()
 
 
     private var usageStats = UsageStatsHelper(context)
@@ -118,10 +115,18 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
             }
         }
 
-        // check if app is under cheat-hours
-        val endCheatMillis = getEndTimeInMillis(packageName)
-        if (endCheatMillis != null) {
-            setUpForcedRefreshChecker(packageName,endCheatMillis)
+        // check if app is under time block
+        if (timeBlockedAppsList.contains(packageName)) {
+            val endAllowedMillis = getEndTimeInMillis(packageName)
+            if (endAllowedMillis == null) {
+                // Not in allowed time, block immediately
+                notificationManager.stopTimer()
+                showWarningScreen(packageName)
+                return
+            } else {
+                // App is in allowed time, ensure it gets blocked when time ends
+                setUpForcedRefreshChecker(packageName, endAllowedMillis)
+            }
         }
 
         // Check if app is in blocked list and has exceeded usage limit
@@ -156,6 +161,7 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
         CoroutineScope(Dispatchers.IO).launch {
             dataStoreManager.settings.collectLatest { settings ->
                 val tempBlockedApps = mutableMapOf<String, AppUsageConfig>()
+                val tempTimeBlockedApps = mutableMapOf<String, AppTimeConfig>()
                 val warningScrnConfigs = mutableMapOf<String, AppBlockerWarningScreenConfig>()
                 settings.blockedAppGroups.forEach {  group ->
                     if(!group.isActive) return@forEach
@@ -165,17 +171,22 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
                             tempBlockedApps[it] = settings
                             warningScrnConfigs[it] = group.warningScreenConfig
                         }
-
+                    }else{
+                        val settings =  Gson().fromJson<AppTimeConfig>(group.setting,
+                            AppTimeConfig::class.java)
+                        group.selectedPackages.forEach {
+                            tempTimeBlockedApps[it] = settings
+                            warningScrnConfigs[it] = group.warningScreenConfig
+                        }
                     }
                 }
                 blockedAppsList = HashMap(tempBlockedApps)
+                timeBlockedAppsList = HashMap(tempTimeBlockedApps)
                 appBlockerWarningScrnConfgs = HashMap(warningScrnConfigs)
                 Log.d("blocked Apps List updated",blockedAppsList.toString())
 
             }
         }
-
-        refreshCheatHoursData(service.savedPreferencesLoader.loadAppBlockerCheatHoursList())
     }
 
     fun handlePutCooldownIntentBroadcast(intent: Intent){
@@ -255,66 +266,46 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
 
     /**
      * @param packageName The app package name.
-     * @return Returns null if the app is not under cheat hours, or the timestamp (real time millis) when it ends if it is.
+     * @return null if app is not currently allowed by time config, or the end time in uptimeMillis if allowed.
      */
     private fun getEndTimeInMillis(packageName: String): Long? {
-        if (cheatHours[packageName] == null) return null
+        val config = timeBlockedAppsList[packageName] ?: return null
 
-        val currentTime = Calendar.getInstance()
-        val currentHour = currentTime.get(Calendar.HOUR_OF_DAY)
-        val currentMinute = currentTime.get(Calendar.MINUTE)
-
+        val calendar = Calendar.getInstance()
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
         val currentMinutes = TimeTools.convertToMinutesFromMidnight(currentHour, currentMinute)
-        val realTimeNow = System.currentTimeMillis()
 
-        cheatHours[packageName]?.forEach { (startMinutes, endMinutes) ->
-            if ((startMinutes <= endMinutes && currentMinutes in startMinutes until endMinutes) ||
-                (startMinutes > endMinutes && (currentMinutes >= startMinutes || currentMinutes < endMinutes))
-            ) {
-                var dayOffsetMinutes = 0
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1 // 0=Sunday, 1=Monday...
 
-                // if cheat hours cross midnight and it is still the first day treat the end time as tomorrow
-                if (startMinutes > endMinutes && currentMinutes > endMinutes) {
-                    dayOffsetMinutes = 1440
+        val intervals = if (config.isEveryday) {
+            config.everydayIntervals
+        } else {
+            config.dailyIntervals[dayOfWeek] ?: emptyList()
+        }
+
+        intervals.forEach { interval ->
+            val startMinutes = TimeTools.convertToMinutesFromMidnight(interval.startHour, interval.startMinute)
+            val endMinutes = TimeTools.convertToMinutesFromMidnight(interval.endHour, interval.endMinute)
+
+            if (startMinutes <= endMinutes) {
+                if (currentMinutes in startMinutes until endMinutes) {
+                    val remainingMins = endMinutes - currentMinutes
+                    return SystemClock.uptimeMillis() + (remainingMins * 60 * 1000L)
                 }
-
-                // Convert endMinutes to real time millis
-                val diffMinutes = endMinutes + dayOffsetMinutes - currentMinutes
-
-                Log.d("AppBlocker", "$packageName cheat-hour ends after $diffMinutes minutes")
-                val endTimeMillis = realTimeNow + (diffMinutes * 60 * 1000)
-
-                return endTimeMillis
+            } else {
+                // cross midnight
+                if (currentMinutes >= startMinutes || currentMinutes < endMinutes) {
+                    val remainingMins = if (currentMinutes >= startMinutes) {
+                        (1440 - currentMinutes) + endMinutes
+                    } else {
+                        endMinutes - currentMinutes
+                    }
+                    return SystemClock.uptimeMillis() + (remainingMins * 60 * 1000L)
+                }
             }
         }
         return null
-    }
-
-    private fun refreshCheatHoursData(cheatList: List<TimedActionActivity.AutoTimedActionItem>) {
-        cheatHours.clear()
-        cheatList.forEach { item ->
-            val startTime = item.startTimeInMins
-            val endTime = item.endTimeInMins
-            val packageNames: ArrayList<String> = item.packages
-
-            packageNames.forEach { packageName ->
-                Log.d(
-                    "AppBlocker",
-                    "added cheat-hour data for $packageName : $startTime to $endTime"
-                )
-
-                if (cheatHours.containsKey(packageName)) {
-                    val cheatHourTimeData: List<Pair<Int, Int>>? = cheatHours[packageName]
-                    val cheatHourNewTimeData: MutableList<Pair<Int, Int>> =
-                        cheatHourTimeData!!.toMutableList()
-
-                    cheatHourNewTimeData.add(Pair(startTime, endTime))
-                    cheatHours[packageName] = cheatHourNewTimeData
-                } else {
-                    cheatHours[packageName] = listOf(Pair(startTime, endTime))
-                }
-            }
-        }
     }
 
     /**

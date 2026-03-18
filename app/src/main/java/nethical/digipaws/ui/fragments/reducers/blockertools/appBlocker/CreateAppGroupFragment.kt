@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.gson.Gson
 import nethical.digipaws.R
-import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppBlockingType
 import nethical.digipaws.data.models.AppGroup
 import nethical.digipaws.databinding.FragmentCreateAppGroupBinding
