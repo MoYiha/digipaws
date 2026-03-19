@@ -75,4 +75,8 @@ class DataStoreManager(private val context: Context) {
     suspend fun setManualFocusStateToInactive(){
         settingsDataStore.updateData { it.copy(activeManualFocusGroupId = Pair(null, 0)) }
     }
+
+    suspend fun updateReelBlockerConfig(config: nethical.digipaws.data.models.ReelBlocker) {
+        settingsDataStore.updateData { it.copy(reelBlockerWarningConfig = config) }
+    }
 }

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_content_container"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:padding="8dp"
+            android:text="@string/configure_warning_screen"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView28"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="It’s a temporary block that appears when your time is up. Instead of just locking you out, it gives you a choice: close the app immediately or &quot;borrow&quot; a few more minutes before the reminder shows up again." />
+
+        <RadioGroup
+            android:id="@+id/warning_radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RadioButton
+                android:id="@+id/direct_back_rb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Skip this screen and go back immediately" />
+
+            <RadioButton
+                android:id="@+id/dynamic_timing_rb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Let me decide how many extra minutes I need right then" />
+
+            <RadioButton
+                android:id="@+id/predefined_time_rb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Use a pre-defined limit, like 5 minutes, every time" />
+
+            <RadioButton
+                android:id="@+id/disable_proceed_rb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Show me the warning screen but don't let me proceed" />
+        </RadioGroup>
+
+        <LinearLayout
+            android:id="@+id/dynamic_timing"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/info"
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="How long to unlock for after proceeding?" />
+
+            <nethical.digipaws.views.HorizontalNumberPicker
+                android:id="@+id/select_mins"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/proceed_delay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/info2"
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"
+                android:text="How long to wait before being able to press the proceed button. Prevents from instantly pressing the button without reading the message." />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/proceed_delay_chips"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                app:checkedChip="@id/fifteen_sec_chip"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/three_sec_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="3 sec" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/nine_sec_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="9 sec" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/fifteen_sec_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="15 sec" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/thirty_sec_chip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="30 sec" />
+
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayout2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="@string/warning_message">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/warning_msg_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/saveconfigs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="16dp"
+            android:text="Save" />
+
+    </LinearLayout>
+</ScrollView>

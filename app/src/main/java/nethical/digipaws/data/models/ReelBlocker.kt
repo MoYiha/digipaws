@@ -44,3 +44,7 @@ data class ReelUsageConfig(
         return result
     }
 }
+
+data class ReelCountConfig(
+    var maxReelsAllowed: Int = 10
+)

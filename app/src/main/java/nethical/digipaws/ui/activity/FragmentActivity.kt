@@ -14,6 +14,7 @@ import nethical.digipaws.ui.fragments.main.reducers.ReducersFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.CreateAppGroupFragment
+import nethical.digipaws.ui.fragments.main.reducers.blockertools.reelBlocker.ReelBlockerFragment
 
 class FragmentActivity : AppCompatActivity() {
 
@@ -36,7 +37,8 @@ class FragmentActivity : AppCompatActivity() {
             WelcomeFragment.FRAGMENT_ID,
             AccessibilityGuide.FRAGMENT_ID,
             AppBlockerGroupsFragment.FRAGMENT_ID,
-            CreateAppGroupFragment.FRAGMENT_ID,-> {
+            CreateAppGroupFragment.FRAGMENT_ID,
+            ReelBlockerFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
                 bottomNav.visibility = android.view.View.GONE
                 
@@ -45,6 +47,7 @@ class FragmentActivity : AppCompatActivity() {
                     WelcomeFragment.FRAGMENT_ID -> WelcomeFragment()
                     AppBlockerGroupsFragment.FRAGMENT_ID -> AppBlockerGroupsFragment()
                     CreateAppGroupFragment.FRAGMENT_ID -> CreateAppGroupFragment()
+                    ReelBlockerFragment.FRAGMENT_ID -> ReelBlockerFragment()
                     else -> AccessibilityGuide()
                 }
                 fragment.arguments = intent.extras
