@@ -1,4 +1,4 @@
-package nethical.digipaws.ui.fragments.reducers
+package nethical.digipaws.ui.fragments.main.reducers
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +10,7 @@ import nethical.digipaws.R
 import android.content.Intent
 import nethical.digipaws.ui.activity.FragmentActivity
 import com.google.android.material.card.MaterialCardView
-import nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
+import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
 
 class ReducersFragment : Fragment() {
     override fun onCreateView(

@@ -1,4 +1,4 @@
-package nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker
+package nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

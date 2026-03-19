@@ -9,11 +9,11 @@ import nethical.digipaws.R
 import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
 import nethical.digipaws.ui.fragments.installation.AccessibilityGuide
 import nethical.digipaws.ui.fragments.installation.WelcomeFragment
+import nethical.digipaws.ui.fragments.main.focus.FocusFragment
+import nethical.digipaws.ui.fragments.main.reducers.ReducersFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
-import nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
-import nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker.CreateAppGroupFragment
-import nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker.TimeBasedSettingsFragment
-import nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker.UsageBasedSettingsFragment
+import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
+import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.CreateAppGroupFragment
 
 class FragmentActivity : AppCompatActivity() {
 
@@ -67,8 +67,8 @@ class FragmentActivity : AppCompatActivity() {
                 bottomNav.setOnItemSelectedListener { item ->
                     val fragment = when (item.itemId) {
                         R.id.nav_usage -> AllAppsUsageFragment()
-                        R.id.nav_focus -> nethical.digipaws.ui.fragments.main.FocusFragment()
-                        R.id.nav_reducers -> nethical.digipaws.ui.fragments.reducers.ReducersFragment()
+                        R.id.nav_focus -> FocusFragment()
+                        R.id.nav_reducers -> ReducersFragment()
                         R.id.nav_info -> nethical.digipaws.ui.fragments.main.InfoFragment()
                         else -> AllAppsUsageFragment()
                     }

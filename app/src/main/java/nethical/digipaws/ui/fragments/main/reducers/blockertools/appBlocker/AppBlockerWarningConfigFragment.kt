@@ -1,9 +1,10 @@
-package nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker
+package nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker
 
 import android.app.Dialog
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
+import android.transition.TransitionSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -93,7 +94,7 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
         if (animate) {
             TransitionManager.beginDelayedTransition(
                 binding.mainContentContainer,
-                AutoTransition().apply { duration = 250 }
+                AutoTransition()
             )
         }
 

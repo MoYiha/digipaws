@@ -1,8 +1,9 @@
-package nethical.digipaws.ui.fragments.reducers.blockertools.appBlocker
+package nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker
 
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -92,7 +93,7 @@ class CreateAppGroupFragment : Fragment() {
 
                         binding.toolbar.menu.clear()
                         val deleteItem = binding.toolbar.menu.add(0, 1001, 0, "Delete")
-                        deleteItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+                        deleteItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
                         binding.toolbar.setOnMenuItemClickListener { item ->
                             if (item.itemId == 1001) {
                                 viewModel.deleteGroup(group.id)
