@@ -295,6 +295,7 @@ class SavedPreferencesLoader(private val context: Context) {
         return gson.fromJson(json, type)
     }
 
+
     fun saveKeywordBlockerIgnoredApps(appList: List<String>) {
         val sharedPreferences =
             context.getSharedPreferences("Keyword_blocker_ignored_apps", Context.MODE_PRIVATE)

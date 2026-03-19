@@ -5,6 +5,7 @@ import androidx.datastore.core.MultiProcessDataStoreFactory
 import androidx.datastore.core.Serializer
 import com.google.gson.Gson
 import nethical.digipaws.data.models.AppGroup
+import nethical.digipaws.data.models.ManualFocusGroup
 import nethical.digipaws.data.models.Settings
 import java.io.File
 import java.io.InputStream
@@ -61,7 +62,17 @@ class DataStoreManager(private val context: Context) {
     // Access the flow exactly like before
     val settings = settingsDataStore.data
 
-    suspend fun updateGroups(newGroups: List<AppGroup>) {
+    suspend fun updateAppGroups(newGroups: List<AppGroup>) {
         settingsDataStore.updateData { it.copy(blockedAppGroups = newGroups) }
+    }
+
+    suspend fun updateManualFocusGroups(newGroup: List<ManualFocusGroup>){
+        settingsDataStore.updateData { it.copy(manualFocusGroups = newGroup) }
+    }
+    suspend fun setManualFocusStateToActive(focusGroupId:String, durationInMs: Long){
+        settingsDataStore.updateData { it.copy(activeManualFocusGroupId = Pair(focusGroupId, System.currentTimeMillis() + durationInMs)) }
+    }
+    suspend fun setManualFocusStateToInactive(){
+        settingsDataStore.updateData { it.copy(activeManualFocusGroupId = Pair(null, 0)) }
     }
 }

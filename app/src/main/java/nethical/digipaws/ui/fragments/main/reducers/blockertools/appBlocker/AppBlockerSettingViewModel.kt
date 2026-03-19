@@ -19,7 +19,7 @@ class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(ap
     var warningScrnConfig: AppBlockerWarningScreenConfig = AppBlockerWarningScreenConfig()
 
     private val dataStoreManager = DataStoreManager(application)
-    
+
     private val _groups = MutableStateFlow<List<AppGroup>>(emptyList())
     val groups: StateFlow<List<AppGroup>> = _groups
     init {
@@ -32,7 +32,7 @@ class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(ap
 
     fun updateGroups(newGroups: List<AppGroup>) {
         viewModelScope.launch {
-            dataStoreManager.updateGroups(newGroups)
+            dataStoreManager.updateAppGroups(newGroups)
         }
     }
     

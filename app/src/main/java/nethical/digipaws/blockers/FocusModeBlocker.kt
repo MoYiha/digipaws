@@ -6,9 +6,18 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import nethical.digipaws.Constants
+import nethical.digipaws.data.models.FocusBlockMode
+import nethical.digipaws.data.models.ManualFocusGroup
 import nethical.digipaws.services.BaseBlockingService
 import nethical.digipaws.ui.activity.TimedActionActivity
+import nethical.digipaws.utils.DataStoreManager
+import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.getCurrentKeyboardPackageName
 import nethical.digipaws.utils.getDefaultLauncherPackageName
@@ -34,6 +43,10 @@ data class FocusModeData(
 
 class FocusModeBlocker : BaseBlocker() {
 
+    private data class ManualFocusModeData(
+        val focusGroupData: ManualFocusGroup,
+        val endTimeInMillis: Long
+    )
     companion object {
         /**
          * Refreshes information related to focus mode.
@@ -43,12 +56,22 @@ class FocusModeBlocker : BaseBlocker() {
     // package-name -> [(start-time, end-time), ...]
     private var autoFocusHours: MutableMap<String, List<Pair<Int, Int>>> = mutableMapOf()
 
-    private var focusModeData = FocusModeData()
+    // Pair(FocusData, endtimeinmillis)
+    private var focusModeData : ManualFocusModeData?  = null
 
     private var lastPackage = ""
 
     private lateinit var service : BaseBlockingService
 
+    private lateinit var notificationManager: NotificationTimerManager
+
+    private fun turnOffFocusMode(){
+        focusModeData = null
+        CoroutineScope(Dispatchers.IO).launch {
+            service.dataStoreManager.setManualFocusStateToInactive()
+        }
+        notificationManager.stopTimer()
+    }
     fun doFocusModeCheck(event: AccessibilityEvent?){
         val packageName = event?.packageName.toString()
         if (lastPackage == packageName || packageName == service.getPackageName()) return
@@ -61,66 +84,55 @@ class FocusModeBlocker : BaseBlocker() {
             Toast.makeText(service, "This app is currently under focus mode", Toast.LENGTH_LONG).show()
         }
 
-        if (focusModeData.isTurnedOn) {
-            if (focusModeData.endTime < System.currentTimeMillis()) { // turn off manual focus mode
-                focusModeData.isTurnedOn = false
-                service.savedPreferencesLoader.saveFocusModeData(focusModeData)
-            }
-
-            // deal with auto focus
-            when (focusModeData.modeType) {
-                Constants.FOCUS_MODE_BLOCK_SELECTED -> {
-                    if (focusModeData.selectedApps.contains(packageName)) performFocusModeAction()
+        if (focusModeData!= null) {
+            when (focusModeData!!.focusGroupData.blockMode) {
+                FocusBlockMode.BLOCK_SELECTED -> {
+                    if (focusModeData!!.focusGroupData.packages.contains(packageName)) performFocusModeAction()
                 }
-
-                Constants.FOCUS_MODE_BLOCK_ALL_EX_SELECTED -> {
-                    if (!focusModeData.selectedApps.contains(packageName)) performFocusModeAction()
+                FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED -> {
+                    if (!focusModeData!!.focusGroupData.packages.contains(packageName)) performFocusModeAction()
                 }
             }
+
+            if (focusModeData!!.endTimeInMillis < System.currentTimeMillis()) { // turn off manual focus mode
+                turnOffFocusMode()
+            }
+
+
         }
-    }
-
-    private fun refreshCheatHoursData(focusData: List<TimedActionActivity.AutoTimedActionItem>) {
-        autoFocusHours.clear()
-        focusData.forEach { item ->
-            val startTime = item.startTimeInMins
-            val endTime = item.endTimeInMins
-            val packageNames: ArrayList<String> = item.packages
-
-            packageNames.forEach { packageName ->
-
-                if (autoFocusHours.containsKey(packageName)) {
-                    val cheatHourTimeData: List<Pair<Int, Int>>? = autoFocusHours[packageName]
-                    val cheatHourNewTimeData: MutableList<Pair<Int, Int>> =
-                        cheatHourTimeData!!.toMutableList()
-
-                    cheatHourNewTimeData.add(Pair(startTime, endTime))
-                    autoFocusHours[packageName] = cheatHourNewTimeData
-                } else {
-                    autoFocusHours[packageName] = listOf(Pair(startTime, endTime))
-                }
-            }
-        }
-        Log.d("FocusModeBlocker", "Auto Focus Data updated $autoFocusHours")
-
     }
 
     fun setupFocusMode(service: BaseBlockingService) {
         this.service = service
-        refreshCheatHoursData(service.savedPreferencesLoader.loadAutoFocusHoursList())
 
-        val selectedFocusModeApps = service.savedPreferencesLoader.getFocusModeSelectedApps().toHashSet()
-        focusModeData = service.savedPreferencesLoader.getFocusModeData()
+        notificationManager = NotificationTimerManager(service)
 
-        // As all apps will get blocked except the selected ones, add essential packages that need not be blocked (systemui, launcher, keyboard)
-        // to the list of selected apps
-        if (focusModeData.modeType == Constants.FOCUS_MODE_BLOCK_ALL_EX_SELECTED) {
-            selectedFocusModeApps.add("com.android.systemui")
-            getDefaultLauncherPackageName(service.packageManager)?.let { selectedFocusModeApps.add(it) }
-            getCurrentKeyboardPackageName(service)?.let { selectedFocusModeApps.add(it) }
+        val selectedFocusModeApps = mutableListOf<String>()
+        CoroutineScope(Dispatchers.IO).launch {
+            service.dataStoreManager.settings.collectLatest { settings ->
+                // manual focus mode has been turned on / is turn on
+                if(settings.activeManualFocusGroupId.first != null){
+                    val currentFocusingGroup = settings.manualFocusGroups.find { it.groupId == settings.activeManualFocusGroupId.first }
+                    if(currentFocusingGroup!=null){
+
+                        if (currentFocusingGroup.blockMode == FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED) {
+                            selectedFocusModeApps.add("com.android.systemui")
+                            getDefaultLauncherPackageName(service.packageManager)?.let { selectedFocusModeApps.add(it) }
+                            getCurrentKeyboardPackageName(service)?.let { selectedFocusModeApps.add(it) }
+                            // As all apps will get blocked except the selected ones, add essential packages that need not be blocked (systemui, launcher, keyboard)
+                            // to the list of selected apps
+                            currentFocusingGroup.packages.addAll(selectedFocusModeApps)
+                        }
+
+                        focusModeData = ManualFocusModeData(currentFocusingGroup,settings.activeManualFocusGroupId.second)
+
+                        withContext(Dispatchers.Main) {
+                            notificationManager.startTimer(focusModeData!!.endTimeInMillis - System.currentTimeMillis(),timerIdU = "focus_mode")
+                        }
+                    }
+                }
+            }
         }
-
-        focusModeData.selectedApps = selectedFocusModeApps
 
     }
 

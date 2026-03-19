@@ -1,11 +1,11 @@
 package nethical.digipaws.ui.fragments.main.focus
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import nethical.digipaws.R
 
 class RulerAdapter(private val maxValue: Int = 180) : RecyclerView.Adapter<RulerAdapter.TickViewHolder>() {
@@ -20,14 +20,22 @@ class RulerAdapter(private val maxValue: Int = 180) : RecyclerView.Adapter<Ruler
     }
 
     override fun onBindViewHolder(holder: TickViewHolder, position: Int) {
-        // Make every 5th tick taller and somewhat brighter
         val params = holder.vTick.layoutParams as FrameLayout.LayoutParams
+        val majorColor = MaterialColors.getColor(
+            holder.vTick,
+            com.google.android.material.R.attr.colorOutline
+        )
+        val minorColor = MaterialColors.getColor(
+            holder.vTick,
+            com.google.android.material.R.attr.colorOutlineVariant
+        )
+
         if ((position + 1) % 5 == 0) {
-            params.height = 100 // Taller
-            holder.vTick.setBackgroundColor(Color.parseColor("#666666"))
+            params.height = 100
+            holder.vTick.setBackgroundColor(majorColor)
         } else {
-            params.height = 60 // Shorter
-            holder.vTick.setBackgroundColor(Color.parseColor("#444444"))
+            params.height = 60
+            holder.vTick.setBackgroundColor(minorColor)
         }
         holder.vTick.layoutParams = params
     }
