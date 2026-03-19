@@ -1,12 +1,16 @@
 package nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import nethical.digipaws.blockers.AppBlocker
+import nethical.digipaws.blockers.FocusModeBlocker
 import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppGroup
 import nethical.digipaws.data.models.AppTimeConfig
@@ -30,9 +34,15 @@ class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
+    private fun requestAppBlockerRefresh() {
+        val intent = Intent(AppBlocker.INTENT_ACTION_REFRESH_APP_BLOCKER)
+        application.sendBroadcast(intent)
+    }
+
     fun updateGroups(newGroups: List<AppGroup>) {
         viewModelScope.launch {
             dataStoreManager.updateAppGroups(newGroups)
+            requestAppBlockerRefresh()
         }
     }
     

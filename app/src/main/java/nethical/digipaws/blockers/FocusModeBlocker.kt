@@ -1,11 +1,19 @@
 package nethical.digipaws.blockers
 
 import android.accessibilityservice.AccessibilityService
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Context.RECEIVER_EXPORTED
+import android.content.Intent
+import android.content.IntentFilter
 import android.media.metrics.Event
+import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
+import androidx.core.content.ContextCompat.registerReceiver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -14,6 +22,7 @@ import kotlinx.coroutines.withContext
 import nethical.digipaws.Constants
 import nethical.digipaws.data.models.FocusBlockMode
 import nethical.digipaws.data.models.ManualFocusGroup
+import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.services.BaseBlockingService
 import nethical.digipaws.ui.activity.TimedActionActivity
 import nethical.digipaws.utils.DataStoreManager
@@ -102,14 +111,30 @@ class FocusModeBlocker : BaseBlocker() {
         }
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    fun setupReceivers(){
+        val filter = IntentFilter().apply {
+            addAction(INTENT_ACTION_REFRESH_FOCUS_MODE)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            service.registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            service.registerReceiver(refreshReceiver, filter)
+        }
+    }
+    fun removeReceivers(){
+        service.unregisterReceiver(refreshReceiver)
+    }
+
     fun setupFocusMode(service: BaseBlockingService) {
         this.service = service
 
         notificationManager = NotificationTimerManager(service)
 
-        val selectedFocusModeApps = mutableListOf<String>()
         CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->
+                val selectedFocusModeApps = mutableListOf<String>()
+
                 // manual focus mode has been turned on / is turn on
                 if(settings.activeManualFocusGroupId.first != null){
                     val currentFocusingGroup = settings.manualFocusGroups.find { it.groupId == settings.activeManualFocusGroupId.first }
@@ -142,5 +167,16 @@ class FocusModeBlocker : BaseBlocker() {
 
     }
 
+
+
+    private val refreshReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent == null) return
+            when (intent.action) {
+                INTENT_ACTION_REFRESH_FOCUS_MODE -> setupFocusMode(service)
+            }
+
+        }
+    }
 
 }

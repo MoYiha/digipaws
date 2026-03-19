@@ -1,13 +1,16 @@
 package nethical.digipaws.ui.fragments.main.reducers.blockertools.reelBlocker
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import nethical.digipaws.blockers.AppBlocker
 import nethical.digipaws.data.models.ReelBlocker
 import nethical.digipaws.data.models.ReelCountConfig
 import nethical.digipaws.data.models.ReelTimeConfig
@@ -26,14 +29,20 @@ class ReelBlockerViewModel(application: Application) : AndroidViewModel(applicat
     init {
         viewModelScope.launch {
             dataStoreManager.settings.collectLatest { settings ->
-                _reelBlockerConfig.value = settings.reelBlockerWarningConfig
+                _reelBlockerConfig.value = settings.reelBlockerConfig
             }
         }
     }
 
+
+    private fun requestReelBlockerRefresh() {
+        val intent = Intent(nethical.digipaws.blockers.ReelBlocker.INTENT_ACTION_REFRESH_REEL_BLOCKER)
+        application.sendBroadcast(intent)
+    }
     private fun updateConfig(newConfig: ReelBlocker) {
         viewModelScope.launch {
             dataStoreManager.updateReelBlockerConfig(newConfig)
+            requestReelBlockerRefresh()
         }
     }
 

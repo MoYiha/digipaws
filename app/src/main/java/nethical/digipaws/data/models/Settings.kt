@@ -10,5 +10,5 @@ data class Settings(
      */
     val activeManualFocusGroupId: Pair<String?, Long> = Pair(null, 0),
 
-    val reelBlockerWarningConfig: ReelBlocker = ReelBlocker()
+    val reelBlockerConfig: ReelBlocker = ReelBlocker()
 )

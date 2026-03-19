@@ -77,6 +77,6 @@ class DataStoreManager(private val context: Context) {
     }
 
     suspend fun updateReelBlockerConfig(config: nethical.digipaws.data.models.ReelBlocker) {
-        settingsDataStore.updateData { it.copy(reelBlockerWarningConfig = config) }
+        settingsDataStore.updateData { it.copy(reelBlockerConfig = config) }
     }
 }

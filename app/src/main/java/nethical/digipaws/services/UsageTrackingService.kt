@@ -17,7 +17,7 @@ import android.util.Log
 import android.view.View
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
-import nethical.digipaws.blockers.ViewBlocker
+import nethical.digipaws.blockers.ReelBlocker
 import nethical.digipaws.ui.overlay.UsageStatOverlayManager
 import nethical.digipaws.utils.TimeTools
 import java.util.concurrent.TimeUnit
@@ -254,8 +254,8 @@ class UsageTrackingService : BaseBlockingService() {
             if (SUPPORTED_TRACKING_APPS.contains(event.packageName)) {
                 Log.d("source", event.source?.className.toString())
                 // find reel tracking view and hide the counter if not found
-                ViewBlocker.BLOCKED_VIEW_ID_LIST.forEach { viewId ->
-                    if (ViewBlocker.findElementById(rootInActiveWindow, viewId) == null) {
+                ReelBlocker.BLOCKED_VIEW_ID_LIST.forEach { viewId ->
+                    if (ReelBlocker.findElementById(rootInActiveWindow, viewId) == null) {
                         hideReelTrackingView()
                     }
                 }
@@ -301,7 +301,7 @@ class UsageTrackingService : BaseBlockingService() {
                     // handle instagram scrolls
                     event.source?.className == "androidx.viewpager.widget.ViewPager" && 
                     event.packageName == "com.instagram.android" -> {
-                        val reelView = ViewBlocker.findElementById(
+                        val reelView = ReelBlocker.findElementById(
                             rootInActiveWindow,
                             "com.instagram.android:id/root_clips_layout"
                         )
@@ -312,7 +312,7 @@ class UsageTrackingService : BaseBlockingService() {
                     // handle MyInsta scrolls
                     event.source?.className == "androidx.viewpager.widget.ViewPager" && 
                     event.packageName == "com.myinsta.android" -> {
-                        val reelView = ViewBlocker.findElementById(
+                        val reelView = ReelBlocker.findElementById(
                             rootInActiveWindow,
                             "com.myinsta.android:id/root_clips_layout"
                         )
@@ -323,11 +323,11 @@ class UsageTrackingService : BaseBlockingService() {
                     // youtube scrolls
                     event.packageName == "com.google.android.youtube" &&
                     event.source?.className == "android.support.v7.widget.RecyclerView" -> {
-                        val reelView = ViewBlocker.findElementById(
+                        val reelView = ReelBlocker.findElementById(
                             rootInActiveWindow,
                             "com.google.android.youtube:id/reel_recycler"
                         )
-                        val commentsSection = ViewBlocker.findElementById(
+                        val commentsSection = ReelBlocker.findElementById(
                             rootInActiveWindow,
                             "com.google.android.youtube:id/engagement_panel_content"
                         )
@@ -339,11 +339,11 @@ class UsageTrackingService : BaseBlockingService() {
                     // revanced scrolls
                     event.packageName == "app.revanced.android.youtube" &&
                     event.source?.className == "android.support.v7.widget.RecyclerView" -> {
-                        val reelView = ViewBlocker.findElementById(
+                        val reelView = ReelBlocker.findElementById(
                             rootInActiveWindow,
                             "app.revanced.android.youtube:id/reel_recycler"
                         )
-                        val commentsSection = ViewBlocker.findElementById(
+                        val commentsSection = ReelBlocker.findElementById(
                             rootInActiveWindow,
                             "app.revanced.android.youtube:id/engagement_panel_content"
                         )

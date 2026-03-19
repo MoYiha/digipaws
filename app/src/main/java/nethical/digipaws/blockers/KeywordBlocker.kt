@@ -150,7 +150,7 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
         if (urlBarInfo == null) return KeywordBlockerResult()
         val idPrefixPart = event.packageName.toString() + ":id/"
         displayUrlTextNode =
-            ViewBlocker.findElementById(rootNode, idPrefixPart + urlBarInfo.displayUrlBarId)
+            ReelBlocker.findElementById(rootNode, idPrefixPart + urlBarInfo.displayUrlBarId)
 
 
 
@@ -171,7 +171,7 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
 
 
         val editUrlBarId = urlBarInfo.editUrlBarId ?: urlBarInfo.displayUrlBarId
-        val editUrlBar = ViewBlocker.findElementById(rootNode, idPrefixPart + editUrlBarId)
+        val editUrlBar = ReelBlocker.findElementById(rootNode, idPrefixPart + editUrlBarId)
             ?: return KeywordBlockerResult(false, detectedAdultKeyword)
 
         editUrlBar.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
@@ -181,7 +181,7 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
         })
         Thread.sleep(300)
         val goBtnNode =
-            ViewBlocker.findElementById(rootNode, idPrefixPart + urlBarInfo.browserSugggestionBoxId)
+            ReelBlocker.findElementById(rootNode, idPrefixPart + urlBarInfo.browserSugggestionBoxId)
                 ?: return KeywordBlockerResult(resultDetectWord = detectedAdultKeyword)
         if (urlBarInfo.isSuggestionEqualToGo) {
             goBtnNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)

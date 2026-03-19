@@ -1,13 +1,19 @@
 package nethical.digipaws.blockers
 
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import androidx.core.content.ContextCompat.registerReceiver
 import nethical.digipaws.Constants
 import nethical.digipaws.services.BaseBlockingService
 import nethical.digipaws.ui.activity.WarningActivity
@@ -21,6 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import nethical.digipaws.blockers.FocusModeBlocker.Companion.INTENT_ACTION_REFRESH_FOCUS_MODE
 import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppBlockingType
 import nethical.digipaws.data.models.AppTimeConfig
@@ -45,6 +52,8 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
          */
         const val INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN =
             "nethical.digipaws.refresh.appblocker.cooldown"
+
+        private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 
     }
     private val prefs: SharedPreferences = context.getSharedPreferences("app_blocker_prefs", Context.MODE_PRIVATE)
@@ -91,10 +100,13 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
      */
     fun doAppBlockerCheck(event: AccessibilityEvent?){
 
-        val packageName = event?.packageName.toString()
+        if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0) return
+
+        val packageName = event.packageName.toString()
         if (lastPackage == packageName || packageName == service.packageName || packageName == "com.android.systemui") return
 
         lastPackage = packageName
+
 
         // check if a blocked apps previously allowed to be used for some time has expired
         if (cooldownAppsList.containsKey(packageName)) {
@@ -144,6 +156,22 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
     }
 
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    fun setupReceivers(){
+        val filter = IntentFilter().apply {
+            addAction(INTENT_ACTION_REFRESH_APP_BLOCKER)
+            addAction(INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            service.registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            service.registerReceiver(refreshReceiver, filter)
+        }
+    }
+
+    fun removeReceivers(){
+        service.unregisterReceiver(refreshReceiver)
+    }
     fun setupAppBlocker(service: BaseBlockingService) {
         this.service = service
         notificationManager = NotificationTimerManager(service)
@@ -156,16 +184,16 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
                 settings.blockedAppGroups.forEach {  group ->
                     if(!group.isActive) return@forEach
                     if(group.blockingType == AppBlockingType.Usage ){
-                        val settings = Gson().fromJson<AppUsageConfig>(group.setting, AppUsageConfig::class.java)
+                        val appUsageConfig = Gson().fromJson<AppUsageConfig>(group.setting, AppUsageConfig::class.java)
                         group.selectedPackages.forEach {
-                            tempBlockedApps[it] = settings
+                            tempBlockedApps[it] = appUsageConfig
                             warningScrnConfigs[it] = group.warningScreenConfig
                         }
                     }else{
-                        val settings =  Gson().fromJson<AppTimeConfig>(group.setting,
+                        val appTimedConfig =  Gson().fromJson<AppTimeConfig>(group.setting,
                             AppTimeConfig::class.java)
                         group.selectedPackages.forEach {
-                            tempTimeBlockedApps[it] = settings
+                            tempTimeBlockedApps[it] = appTimedConfig
                             warningScrnConfigs[it] = group.warningScreenConfig
                         }
                     }
@@ -346,6 +374,18 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
         dialogIntent.putExtra("result_id", packageName)
         dialogIntent.putExtra("warning_config",Gson().toJson(appBlockerWarningScrnConfgs[packageName]))
         service.startActivity(dialogIntent)
+    }
+
+
+    private val refreshReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent == null) return
+            when (intent.action) {
+                INTENT_ACTION_REFRESH_APP_BLOCKER -> setupAppBlocker(service)
+                INTENT_ACTION_REFRESH_APP_BLOCKER_COOLDOWN -> handlePutCooldownIntentBroadcast(intent)
+            }
+
+        }
     }
 
 }
