@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.R
 import nethical.digipaws.data.blockers.PackageWand
+import nethical.digipaws.data.models.AppUsageConfig
 import nethical.digipaws.databinding.ActivitySelectAppsBinding
 import nethical.digipaws.databinding.DialogAddKeywordBinding
 import nethical.digipaws.databinding.DialogSetBlockedAppsTimerangeBinding
@@ -504,9 +505,3 @@ class SelectAppBlockerApps : AppCompatActivity() {
         val displayName: String = packageName
     )
 }
-
-data class AppUsageConfig(
-    var isDailyUniform: Boolean = true,
-    var uniformLimit: Long = 0,
-    val dailyLimits: LongArray = LongArray(7) { 0 } // 0=Sunday
-)

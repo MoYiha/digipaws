@@ -4,9 +4,9 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import nethical.digipaws.blockers.FocusModeData
-import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
+import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
+import nethical.digipaws.data.models.AppUsageConfig
 import nethical.digipaws.services.UsageTrackingService.AttentionSpanVideoItem
-import nethical.digipaws.ui.activity.AppUsageConfig
 import nethical.digipaws.ui.activity.TimedActionActivity
 
 class SavedPreferencesLoader(private val context: Context) {

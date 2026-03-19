@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
+import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppGroup
-import nethical.digipaws.ui.activity.AppUsageConfig
-import nethical.digipaws.ui.activity.AppTimeConfig
+import nethical.digipaws.data.models.AppTimeConfig
+import nethical.digipaws.data.models.AppUsageConfig
 import nethical.digipaws.utils.DataStoreManager
 
 class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(application) {

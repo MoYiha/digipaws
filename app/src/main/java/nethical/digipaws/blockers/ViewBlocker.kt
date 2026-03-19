@@ -1,8 +1,16 @@
 package nethical.digipaws.blockers
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import android.os.SystemClock
+import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
+import androidx.core.content.ContextCompat.startActivity
+import nethical.digipaws.Constants
+import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
+import nethical.digipaws.services.BaseBlockingService
+import nethical.digipaws.ui.activity.WarningActivity
 import nethical.digipaws.utils.TimeTools
 import java.util.Calendar
 
@@ -20,11 +28,6 @@ class ViewBlocker : BaseBlocker() {
             return targetNode
         }
 
-        val TIKTOK_PACKAGE_NAMES = hashSetOf(
-            "com.ss.android.ugc.trill",
-            "com.zhiliaoapp.musically",
-            "com.ss.android.ugc.aweme"
-        )
         val BLOCKED_VIEW_ID_LIST = mutableListOf(
             "com.instagram.android:id/root_clips_layout",
             "com.myinsta.android:id/root_clips_layout",
@@ -33,36 +36,34 @@ class ViewBlocker : BaseBlocker() {
         )
 
     }
+    private lateinit var service : BaseBlockingService
+
+    private var warningScreenConfig = AppBlockerWarningScreenConfig()
     private val cooldownViewIdsList = mutableMapOf<String, Long>()
     var screenWidth: Int = 0
     var screenHeight: Int = 0
 
     var isIGInboxReelAllowed = false
-    var isFirstReelInFeedAllowed = false
 
     var cheatMinuteStartTime: Int? = null
     var cheatMinutesEndTIme: Int? = null
 
     fun doesViewNeedToBeBlocked(
         node: AccessibilityNodeInfo,
-        packageName: String
-    ): ViewBlockerResult? {
-        if (isCheatHourActive()) {
-            return null
+    ){
+        fun showWarningScreen(viewId: String){
+            service.pressBack()
+
+            if(warningScreenConfig.isWarningDialogHidden) return
+            val dialogIntent = Intent(service, WarningActivity::class.java)
+            dialogIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            dialogIntent.putExtra("mode", Constants.WARNING_SCREEN_MODE_VIEW_BLOCKER)
+            dialogIntent.putExtra("result_id", viewId)
+            service.startActivity(dialogIntent)
         }
-        if (TIKTOK_PACKAGE_NAMES.contains(packageName)) {
-            if (isCooldownActive(packageName)) {
-                return ViewBlockerResult(
-                    isReelFoundInCooldownState = true,
-                    viewId = packageName,
-                    requestHomePressInstead = true
-                )
-            }
-            return ViewBlockerResult(
-                isBlocked = true,
-                viewId = packageName,
-                requestHomePressInstead = true
-            )
+
+        if (isCheatHourActive()) {
+            return
         }
 
         if (isIGInboxReelAllowed && isViewOpened(
@@ -70,24 +71,39 @@ class ViewBlocker : BaseBlocker() {
                 "com.instagram.android:id/reply_bar_container"
             )
         ) {
-            return null
+            return
         }
 
 
         BLOCKED_VIEW_ID_LIST.forEach { viewId ->
             if(isViewOpened(node,viewId)){
-                if (isCooldownActive(viewId)) {
-                    return ViewBlockerResult(isReelFoundInCooldownState = true, viewId = viewId)
+                if (!isCooldownActive(viewId)) {
+                    showWarningScreen(viewId)
                 }
-                return ViewBlockerResult(isBlocked = true, viewId = viewId)
             }
         }
-        return null
+
     }
+
 
     fun applyCooldown(viewId: String, endTime: Long) {
         cooldownViewIdsList[viewId] = endTime
     }
+
+
+//    private fun setupBlocker() {
+//        warningScreenConfig = savedPreferencesLoader.loadViewBlockerWarningInfo()
+//
+//        val viewBlockerCheatHours = getSharedPreferences("cheat_hours", Context.MODE_PRIVATE)
+//        viewBlocker.cheatMinuteStartTime =
+//            viewBlockerCheatHours.getInt("view_blocker_start_time", -1)
+//        viewBlocker.cheatMinutesEndTIme = viewBlockerCheatHours.getInt("view_blocker_end_time", -1)
+//
+//        val addReelData = getSharedPreferences("config_reels", Context.MODE_PRIVATE)
+//        viewBlocker.isIGInboxReelAllowed = addReelData.getBoolean("is_reel_inbox", false)
+//        viewBlocker.isFirstReelInFeedAllowed = addReelData.getBoolean("is_reel_first", false)
+//        Log.d("data", viewBlocker.isFirstReelInFeedAllowed.toString())
+//    }
 
     private fun isCooldownActive(viewId: String): Boolean {
         val cooldownEnd = cooldownViewIdsList[viewId] ?: return false

@@ -8,5 +8,7 @@ data class Settings(
      * Format Pair<GroupId?, system ms when it ends>.
      * Set group id as null when no active focus mode is running
      */
-    val activeManualFocusGroupId: Pair<String?, Long> = Pair(null, 0)
+    val activeManualFocusGroupId: Pair<String?, Long> = Pair(null, 0),
+
+    val reelBlockerWarningConfig: AppBlockerWarningScreenConfig = AppBlockerWarningScreenConfig()
 )

@@ -13,8 +13,8 @@ import com.google.android.material.timepicker.TimeFormat
 import nethical.digipaws.databinding.FragmentAppBlockerTimeRangeSettingsBinding
 import nethical.digipaws.databinding.ItemDayTimeRangesBinding
 import nethical.digipaws.databinding.ItemTimeRangeIntervalBinding
-import nethical.digipaws.ui.activity.AppTimeConfig
-import nethical.digipaws.ui.activity.TimeInterval
+import nethical.digipaws.data.models.AppTimeConfig
+import nethical.digipaws.data.models.TimeInterval
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale

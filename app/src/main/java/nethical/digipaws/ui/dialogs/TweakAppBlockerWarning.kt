@@ -8,7 +8,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import nethical.digipaws.R
 import nethical.digipaws.blockers.AppBlocker
-import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
+import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.databinding.DialogTweakBlockerWarningBinding
 import nethical.digipaws.utils.AnimTools.Companion.animateVisibility
 import nethical.digipaws.utils.SavedPreferencesLoader

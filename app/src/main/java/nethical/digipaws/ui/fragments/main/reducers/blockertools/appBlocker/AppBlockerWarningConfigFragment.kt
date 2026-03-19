@@ -12,7 +12,7 @@ import android.view.WindowManager
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import nethical.digipaws.R
-import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
+import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.databinding.FragmentAppBlockerWarningScrnConfigBinding
 
 class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {

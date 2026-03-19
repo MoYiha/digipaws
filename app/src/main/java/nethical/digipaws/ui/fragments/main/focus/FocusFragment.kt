@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 import nethical.digipaws.R
 import nethical.digipaws.databinding.FragmentFocusBinding
 import nethical.digipaws.utils.TimeTools
-import nethical.digipaws.utils.TimeTools.Companion.formatTime
 
 class FocusFragment : Fragment() {
 

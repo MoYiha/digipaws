@@ -10,8 +10,6 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import nethical.digipaws.Constants
 import nethical.digipaws.services.BaseBlockingService
-import nethical.digipaws.ui.activity.AppUsageConfig
-import nethical.digipaws.ui.activity.TimedActionActivity
 import nethical.digipaws.ui.activity.WarningActivity
 import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.TimeTools
@@ -23,19 +21,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppBlockingType
-import nethical.digipaws.ui.activity.AppTimeConfig
-import nethical.digipaws.utils.DataStoreManager
+import nethical.digipaws.data.models.AppTimeConfig
+import nethical.digipaws.data.models.AppUsageConfig
+import kotlin.jvm.java
 
-
-data class AppBlockerWarningScreenConfig(
-    val message: String = "You can setup a custom message to appear here!",
-    val timeInterval: Int = 120000, // default cooldown period
-    val isDynamicIntervalSettingAllowed: Boolean = false,
-    val isProceedDisabled: Boolean = false,
-    val isWarningDialogHidden: Boolean = false, // perform back/home action directly without showing warning screen
-    val proceedDelayInSecs: Int = 15
-)
 
 class AppBlocker(private val context: Context) : BaseBlocker() {
 
@@ -156,10 +147,9 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
     fun setupAppBlocker(service: BaseBlockingService) {
         this.service = service
         notificationManager = NotificationTimerManager(service)
-        val dataStoreManager = DataStoreManager(service)
 
         CoroutineScope(Dispatchers.IO).launch {
-            dataStoreManager.settings.collectLatest { settings ->
+            service.dataStoreManager.settings.collectLatest { settings ->
                 val tempBlockedApps = mutableMapOf<String, AppUsageConfig>()
                 val tempTimeBlockedApps = mutableMapOf<String, AppTimeConfig>()
                 val warningScrnConfigs = mutableMapOf<String, AppBlockerWarningScreenConfig>()

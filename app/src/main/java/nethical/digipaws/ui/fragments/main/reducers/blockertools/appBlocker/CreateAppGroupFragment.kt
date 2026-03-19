@@ -20,10 +20,11 @@ import nethical.digipaws.data.models.AppBlockingType
 import nethical.digipaws.data.models.AppGroup
 import nethical.digipaws.databinding.FragmentCreateAppGroupBinding
 import nethical.digipaws.ui.activity.SelectAppsActivity
-import nethical.digipaws.ui.activity.AppUsageConfig
-import nethical.digipaws.ui.activity.AppTimeConfig
-import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
+import nethical.digipaws.data.models.AppTimeConfig
+import nethical.digipaws.data.models.AppUsageConfig
 import java.util.UUID
+import kotlin.jvm.java
+
 class CreateAppGroupFragment : Fragment() {
 
     companion object {
@@ -89,7 +90,7 @@ class CreateAppGroupFragment : Fragment() {
                             binding.rgBlockingType.check(R.id.rb_time_based)
                             viewModel.currentTimeConfig = Gson().fromJson(group.setting, AppTimeConfig::class.java)
                         }
-                        viewModel.warningScrnConfig = group.warningScreenConfig ?: AppBlockerWarningScreenConfig()
+                        viewModel.warningScrnConfig = group.warningScreenConfig
 
                         binding.toolbar.menu.clear()
                         val deleteItem = binding.toolbar.menu.add(0, 1001, 0, "Delete")

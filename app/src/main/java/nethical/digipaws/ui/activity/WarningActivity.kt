@@ -12,7 +12,7 @@ import com.google.gson.Gson
 import nethical.digipaws.Constants
 import nethical.digipaws.R
 import nethical.digipaws.blockers.AppBlocker
-import nethical.digipaws.blockers.AppBlockerWarningScreenConfig
+import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.databinding.DialogWarningOverlayBinding
 import nethical.digipaws.services.AppBlockerService
 import nethical.digipaws.services.ViewBlockerService
