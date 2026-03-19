@@ -7,11 +7,17 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
 import nethical.digipaws.R
 import nethical.digipaws.databinding.FragmentFocusBinding
+import nethical.digipaws.utils.TimeTools
+import nethical.digipaws.utils.TimeTools.Companion.formatTime
 
 class FocusFragment : Fragment() {
 
@@ -28,11 +34,41 @@ class FocusFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFocusBinding.inflate(inflater, container, false)
-        setupRuler()
-        setupClicks()
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.currentRunningFocus.collect { (groupId, endTime) ->
+                        if (groupId != null) {
+                            binding.activeContainer.visibility = View.VISIBLE
+                            binding.setupContainer.visibility = View.GONE
+
+                            val group = viewModel.groups.value.find { it.groupId == groupId }
+                            binding.tvActiveGroup.text = group!!.groupName
+
+                            binding.btnStop.visibility = if (group.exitable) View.VISIBLE else View.GONE
+                            viewModel.startTimer(endTime)
+                        } else {
+                            binding.activeContainer.visibility = View.GONE
+                            binding.setupContainer.visibility = View.VISIBLE
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.currentRunningTimer.collect { time ->
+                        binding.tvCountdown.text = TimeTools.formatTimeInHHMM(time)
+                    }
+                }
+            }
+        }
+        setupRuler()
+        setupClicks()
+    }
     override fun onResume() {
         super.onResume()
     }
@@ -55,7 +91,9 @@ class FocusFragment : Fragment() {
         }
 
         binding.btnStop.setOnClickListener {
+            viewModel.forceStopFocus()
         }
+
     }
 
 

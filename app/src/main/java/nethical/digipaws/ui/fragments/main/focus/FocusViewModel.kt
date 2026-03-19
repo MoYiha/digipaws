@@ -1,6 +1,5 @@
 package nethical.digipaws.ui.fragments.main.focus
 
-import android.R.attr.action
 import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
@@ -11,15 +10,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import nethical.digipaws.Constants
 import nethical.digipaws.blockers.FocusModeBlocker
-import nethical.digipaws.data.models.AppGroup
 import nethical.digipaws.data.models.ManualFocusGroup
 import nethical.digipaws.utils.DataStoreManager
-import java.util.Calendar
-import java.util.UUID
 
 class FocusViewModel(application: Application) : AndroidViewModel(application) {
     var newGroupSelectedApps = hashSetOf<String>()
@@ -32,10 +26,21 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
     var selectedMins = 25
 
     var selectedGroup : ManualFocusGroup? = null
+
+
+    private val _currentRunningFocus = MutableStateFlow<Pair<String?, Long>>(Pair(null,0L))
+    val currentRunningFocus: StateFlow<Pair<String?, Long>> = _currentRunningFocus
+
+    private var timerJob: Job? = null
+    private var _currentRunningTimer = MutableStateFlow<Long>(0L)
+    var currentRunningTimer: StateFlow<Long> = _currentRunningTimer
+
+
     init {
         viewModelScope.launch {
             dataStoreManager.settings.collectLatest { settings ->
                 _groups.value = settings.manualFocusGroups
+                _currentRunningFocus.value = settings.activeManualFocusGroupId
             }
         }
     }
@@ -47,13 +52,22 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun startFocusing(){
+    private fun requestFocusBlockerRefresh() {
+        val intent = Intent(FocusModeBlocker.INTENT_ACTION_REFRESH_FOCUS_MODE)
+        application.sendBroadcast(intent)
+    }
 
+    fun forceStopFocus(){
+        viewModelScope.launch {
+            dataStoreManager.setManualFocusStateToInactive()
+            requestFocusBlockerRefresh()
+        }
+    }
+    fun startFocusing(){
         if(selectedGroup == null) return
         viewModelScope.launch {
             dataStoreManager.setManualFocusStateToActive(selectedGroup!!.groupId,selectedMins * 60_000L)
-            val intent = Intent(FocusModeBlocker.INTENT_ACTION_REFRESH_FOCUS_MODE)
-            application.sendBroadcast(intent)
+            requestFocusBlockerRefresh()
         }
     }
     fun addGroup(group: ManualFocusGroup) {
@@ -61,4 +75,32 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
         updateGroups(updatedGroups)
     }
 
+
+    fun startTimer( endTime: Long) {
+        // Stop any existing timer before starting a new one
+        timerJob?.cancel()
+
+        timerJob = viewModelScope.launch {
+
+            while (System.currentTimeMillis() < endTime) {
+                val remaining = endTime - System.currentTimeMillis()
+
+                _currentRunningTimer.value = remaining
+
+                delay(1000L)
+            }
+
+            // Timer Finished
+            onTimerFinished()
+        }
+    }
+
+    fun stopTimer() {
+        timerJob?.cancel()
+        _currentRunningTimer.value = 0L
+    }
+
+    private fun onTimerFinished() {
+        _currentRunningTimer.value = 0L
+    }
 }

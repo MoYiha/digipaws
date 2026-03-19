@@ -184,7 +184,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        app:cardBackgroundColor="?attr/colorPrimaryContainer"
         app:cardCornerRadius="0dp"
         app:cardElevation="0dp"
         app:strokeWidth="0dp">
@@ -204,20 +203,15 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/focus_active"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:textColor="?attr/colorOnPrimaryContainer"
-                android:textStyle="bold" />
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
 
             <TextView
                 android:id="@+id/tvCountdown"
+                style="@style/TextAppearance.Material3.HeadlineLarge"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:fontFamily="monospace"
                 android:gravity="center"
                 android:text="00:00"
-                android:textColor="?attr/colorOnPrimaryContainer"
-                android:textSize="72sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -227,17 +221,15 @@
                 android:layout_marginTop="4dp"
                 android:alpha="0.7"
                 android:gravity="center"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnPrimaryContainer" />
+                android:textAppearance="?attr/textAppearanceBodyMedium" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnStop"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="64dp"
-                android:text="@string/focus_end_session"
-                app:cornerRadius="28dp" />
+                android:layout_marginTop="16dp"
+                android:text="@string/focus_end_session" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

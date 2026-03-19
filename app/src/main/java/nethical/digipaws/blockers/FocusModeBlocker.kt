@@ -130,6 +130,12 @@ class FocusModeBlocker : BaseBlocker() {
                             notificationManager.startTimer(focusModeData!!.endTimeInMillis - System.currentTimeMillis(),timerIdU = "focus_mode")
                         }
                     }
+                } else {
+                    focusModeData  = null
+
+                    withContext(Dispatchers.Main) {
+                        notificationManager.stopTimer()
+                    }
                 }
             }
         }

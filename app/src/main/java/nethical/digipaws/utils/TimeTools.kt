@@ -6,6 +6,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class TimeTools {
     companion object {
@@ -70,6 +71,19 @@ class TimeTools {
             }.trim()
         }
 
+        fun formatTimeInHHMM(millis: Long): String {
+            val hours = TimeUnit.MILLISECONDS.toHours(millis)
+            val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
+            val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
+
+            return if (hours > 0) {
+                // Format as HH:mm:ss if there are hours
+                String.format("%02d:%02d:%02d", hours, minutes, seconds)
+            } else {
+                // Format as mm:ss for shorter sessions
+                String.format("%02d:%02d", minutes, seconds)
+            }
+        }
         fun formatTimeForWidget(timeInMillis: Long): String {
             val hours = timeInMillis / (1000 * 60 * 60)
             val minutes = (timeInMillis % (1000 * 60 * 60)) / (1000 * 60)
