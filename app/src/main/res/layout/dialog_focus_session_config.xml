@@ -181,6 +181,14 @@
 
                 </com.google.android.material.button.MaterialButtonToggleGroup>
 
+                <CheckBox
+                    android:id="@+id/exitable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:checked="true"
+                    android:text="Let me quit mid-sessions" />
+
                 <Button
                     android:id="@+id/save_group"
                     android:layout_width="match_parent"

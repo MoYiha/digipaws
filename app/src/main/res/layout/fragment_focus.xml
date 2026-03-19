@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
@@ -13,7 +14,8 @@
         android:orientation="vertical"
         android:paddingHorizontal="20dp"
         android:paddingTop="32dp"
-        android:paddingBottom="100dp">
+        android:paddingBottom="132dp"
+        android:visibility="visible">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -36,8 +38,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_baseline_bar_chart_24"
                 android:contentDescription="@string/focus_stats"
+                android:src="@drawable/ic_baseline_bar_chart_24"
                 app:tint="?attr/colorOnSurface" />
         </RelativeLayout>
 
@@ -193,8 +195,8 @@
             android:gravity="center"
             android:orientation="vertical"
             android:paddingStart="24dp"
-            android:paddingEnd="24dp"
             android:paddingTop="24dp"
+            android:paddingEnd="24dp"
             android:paddingBottom="100dp">
 
             <TextView
@@ -211,31 +213,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:fontFamily="monospace"
                 android:gravity="center"
                 android:text="00:00"
                 android:textColor="?attr/colorOnPrimaryContainer"
                 android:textSize="72sp"
-                android:textStyle="bold"
-                android:fontFamily="monospace" />
-
-            <TextView
-                android:id="@+id/tvActiveTag"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:textAppearance="?attr/textAppearanceBodyLarge"
-                android:textColor="?attr/colorOnPrimaryContainer" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvActiveGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:alpha="0.7"
                 android:gravity="center"
                 android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnPrimaryContainer"
-                android:alpha="0.7" />
+                android:textColor="?attr/colorOnPrimaryContainer" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnStop"

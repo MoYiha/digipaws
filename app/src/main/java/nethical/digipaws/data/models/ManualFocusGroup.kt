@@ -7,6 +7,7 @@ data class ManualFocusGroup(
     val groupName: String,
     val packages: HashSet<String>,
     val blockMode: FocusBlockMode,
+    val exitable: Boolean = true
 ){
     override fun toString(): String {
         return "$groupName (${packages.size} ${

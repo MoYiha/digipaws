@@ -76,7 +76,8 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
             viewModel.addGroup(ManualFocusGroup(
                 groupName = binding.groupName.text.toString(),
                 packages = viewModel.newGroupSelectedApps,
-                blockMode = if(binding.selectedBlockAction.checkedButtonId == R.id.btn_selected) FocusBlockMode.BLOCK_SELECTED else FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED
+                blockMode = if(binding.selectedBlockAction.checkedButtonId == R.id.btn_selected) FocusBlockMode.BLOCK_SELECTED else FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED,
+                exitable = binding.exitable.isChecked
             ))
             binding.createGroup.visibility = View.GONE
             binding.selectGrouo.visibility = View.VISIBLE
