@@ -28,6 +28,7 @@ import nethical.digipaws.ui.activity.TimedActionActivity
 import nethical.digipaws.utils.DataStoreManager
 import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.TimeTools
+import nethical.digipaws.utils.TimerNotification
 import nethical.digipaws.utils.getCurrentKeyboardPackageName
 import nethical.digipaws.utils.getDefaultLauncherPackageName
 import java.util.Calendar
@@ -72,7 +73,7 @@ class FocusModeBlocker : BaseBlocker() {
 
     private lateinit var service : BaseBlockingService
 
-    private lateinit var notificationManager: NotificationTimerManager
+    private lateinit var notificationManager: TimerNotification
 
     private fun turnOffFocusMode(){
         focusModeData = null
@@ -129,7 +130,7 @@ class FocusModeBlocker : BaseBlocker() {
     fun setupFocusMode(service: BaseBlockingService) {
         this.service = service
 
-        notificationManager = NotificationTimerManager(service)
+        notificationManager = TimerNotification(service)
 
         CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->
@@ -138,7 +139,7 @@ class FocusModeBlocker : BaseBlocker() {
                 // manual focus mode has been turned on / is turn on
                 if(settings.activeManualFocusGroupId.first != null){
                     val currentFocusingGroup = settings.manualFocusGroups.find { it.groupId == settings.activeManualFocusGroupId.first }
-                    if(currentFocusingGroup!=null){
+                    if(currentFocusingGroup!=null && settings.activeManualFocusGroupId.second > System.currentTimeMillis()){
 
                         if (currentFocusingGroup.blockMode == FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED) {
                             selectedFocusModeApps.add("com.android.systemui")
@@ -152,7 +153,7 @@ class FocusModeBlocker : BaseBlocker() {
                         focusModeData = ManualFocusModeData(currentFocusingGroup,settings.activeManualFocusGroupId.second)
 
                         withContext(Dispatchers.Main) {
-                            notificationManager.startTimer(focusModeData!!.endTimeInMillis - System.currentTimeMillis(),timerIdU = "focus_mode")
+                            notificationManager.startTimer(focusModeData!!.endTimeInMillis - System.currentTimeMillis(), timerId = "focus_mode", title = "Focus Mode is on")
                         }
                     }
                 } else {

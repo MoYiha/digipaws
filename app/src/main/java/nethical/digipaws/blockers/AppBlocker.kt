@@ -13,11 +13,9 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
-import androidx.core.content.ContextCompat.registerReceiver
 import nethical.digipaws.Constants
 import nethical.digipaws.services.BaseBlockingService
 import nethical.digipaws.ui.activity.WarningActivity
-import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
 import java.util.Calendar
@@ -27,11 +25,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import nethical.digipaws.blockers.FocusModeBlocker.Companion.INTENT_ACTION_REFRESH_FOCUS_MODE
 import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppBlockingType
 import nethical.digipaws.data.models.AppTimeConfig
 import nethical.digipaws.data.models.AppUsageConfig
+import nethical.digipaws.utils.TimerNotification
 import kotlin.jvm.java
 
 
@@ -86,7 +84,7 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
 
     private var appBlockerWarningScrnConfgs = HashMap<String, AppBlockerWarningScreenConfig>()
 
-    private lateinit var notificationManager: NotificationTimerManager
+    private lateinit var notificationManager: TimerNotification
     init {
         loadPersistedData()
     }
@@ -147,7 +145,7 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
                 showWarningScreen(packageName)
             } else {
                 // App is in blocked list but hasn't exceeded usage limit yet
-                notificationManager.startTimer(remainingUsage, timerIdU = packageName)
+                notificationManager.startTimer(totalMillis = remainingUsage, timerId = packageName, title = "Remaining usage before lockdown")
                 setUpForcedRefreshChecker(packageName,remainingUsage + SystemClock.uptimeMillis())
                 return
             }
@@ -169,12 +167,13 @@ class AppBlocker(private val context: Context) : BaseBlocker() {
         }
     }
 
-    fun removeReceivers(){
+    fun onDestroy(){
         service.unregisterReceiver(refreshReceiver)
+        notificationManager.release()
     }
     fun setupAppBlocker(service: BaseBlockingService) {
         this.service = service
-        notificationManager = NotificationTimerManager(service)
+        notificationManager = TimerNotification(service)
 
         CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->

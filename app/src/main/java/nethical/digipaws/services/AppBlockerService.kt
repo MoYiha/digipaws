@@ -46,7 +46,7 @@ class AppBlockerService : BaseBlockingService() {
         super.onDestroy()
         focusModeBlocker.removeReceivers()
         reelBlocker.removeReceivers()
-        appBlocker.removeReceivers()
+        appBlocker.onDestroy()
 
     }
 
