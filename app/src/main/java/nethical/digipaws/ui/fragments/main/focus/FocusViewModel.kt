@@ -41,6 +41,7 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
             dataStoreManager.settings.collectLatest { settings ->
                 _groups.value = settings.manualFocusGroups
                 _currentRunningFocus.value = settings.activeManualFocusGroupId
+                if(_currentRunningFocus.value.second < System.currentTimeMillis()) forceStopFocus()
             }
         }
     }

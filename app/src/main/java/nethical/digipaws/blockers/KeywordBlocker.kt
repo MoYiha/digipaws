@@ -13,6 +13,8 @@ import android.content.res.Resources
 import android.graphics.Path
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.LruCache
 import android.view.accessibility.AccessibilityEvent
@@ -57,7 +59,7 @@ class KeywordBlocker : BaseBlocker() {
 
         const val INTENT_ACTION_REFRESH_CONFIG =
             "nethical.digipaws.refresh.keywordblocker.config"
-        private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+        private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
 
     }
     private lateinit var service : BaseBlockingService
@@ -82,7 +84,6 @@ class KeywordBlocker : BaseBlocker() {
 
 
     private fun containsBlockedKeyword(url: String): String? {
-        Log.d("checking" , url)
         // Check cache first
         val cachedResult = detectionCache.get(url)
         if (cachedResult != null) {
@@ -93,7 +94,7 @@ class KeywordBlocker : BaseBlocker() {
         val keywords = parseTextForKeywords(url)
         for (word in keywords) {
             if (blockedKeyword.contains(word)) { // word is already lowercased in parseTextForKeywords
-                Log.d("blocked word found ", word)
+//                Log.d("blocked word found ", word)
                 // Cache the bad word and return
                 detectionCache.put(url, word)
                 return word
@@ -157,11 +158,13 @@ class KeywordBlocker : BaseBlocker() {
     fun checkIfUserGettingFreaky(event: AccessibilityEvent?) {
 
         fun showMessage(word: String) {
-            Toast.makeText(
-                service,
-                "Blocked keyword $word was found.",
-                Toast.LENGTH_LONG
-            ).show()
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(
+                    service,
+                    "Blocked keyword $word was found.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
 
         fun pressHome(word: String) {
@@ -322,12 +325,6 @@ class KeywordBlocker : BaseBlocker() {
                 isUnsupportedBrowserBlockingOn = settings.keywordBlockerConfig.blockAllExceptSupported
                 isTurnedOn = settings.keywordBlockerConfig.isActive
                 ignoredApps = settings.keywordBlockerConfig.ignoredApps.toHashSet()
-
-                refreshCooldown = if(settings.keywordBlockerConfig.searchRecursively) {
-                    5000
-                } else {
-                    1000
-                }
             }
         }
 

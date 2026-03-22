@@ -31,4 +31,17 @@ class CrashLogger(private val context: Context) : Thread.UncaughtExceptionHandle
 
         defaultHandler?.uncaughtException(thread, throwable) // Let the system handle the crash
     }
+    fun logNonFatalError(exception: Exception) {
+        try {
+            val timeStamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+            val writer = FileWriter(logFile, true) // Append mode
+            writer.append("\n--- Non-Fatal Error (Caught) at $timeStamp ---\n")
+            val printWriter = PrintWriter(writer)
+            exception.printStackTrace(printWriter)
+            printWriter.flush()
+            printWriter.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 }
