@@ -26,7 +26,9 @@ import nethical.digipaws.services.BaseBlockingService
 import nethical.digipaws.services.ViewBlockerService.Companion.INTENT_ACTION_REFRESH_VIEW_BLOCKER
 import nethical.digipaws.services.ViewBlockerService.Companion.INTENT_ACTION_REFRESH_VIEW_BLOCKER_COOLDOWN
 import nethical.digipaws.ui.activity.WarningActivity
+import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.TimeTools
+import nethical.digipaws.utils.TimerNotification
 import java.util.Calendar
 
 
@@ -70,6 +72,8 @@ class ReelBlocker : BaseBlocker() {
     private var screenHeight: Int = 0
 
     private var lastEventTimeStamp = 0L
+
+    private lateinit var notificationManager: TimerNotification
 
     fun doViewBlockerCheck(
         event: AccessibilityEvent?
@@ -124,16 +128,18 @@ class ReelBlocker : BaseBlocker() {
 
 
     fun applyCooldown(viewId: String, endTime: Long) {
+        notificationManager.startTimer(totalMillis = endTime - SystemClock.uptimeMillis(), timerId = viewId, title = "Remaining usage before reels lockdown")
         cooldownViewIdsList[viewId] = endTime
     }
 
 
     fun setupBlocker(service: BaseBlockingService) {
         this.service = service
+
+        notificationManager = TimerNotification(service)
         var displayMetrics: DisplayMetrics = service.resources.displayMetrics
         screenHeight = displayMetrics.heightPixels
         screenWidth = displayMetrics.widthPixels
-
 
         CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->
@@ -165,6 +171,7 @@ class ReelBlocker : BaseBlocker() {
 
     fun removeReceivers(){
         service.unregisterReceiver(refreshReceiver)
+        notificationManager.release()
     }
 
     private val refreshReceiver = object : BroadcastReceiver() {
@@ -245,12 +252,5 @@ class ReelBlocker : BaseBlocker() {
         }
         return null
     }
-
-    data class ViewBlockerResult(
-        val isBlocked: Boolean = false,
-        val requestHomePressInstead: Boolean = false,
-        val isReelFoundInCooldownState: Boolean = false,
-        val viewId: String = ""
-    )
 
 }
