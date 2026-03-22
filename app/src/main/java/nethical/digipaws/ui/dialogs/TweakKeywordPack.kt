@@ -42,7 +42,6 @@ class TweakKeywordPack : BaseDialog() {
                 }
 
                 // Send broadcast to refresh the KeywordBlockerService
-                sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_BLOCKED_KEYWORD_LIST)
             }
             .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()

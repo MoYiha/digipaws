@@ -1,12 +1,15 @@
 package nethical.digipaws.ui.fragments.main.reducers.blockertools.keywordBlocker
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import nethical.digipaws.blockers.AppBlocker
 import nethical.digipaws.data.models.KeywordBlocker
 import nethical.digipaws.utils.DataStoreManager
 
@@ -24,9 +27,15 @@ class KeywordBlockerViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
+
+    private fun requestKeywordBlockerRefresh() {
+        val intent = Intent(nethical.digipaws.blockers.KeywordBlocker.INTENT_ACTION_REFRESH_CONFIG)
+        application.sendBroadcast(intent)
+    }
     private fun updateConfig(newConfig: KeywordBlocker) {
         viewModelScope.launch {
             dataStoreManager.updateKeywordBlockerConfig(newConfig)
+            requestKeywordBlockerRefresh()
         }
     }
 
@@ -51,6 +60,9 @@ class KeywordBlockerViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
+    fun setIgnoredApps(list:List<String>){
+        updateConfig(_keywordBlockerConfig.value.copy(ignoredApps = list))
+    }
     fun setRedirectUrl(url: String) {
         updateConfig(_keywordBlockerConfig.value.copy(redirectUrl = url))
     }

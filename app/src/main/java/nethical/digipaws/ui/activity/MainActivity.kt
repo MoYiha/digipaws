@@ -233,7 +233,6 @@ class MainActivity : AppCompatActivity() {
                     val blockedKeywords = result.data?.getStringArrayListExtra("SELECTED_KEYWORDS")
                     blockedKeywords?.let {
                         savedPreferencesLoader.saveBlockedKeywords(it.toSet())
-                        sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_BLOCKED_KEYWORD_LIST)
                     }
                 }
             }

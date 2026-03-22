@@ -106,7 +106,6 @@ class TweakKeywordBlocker(savedPreferencesLoader: SavedPreferencesLoader) :
                 }
 
                 // Send broadcast to refresh the KeywordBlockerService
-                sendRefreshRequest(KeywordBlockerService.INTENT_ACTION_REFRESH_CONFIG)
             }
             .setNegativeButton(getString(R.string.close)) { _, _ ->
                 // Do nothing on cancel

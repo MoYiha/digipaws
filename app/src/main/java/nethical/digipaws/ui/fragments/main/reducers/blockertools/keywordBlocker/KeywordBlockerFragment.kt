@@ -1,11 +1,16 @@
 package nethical.digipaws.ui.fragments.main.reducers.blockertools.keywordBlocker
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -13,6 +18,7 @@ import com.google.android.material.chip.Chip
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import nethical.digipaws.databinding.FragmentKeywordBlockerBinding
+import nethical.digipaws.ui.activity.SelectAppsActivity
 
 class KeywordBlockerFragment : Fragment() {
 
@@ -21,6 +27,20 @@ class KeywordBlockerFragment : Fragment() {
 
     private val viewModel: KeywordBlockerViewModel by activityViewModels()
     private var isUpdatingUi = false
+
+    private var selectedApps = listOf<String>()
+    private val selectAppsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == AppCompatActivity.RESULT_OK) {
+            val apps = result.data?.getStringArrayListExtra("SELECTED_APPS")
+            if (apps != null) {
+                viewModel.setIgnoredApps(apps)
+                binding.btnSelectIgnoredApps.text = "Select Ignored Apps (${apps.size})"
+                selectedApps = apps
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,8 +64,17 @@ class KeywordBlockerFragment : Fragment() {
         }
 
         binding.btnAddKeyword.setOnClickListener {
-            val keyword = binding.etKeyword.text.toString()
+            var keyword = binding.etKeyword.text.toString()
             if (keyword.isNotBlank()) {
+                if (Patterns.WEB_URL.matcher(keyword).matches()) {
+                    val regex = Regex("^(?:https?://)?(?:www\\.)?([\\w-]+)\\.")
+                    keyword = regex.find(keyword)?.groupValues?.get(1) ?: ""
+                    Toast.makeText(
+                        requireContext(),
+                        "WARNING: Link blocker may not work everywhere.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
                 viewModel.addKeyword(keyword)
                 binding.etKeyword.setText("")
             }
@@ -74,7 +103,9 @@ class KeywordBlockerFragment : Fragment() {
         }
 
         binding.btnSelectIgnoredApps.setOnClickListener {
-            // Future implementation for ignored apps
+            val intent = Intent(requireContext(), SelectAppsActivity::class.java)
+            intent.putStringArrayListExtra("PRE_SELECTED_APPS", ArrayList(selectedApps))
+            selectAppsLauncher.launch(intent)
         }
     }
 
@@ -98,6 +129,7 @@ class KeywordBlockerFragment : Fragment() {
                 if (binding.cbBlockUnsupportedBrowsers.isChecked != config.blockAllExceptSupported) {
                     binding.cbBlockUnsupportedBrowsers.isChecked = config.blockAllExceptSupported
                 }
+                selectedApps = config.ignoredApps
 
                 updateKeywordsList(config.blockedKeywords)
 

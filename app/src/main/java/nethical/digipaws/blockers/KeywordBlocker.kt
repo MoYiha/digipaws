@@ -3,18 +3,31 @@ package nethical.digipaws.blockers
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
 import android.accessibilityservice.GestureDescription
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Context.RECEIVER_EXPORTED
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Resources
 import android.graphics.Path
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.LruCache
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import nethical.digipaws.services.BaseBlockingService
 import java.util.Locale
 
-class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
+class KeywordBlocker : BaseBlocker() {
     companion object {
         val URL_BAR_ID_LIST = mapOf(
-
             "com.android.chrome" to BrowserUrlBarInfo(
                 displayUrlBarId = "url_bar",
                 browserSugggestionBoxId = "omnibox_suggestions_dropdown"
@@ -39,31 +52,62 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
             ),
         )
 
+        // CONSTANTS FOR CACHING
+        private const val SAFE_STRING_TOKEN = "||SAFE||"
+
+        const val INTENT_ACTION_REFRESH_CONFIG =
+            "nethical.digipaws.refresh.keywordblocker.config"
+        private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+
     }
+    private lateinit var service : BaseBlockingService
+    private lateinit var browserBlocker : BrowserBlocker
 
     lateinit var blockedKeyword: HashSet<String>
-
     lateinit var redirectUrl: String
     var isSearchAllTextFields = false
-
     var recursionResultNodes: MutableList<AccessibilityNodeInfo> = mutableListOf()
+
+    private val wordSplitRegex = Regex("[^a-zA-Z0-9]+")
+
+    // Caches the results of string evaluations. Max 200 items to prevent memory bloat.
+    // Maps the raw text -> The blocked keyword found (or SAFE_STRING_TOKEN if safe)
+    private val detectionCache = LruCache<String, String>(200)
+    private var isTurnedOn = false
+    private var isUnsupportedBrowserBlockingOn = false
+    private var ignoredApps: HashSet<String> = hashSetOf()
+
+    private var lastEventTimeStamp = 0L
+    private var refreshCooldown : Int = 0
 
 
     private fun containsBlockedKeyword(url: String): String? {
-        // Split text by whitespace to get individual words and check each word
+        Log.d("checking" , url)
+        // Check cache first
+        val cachedResult = detectionCache.get(url)
+        if (cachedResult != null) {
+            return if (cachedResult == SAFE_STRING_TOKEN) null else cachedResult
+        }
+
+        // If not in cache, process it
         val keywords = parseTextForKeywords(url)
-        keywords.forEach { word ->
-            if (blockedKeyword.contains(word.lowercase())) {
-                Log.d("chcking", word )
+        for (word in keywords) {
+            if (blockedKeyword.contains(word)) { // word is already lowercased in parseTextForKeywords
+                Log.d("blocked word found ", word)
+                // Cache the bad word and return
+                detectionCache.put(url, word)
                 return word
             }
         }
+
+        // Cache as safe and return null
+        detectionCache.put(url, SAFE_STRING_TOKEN)
         return null
     }
 
     private fun parseTextForKeywords(input: String): Set<String> {
         fun extractWords(text: String): Set<String> =
-            text.split(Regex("[^a-zA-Z0-9]+"))
+            text.split(wordSplitRegex) // Uses the hoisted regex
                 .filter { it.isNotEmpty() }
                 .map { it.lowercase(Locale.ROOT) }
                 .toSet()
@@ -105,74 +149,92 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
         }
 
         // Plain text fallback
-        words.add(input)
+        words.add(input.lowercase(Locale.ROOT))
         words.addAll(extractWords(input))
-        Log.d("words", words.toString())
         return words
     }
 
-    fun checkIfUserGettingFreaky(
-        rootNode: AccessibilityNodeInfo?,
-        event: AccessibilityEvent
-    ): KeywordBlockerResult {
-        rootNode ?: return KeywordBlockerResult()
-        val displayUrlTextNode: AccessibilityNodeInfo?
+    fun checkIfUserGettingFreaky(event: AccessibilityEvent?) {
 
+        fun showMessage(word: String) {
+            Toast.makeText(
+                service,
+                "Blocked keyword $word was found.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        fun pressHome(word: String) {
+            showMessage(word)
+            service.pressHome()
+        }
+
+        if(!isTurnedOn) return
+        if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0) return
+
+        if (!service.isDelayOver(
+                lastEventTimeStamp,
+                refreshCooldown
+            ) || event.packageName == "nethical.digipaws" || ignoredApps.contains(
+                event.packageName
+            )
+        ) {
+            return
+        }
+
+        if(isUnsupportedBrowserBlockingOn && browserBlocker!!.isAppBrowser(event)) return pressHome("/ unsupported browser")
+        val rootNode = service.rootInActiveWindow ?: return
+        val displayUrlTextNode: AccessibilityNodeInfo?
         var detectedAdultKeyword: String? = null
 
         if (isSearchAllTextFields) {
-
             recursionResultNodes.clear()
             findNodesByClassName(rootNode, "android.widget.TextView", false)
 
             try {
                 recursionResultNodes.forEach { node ->
-                    // Guard against null text
                     val nodeText = node.text?.toString() ?: ""
                     if (nodeText.isEmpty()) return@forEach
                     val word = containsBlockedKeyword(nodeText)
                     if (word != null) {
                         detectedAdultKeyword = word
-                        return@forEach
+                        return@forEach // breaks from the forEach loop
                     }
                 }
             } catch (e: Exception) {
                 Log.d("Keyword Blocker 111", e.toString())
             }
         }
-        // Check if the package name exists in the map
+
         val urlBarInfo = URL_BAR_ID_LIST[event.packageName]
         if (urlBarInfo == null && detectedAdultKeyword != null) {
-            // App is not a supported browser and adult word was found so hence press home
-            return KeywordBlockerResult(true, detectedAdultKeyword)
+            pressHome(detectedAdultKeyword!!)
+            return
         }
 
-        if (urlBarInfo == null) return KeywordBlockerResult()
+        if (urlBarInfo == null) return
+
         val idPrefixPart = event.packageName.toString() + ":id/"
         displayUrlTextNode =
             ReelBlocker.findElementById(rootNode, idPrefixPart + urlBarInfo.displayUrlBarId)
 
-
-
         if (detectedAdultKeyword == null) {
-            // Safely handle possible nulls from searchKeywordsInWebViewTitle and displayUrlTextNode.text
             val webViewKeyword = searchKeywordsInWebViewTitle(rootNode)
             val displayText = displayUrlTextNode?.text?.toString() ?: ""
-            Log.d("displaytext",displayText)
-            detectedAdultKeyword = webViewKeyword ?: (if (displayText.isNotEmpty()) containsBlockedKeyword(displayText) else null) ?: return KeywordBlockerResult()
 
+            detectedAdultKeyword = webViewKeyword ?: (if (displayText.isNotEmpty())
+                containsBlockedKeyword(displayText)
+            else null) ?: return
         }
+
         performSmallUpwardScroll()
         Thread.sleep(200)
         displayUrlTextNode?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
         Thread.sleep(200)
 
-        Log.d("edit", idPrefixPart + urlBarInfo.editUrlBarId)
-
-
         val editUrlBarId = urlBarInfo.editUrlBarId ?: urlBarInfo.displayUrlBarId
         val editUrlBar = ReelBlocker.findElementById(rootNode, idPrefixPart + editUrlBarId)
-            ?: return KeywordBlockerResult(false, detectedAdultKeyword)
+            ?: return pressHome(detectedAdultKeyword!!)
 
         editUrlBar.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
             putCharSequence(
@@ -180,21 +242,20 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
             )
         })
         Thread.sleep(300)
+
         val goBtnNode =
             ReelBlocker.findElementById(rootNode, idPrefixPart + urlBarInfo.browserSugggestionBoxId)
-                ?: return KeywordBlockerResult(resultDetectWord = detectedAdultKeyword)
+                ?: return pressHome(detectedAdultKeyword!!)
+
         if (urlBarInfo.isSuggestionEqualToGo) {
             goBtnNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
         } else {
             goBtnNode.getChild(urlBarInfo.suggestionBoxIndexOfGoBtn)
-                .performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                ?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
         }
-
-        return KeywordBlockerResult(resultDetectWord = detectedAdultKeyword)
     }
 
     private fun searchKeywordsInWebViewTitle(rootNode: AccessibilityNodeInfo): String? {
-
         recursionResultNodes.clear()
         try {
             findNodesByClassName(rootNode, "android.webkit.WebView")
@@ -202,20 +263,13 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
             Log.d("error", e.toString())
             return null
         }
+
         val webView = recursionResultNodes.getOrNull(0) ?: return null
-        Log.d("Keyword Blocker", "Webview found")
-        val resultWord = webView.text
-
-        Log.d("Keyword Blocker", "Webview title $resultWord")
-
-        // Guard against null text on webview
-        val titleText = resultWord?.toString() ?: ""
+        val titleText = webView.text?.toString() ?: ""
         if (titleText.isEmpty()) return null
 
         return containsBlockedKeyword(titleText)
-
     }
-
 
     private fun findNodesByClassName(
         node: AccessibilityNodeInfo?,
@@ -232,66 +286,81 @@ class KeywordBlocker(val service: AccessibilityService) : BaseBlocker() {
             findNodesByClassName(node.getChild(i), targetClassName)
         }
         if (returnOnFirstResult && recursionResultNodes.isNotEmpty()) return
-        return
     }
 
-
     fun performSmallUpwardScroll() {
-        // Create a path for the gesture
         val path = Path()
-
-        // Screen dimensions (you may want to get these dynamically)
         val screenHeight = Resources.getSystem().displayMetrics.heightPixels
-
-        // Start point: bottom quarter of screen
         val startY = (screenHeight * 0.75).toFloat()
-        // End point: slightly above start point (small scroll)
         val endY = startY - (screenHeight * 0.1).toFloat()
-
-        // Center horizontally
         val centerX = Resources.getSystem().displayMetrics.widthPixels / 2f
 
-        // Define the gesture path
         path.moveTo(centerX, startY)
         path.lineTo(centerX, endY)
 
-        // Create gesture builder
         val gestureBuilder = GestureDescription.Builder()
-        val gestureStroke = GestureDescription.StrokeDescription(
-            path,
-            0, // start time
-            200 // duration in milliseconds
-        )
+        val gestureStroke = GestureDescription.StrokeDescription(path, 0, 200)
 
-        // Build and dispatch gesture
-        val gesture = gestureBuilder
-            .addStroke(gestureStroke)
-            .build()
+        val gesture = gestureBuilder.addStroke(gestureStroke).build()
 
         service.dispatchGesture(gesture, object : AccessibilityService.GestureResultCallback() {
-            override fun onCompleted(gestureDescription: GestureDescription?) {
-                super.onCompleted(gestureDescription)
-                // Handle completion if needed
-            }
-
             override fun onCancelled(gestureDescription: GestureDescription?) {
                 super.onCancelled(gestureDescription)
                 service.performGlobalAction(GLOBAL_ACTION_HOME)
-
             }
         }, null)
     }
 
+    fun setupBlocker(service: BaseBlockingService){
+        this.service = service
+        this.browserBlocker = BrowserBlocker(service)
+        CoroutineScope(Dispatchers.IO).launch {
+            service.dataStoreManager.settings.collectLatest { settings ->
+                blockedKeyword =  settings.keywordBlockerConfig.blockedKeywords.toHashSet()
+                isSearchAllTextFields = settings.keywordBlockerConfig.searchRecursively
+                redirectUrl = settings.keywordBlockerConfig.redirectUrl
+                isUnsupportedBrowserBlockingOn = settings.keywordBlockerConfig.blockAllExceptSupported
+                isTurnedOn = settings.keywordBlockerConfig.isActive
+                ignoredApps = settings.keywordBlockerConfig.ignoredApps.toHashSet()
+
+                refreshCooldown = if(settings.keywordBlockerConfig.searchRecursively) {
+                    5000
+                } else {
+                    1000
+                }
+            }
+        }
+
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    fun setupReceivers(){
+        val filter = IntentFilter().apply {
+            addAction(INTENT_ACTION_REFRESH_CONFIG)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            service.registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            service.registerReceiver(refreshReceiver, filter)
+        }
+    }
+
+
+    fun removeReceivers(){
+        service.unregisterReceiver(refreshReceiver)
+    }
+    private val refreshReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                INTENT_ACTION_REFRESH_CONFIG -> setupBlocker(service)
+            }
+        }
+    }
     data class BrowserUrlBarInfo(
         val displayUrlBarId: String,
         val editUrlBarId: String? = null,
         val browserSugggestionBoxId: String,
         val suggestionBoxIndexOfGoBtn: Int = 0,
         val isSuggestionEqualToGo: Boolean = false
-    )
-
-    data class KeywordBlockerResult(
-        val isHomePressRequested: Boolean = false,
-        val resultDetectWord: String? = null
     )
 }
