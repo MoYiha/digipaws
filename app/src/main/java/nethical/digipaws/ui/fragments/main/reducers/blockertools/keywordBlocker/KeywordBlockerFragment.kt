@@ -67,8 +67,10 @@ class KeywordBlockerFragment : Fragment() {
             var keyword = binding.etKeyword.text.toString()
             if (keyword.isNotBlank()) {
                 if (Patterns.WEB_URL.matcher(keyword).matches()) {
-                    val regex = Regex("^(?:https?://)?(?:www\\.)?([\\w-]+)\\.")
-                    keyword = regex.find(keyword)?.groupValues?.get(1) ?: ""
+                    keyword = keyword
+                        .removePrefix("https://")
+                        .removePrefix("http://")
+                        .removePrefix("www.")
                     Toast.makeText(
                         requireContext(),
                         "WARNING: Link blocker may not work everywhere.",

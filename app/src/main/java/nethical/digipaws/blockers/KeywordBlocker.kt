@@ -80,7 +80,7 @@ class KeywordBlocker : BaseBlocker() {
     private var ignoredApps: HashSet<String> = hashSetOf()
 
     private var lastEventTimeStamp = 0L
-    private var refreshCooldown : Int = 0
+    private var refreshCooldown : Int = 2000
 
 
     private fun containsBlockedKeyword(url: String): String? {
@@ -170,6 +170,7 @@ class KeywordBlocker : BaseBlocker() {
         fun pressHome(word: String) {
             showMessage(word)
             service.pressHome()
+            lastEventTimeStamp = System.currentTimeMillis()
         }
 
         if(!isTurnedOn) return
@@ -317,6 +318,7 @@ class KeywordBlocker : BaseBlocker() {
     fun setupBlocker(service: BaseBlockingService){
         this.service = service
         this.browserBlocker = BrowserBlocker(service)
+        Log.d("Keyword Blocker","Setting up kw blocker")
         CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->
                 blockedKeyword =  settings.keywordBlockerConfig.blockedKeywords.toHashSet()
@@ -348,7 +350,8 @@ class KeywordBlocker : BaseBlocker() {
     }
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
+            if (intent == null) return
+            when (intent.action) {
                 INTENT_ACTION_REFRESH_CONFIG -> setupBlocker(service)
             }
         }
