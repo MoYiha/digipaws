@@ -30,6 +30,8 @@ class WarningActivity : AppCompatActivity() {
     private var proceedTimer: CountDownTimer? = null
     private var dialog: AlertDialog? = null
 
+    private var vibrator: Vibrator? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,15 +39,13 @@ class WarningActivity : AppCompatActivity() {
         layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL
         window.attributes = layoutParams
 
-
         val mode = intent.getIntExtra("mode", 0)
 
         val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
             intent.getStringExtra("warning_config"),
             AppBlockerWarningScreenConfig::class.java
         )
-        triggerRandomizedVibration(maxOf(3000,(warningScreenConfig.proceedDelayInSecs/2) * 1000L))
-
+        triggerRandomizedVibration(maxOf(3000L, (warningScreenConfig.proceedDelayInSecs / 2) * 1000L))
 
         val binding = DialogWarningOverlayBinding.inflate(layoutInflater)
         val isHomePressRequested = intent.getBooleanExtra("is_press_home", false)
@@ -135,7 +135,8 @@ class WarningActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        proceedTimer?.onFinish()
+        proceedTimer?.cancel()
+        vibrator?.cancel()
         dialog?.dismiss()
     }
 
@@ -151,7 +152,8 @@ class WarningActivity : AppCompatActivity() {
      * The lack of a steady rhythm prevents habituation and breaks focus.
      */
     private fun triggerRandomizedVibration(durationMillis: Long) {
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        // Initialize the class-level vibrator variable
+        vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
             vibratorManager.defaultVibrator
         } else {
@@ -159,34 +161,41 @@ class WarningActivity : AppCompatActivity() {
             getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
 
-        if (vibrator.hasVibrator()) {
-            val patternList = mutableListOf<Long>()
-            patternList.add(0L) // Start immediately (0ms initial delay)
+        vibrator?.let { currentVibrator ->
+            if (currentVibrator.hasVibrator()) {
+                val patternList = mutableListOf<Long>()
+                patternList.add(0L) // Start immediately (0ms initial delay)
 
-            var elapsedTime = 0L
+                var elapsedTime = 0L
 
-            while (elapsedTime < durationMillis) {
-                val vibrateDuration = Random.nextLong(40, 250)
-                val pauseDuration = Random.nextLong(40, 150)
+                while (elapsedTime < durationMillis) {
+                    val vibrateDuration = Random.nextLong(40, 250)
+                    val pauseDuration = Random.nextLong(40, 150)
 
-                if (elapsedTime + vibrateDuration >= durationMillis) {
-                    patternList.add(durationMillis - elapsedTime) // Cap exactly at duration
-                    break
+                    if (elapsedTime + vibrateDuration >= durationMillis) {
+                        patternList.add(durationMillis - elapsedTime) // Cap exactly at duration
+                        break
+                    }
+                    patternList.add(vibrateDuration)
+                    elapsedTime += vibrateDuration
+
+                    if (elapsedTime + pauseDuration >= durationMillis) {
+                        patternList.add(durationMillis - elapsedTime) // Cap exactly at duration
+                        break
+                    }
+                    patternList.add(pauseDuration)
+                    elapsedTime += pauseDuration
                 }
-                patternList.add(vibrateDuration)
-                elapsedTime += vibrateDuration
 
-                if (elapsedTime + pauseDuration >= durationMillis) {
-                    patternList.add(durationMillis - elapsedTime) // Cap exactly at duration
-                    break
+                val jaggedPattern = patternList.toLongArray()
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    currentVibrator.vibrate(VibrationEffect.createWaveform(jaggedPattern, -1))
+                } else {
+                    @Suppress("DEPRECATION")
+                    currentVibrator.vibrate(jaggedPattern, -1)
                 }
-                patternList.add(pauseDuration)
-                elapsedTime += pauseDuration
             }
-
-            val jaggedPattern = patternList.toLongArray()
-
-            vibrator.vibrate(VibrationEffect.createWaveform(jaggedPattern, -1))
         }
     }
 }
