@@ -1,12 +1,15 @@
 package nethical.digipaws.ui.fragments.main.reducers.blockertools.autofocus
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import nethical.digipaws.blockers.FocusModeBlocker
 import nethical.digipaws.data.models.AutoFocusGroup
 import nethical.digipaws.utils.DataStoreManager
 
@@ -50,6 +53,12 @@ class AutoFocusViewModel(application: Application) : AndroidViewModel(applicatio
     private fun updateGroups(newGroups: List<AutoFocusGroup>) {
         viewModelScope.launch {
             dataStoreManager.updateAutoFocusGroups(newGroups)
+            requestFocusBlockerRefresh()
         }
+    }
+
+    private fun requestFocusBlockerRefresh() {
+        val intent = Intent(FocusModeBlocker.INTENT_ACTION_REFRESH_FOCUS_MODE)
+        application.sendBroadcast(intent)
     }
 }
