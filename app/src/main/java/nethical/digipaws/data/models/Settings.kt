@@ -3,6 +3,7 @@ package nethical.digipaws.data.models
 data class Settings(
     val blockedAppGroups: List<AppGroup> = listOf(),
     val manualFocusGroups: List<ManualFocusGroup> = listOf(),
+    val autoFocusGroups: List<AutoFocusGroup> = listOf(),
     /**
      * Stores info about active manual focus mode.
      * Format Pair<GroupId?, system ms when it ends>.

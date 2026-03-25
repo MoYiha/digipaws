@@ -21,6 +21,7 @@ class ReducersFragment : Fragment() {
         val appBlockerCard = view.findViewById<MaterialCardView>(R.id.card_app_blocker)
         val reelBlockerCard = view.findViewById<MaterialCardView>(R.id.card_reels_blocker)
         val keywordBlockerCard = view.findViewById<MaterialCardView>(R.id.card_keyword_blocker)
+        val autoFocusCard = view.findViewById<MaterialCardView>(R.id.card_autofocus)
         
         appBlockerCard.setOnClickListener {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
@@ -39,6 +40,13 @@ class ReducersFragment : Fragment() {
         keywordBlockerCard.setOnClickListener {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
                 putExtra("fragment", nethical.digipaws.ui.fragments.main.reducers.blockertools.keywordBlocker.KeywordBlockerFragment.FRAGMENT_ID)
+            }
+            startActivity(intent)
+        }
+
+        autoFocusCard.setOnClickListener {
+            val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                putExtra("fragment", nethical.digipaws.ui.fragments.main.reducers.blockertools.autofocus.AutoFocusFragment.FRAGMENT_ID)
             }
             startActivity(intent)
         }

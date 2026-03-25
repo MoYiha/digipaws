@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import nethical.digipaws.R
+import nethical.digipaws.data.models.AutoFocusGroup
 import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
 import nethical.digipaws.ui.fragments.installation.AccessibilityGuide
 import nethical.digipaws.ui.fragments.installation.WelcomeFragment
@@ -14,6 +15,8 @@ import nethical.digipaws.ui.fragments.main.reducers.ReducersFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.CreateAppGroupFragment
+import nethical.digipaws.ui.fragments.main.reducers.blockertools.autofocus.AutoFocusFragment
+import nethical.digipaws.ui.fragments.main.reducers.blockertools.autofocus.CreateAutoFocusGroupFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.reelBlocker.ReelBlockerFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.keywordBlocker.KeywordBlockerFragment
 
@@ -40,6 +43,8 @@ class FragmentActivity : AppCompatActivity() {
             AppBlockerGroupsFragment.FRAGMENT_ID,
             CreateAppGroupFragment.FRAGMENT_ID,
             ReelBlockerFragment.FRAGMENT_ID,
+            AutoFocusFragment.FRAGMENT_ID,
+            CreateAutoFocusGroupFragment.FRAGMENT_ID,
             KeywordBlockerFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
                 bottomNav.visibility = android.view.View.GONE
@@ -51,6 +56,8 @@ class FragmentActivity : AppCompatActivity() {
                     CreateAppGroupFragment.FRAGMENT_ID -> CreateAppGroupFragment()
                     ReelBlockerFragment.FRAGMENT_ID -> ReelBlockerFragment()
                     KeywordBlockerFragment.FRAGMENT_ID -> KeywordBlockerFragment()
+                    AutoFocusFragment.FRAGMENT_ID -> AutoFocusFragment()
+                    CreateAutoFocusGroupFragment.FRAGMENT_ID -> CreateAutoFocusGroupFragment()
                     else -> AccessibilityGuide()
                 }
                 fragment.arguments = intent.extras

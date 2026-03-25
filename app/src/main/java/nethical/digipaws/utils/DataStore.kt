@@ -69,6 +69,11 @@ class DataStoreManager(private val context: Context) {
     suspend fun updateManualFocusGroups(newGroup: List<ManualFocusGroup>){
         settingsDataStore.updateData { it.copy(manualFocusGroups = newGroup) }
     }
+
+    suspend fun updateAutoFocusGroups(newGroups: List<nethical.digipaws.data.models.AutoFocusGroup>) {
+        settingsDataStore.updateData { it.copy(autoFocusGroups = newGroups) }
+    }
+    
     suspend fun setManualFocusStateToActive(focusGroupId:String, durationInMs: Long){
         settingsDataStore.updateData { it.copy(activeManualFocusGroupId = Pair(focusGroupId, System.currentTimeMillis() + durationInMs)) }
     }
