@@ -45,6 +45,7 @@ class FragmentActivity : AppCompatActivity() {
             ReelBlockerFragment.FRAGMENT_ID,
             AutoFocusFragment.FRAGMENT_ID,
             CreateAutoFocusGroupFragment.FRAGMENT_ID,
+            nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID,
             KeywordBlockerFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
                 bottomNav.visibility = android.view.View.GONE
@@ -58,6 +59,7 @@ class FragmentActivity : AppCompatActivity() {
                     KeywordBlockerFragment.FRAGMENT_ID -> KeywordBlockerFragment()
                     AutoFocusFragment.FRAGMENT_ID -> AutoFocusFragment()
                     CreateAutoFocusGroupFragment.FRAGMENT_ID -> CreateAutoFocusGroupFragment()
+                    nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID -> nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment()
                     else -> AccessibilityGuide()
                 }
                 fragment.arguments = intent.extras

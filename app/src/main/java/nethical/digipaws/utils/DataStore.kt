@@ -88,4 +88,8 @@ class DataStoreManager(private val context: Context) {
     suspend fun updateKeywordBlockerConfig(config: nethical.digipaws.data.models.KeywordBlocker) {
         settingsDataStore.updateData { it.copy(keywordBlockerConfig = config) }
     }
+
+    suspend fun updateReelCounterState(isActive: Boolean) {
+        settingsDataStore.updateData { it.copy(isReelCounterOn = isActive) }
+    }
 }

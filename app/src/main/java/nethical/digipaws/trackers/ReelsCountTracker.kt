@@ -42,21 +42,20 @@ class ReelsCountTracker {
             "com.ss.android.ugc.aweme",
         )
 
-        // bootstrap defaults used before the algorithm has learned enough
-        private val DEFAULT_EVENTS_PER_BURST = mapOf(
-            "com.ss.android.ugc.trill" to 1f,
-            "com.zhiliaoapp.musically" to 1f,
-            "com.ss.android.ugc.aweme" to 1f,
-            "com.google.android.youtube" to 2f,
-            "app.revanced.android.youtube" to 2f,
-            "com.facebook.katana" to 2f,
-            "com.instagram.android" to 2f,
-            "com.myinsta.android" to 2f
+        private val DEFAULT_THRESHOLD = mapOf(
+            "com.ss.android.ugc.trill" to 1,
+            "com.zhiliaoapp.musically" to 1,
+            "com.ss.android.ugc.aweme" to 1,
+            "com.google.android.youtube" to 2,
+            "app.revanced.android.youtube" to 2,
+            "com.facebook.katana" to 2,
+            "com.instagram.android" to 2,
+            "com.myinsta.android" to 2
         )
 
-        private const val DEFAULT_BURST_GAP_MS = 400L
-        private const val BOOTSTRAP_THRESHOLD = 10
-        private const val EMA_ALPHA = 0.2f
+        private const val COOLDOWN_MS = 300L
+        private const val EMA_ALPHA = 0.15f
+        private const val BOOTSTRAP_COUNT = 15
     }
 
     private lateinit var service: BaseBlockingService
@@ -72,8 +71,11 @@ class ReelsCountTracker {
     private var lastVideoViewFoundTime: Long? = null
     private var lastContentChangeTimestamp = 0L
 
-    // per-app burst detectors, created lazily
-    private val burstDetectors = mutableMapOf<String, BurstDetector>()
+    // per-app counters
+    private val scrollCounters = mutableMapOf<String, Int>()
+    private val lastCountTime = mutableMapOf<String, Long>()
+    private val learnedThresholds = mutableMapOf<String, Float>()
+    private val totalSwipesSeen = mutableMapOf<String, Int>()
 
     fun setup(service: BaseBlockingService, overlayManager: UsageStatOverlayManager) {
         this.service = service
@@ -95,6 +97,19 @@ class ReelsCountTracker {
             } catch (_: Exception) {
                 todayCount = 0
             }
+        }
+
+        // load learned patterns
+        scope.launch {
+            try {
+                SUPPORTED_APPS.forEach { pkg ->
+                    val pattern = scrollPatternDao.getPattern(pkg)
+                    if (pattern != null) {
+                        learnedThresholds[pkg] = pattern.learnedEventsPerBurst
+                        totalSwipesSeen[pkg] = pattern.totalBurstsSeen
+                    }
+                }
+            } catch (_: Exception) { }
         }
     }
 
@@ -119,17 +134,65 @@ class ReelsCountTracker {
 
             if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
                 if (isReelScrollEvent(event)) {
-                    val pkg = event.packageName.toString()
-                    val detector = getOrCreateDetector(pkg)
-                    detector.onScrollEvent()
+                    handleScrollEvent(event.packageName.toString())
                 }
             }
         } catch (_: Exception) { }
     }
 
-    /**
-     * Checks if this scroll event is happening on a reel view (not just any scroll in the app).
-     */
+    private fun handleScrollEvent(pkg: String) {
+        val now = SystemClock.uptimeMillis()
+        val lastTime = lastCountTime[pkg] ?: 0L
+
+        // cooldown: if we just counted a reel, reset counter and skip
+        if (now - lastTime < COOLDOWN_MS && lastTime > 0L) {
+            scrollCounters[pkg] = 0
+            return
+        }
+
+        val counter = (scrollCounters[pkg] ?: 0) + 1
+        scrollCounters[pkg] = counter
+
+        val threshold = getThreshold(pkg)
+        if (counter >= threshold) {
+            scrollCounters[pkg] = 0
+            lastCountTime[pkg] = now
+            onReelCounted()
+            updateLearnedThreshold(pkg, counter)
+        }
+    }
+
+    private fun getThreshold(pkg: String): Int {
+        val seen = totalSwipesSeen[pkg] ?: 0
+        return if (seen < BOOTSTRAP_COUNT) {
+            DEFAULT_THRESHOLD[pkg] ?: 2
+        } else {
+            max(1, (learnedThresholds[pkg] ?: (DEFAULT_THRESHOLD[pkg]?.toFloat() ?: 2f)).roundToInt())
+        }
+    }
+
+    private fun updateLearnedThreshold(pkg: String, eventsUsed: Int) {
+        val current = learnedThresholds[pkg] ?: (DEFAULT_THRESHOLD[pkg]?.toFloat() ?: 2f)
+        val updated = EMA_ALPHA * eventsUsed + (1 - EMA_ALPHA) * current
+        learnedThresholds[pkg] = updated
+
+        val seen = (totalSwipesSeen[pkg] ?: 0) + 1
+        totalSwipesSeen[pkg] = seen
+
+        scope.launch {
+            try {
+                scrollPatternDao.upsert(
+                    ScrollPatternEntity(
+                        packageName = pkg,
+                        learnedEventsPerBurst = updated,
+                        learnedBurstGapMs = COOLDOWN_MS.toFloat(),
+                        totalBurstsSeen = seen
+                    )
+                )
+            } catch (_: Exception) { }
+        }
+    }
+
     private fun isReelScrollEvent(event: AccessibilityEvent): Boolean {
         val pkg = event.packageName?.toString() ?: return false
         val className = try { event.source?.className?.toString() } catch (_: Exception) { return false }
@@ -176,27 +239,6 @@ class ReelsCountTracker {
         } catch (_: Exception) { false }
     }
 
-    private fun getOrCreateDetector(pkg: String): BurstDetector {
-        return burstDetectors.getOrPut(pkg) {
-            val defaultEpb = DEFAULT_EVENTS_PER_BURST[pkg] ?: 2f
-            val detector = BurstDetector(pkg, defaultEpb)
-
-            // load learned params from Room asynchronously
-            scope.launch {
-                try {
-                    val pattern = scrollPatternDao.getPattern(pkg)
-                    if (pattern != null) {
-                        detector.learnedEventsPerBurst = pattern.learnedEventsPerBurst
-                        detector.learnedBurstGapMs = pattern.learnedBurstGapMs
-                        detector.totalBurstsSeen = pattern.totalBurstsSeen
-                    }
-                } catch (_: Exception) { }
-            }
-
-            detector
-        }
-    }
-
     private fun onReelCounted() {
         val date = TimeTools.getCurrentDate()
         todayCount++
@@ -223,120 +265,5 @@ class ReelsCountTracker {
     private fun hideReelCounter() {
         overlayManager.binding?.reelCounter?.visibility = View.GONE
         lastVideoViewFoundTime = null
-    }
-
-    /**
-     * Adaptive burst detector. Groups rapid scroll events into bursts.
-     * One burst = one reel swipe. Uses EMA to learn the typical events-per-burst
-     * for each app and self-adjusts its threshold over time.
-     */
-    private inner class BurstDetector(
-        private val packageName: String,
-        private val defaultEventsPerBurst: Float
-    ) {
-        var learnedEventsPerBurst: Float = defaultEventsPerBurst
-        var learnedBurstGapMs: Float = DEFAULT_BURST_GAP_MS.toFloat()
-        var totalBurstsSeen: Int = 0
-
-        private var currentBurstSize: Int = 0
-        private var lastEventTime: Long = 0
-        private var burstStartTime: Long = 0
-        private var pendingBurstEval: Runnable? = null
-
-        fun onScrollEvent() {
-            val now = SystemClock.uptimeMillis()
-            val gap = now - lastEventTime
-
-            if (currentBurstSize == 0 || gap > getBurstGap()) {
-                // previous burst ended, evaluate it
-                if (currentBurstSize > 0) {
-                    cancelPendingEval()
-                    evaluateBurst()
-                }
-                // start new burst
-                currentBurstSize = 1
-                burstStartTime = now
-            } else {
-                currentBurstSize++
-            }
-
-            lastEventTime = now
-
-            // schedule a delayed evaluation in case no more events come
-            // (handles the "last burst" that has no following gap to trigger evaluation)
-            schedulePendingEval()
-        }
-
-        private fun getBurstGap(): Long {
-            return if (totalBurstsSeen < BOOTSTRAP_THRESHOLD) {
-                DEFAULT_BURST_GAP_MS
-            } else {
-                learnedBurstGapMs.toLong().coerceIn(200L, 1200L)
-            }
-        }
-
-        private fun getThreshold(): Int {
-            return if (totalBurstsSeen < BOOTSTRAP_THRESHOLD) {
-                max(1, defaultEventsPerBurst.roundToInt())
-            } else {
-                max(1, (learnedEventsPerBurst * 0.6f).roundToInt())
-            }
-        }
-
-        private fun evaluateBurst() {
-            val size = currentBurstSize
-            if (size <= 0) return
-
-            if (size >= getThreshold()) {
-                onReelCounted()
-
-                // update EMA for events-per-burst
-                learnedEventsPerBurst = EMA_ALPHA * size + (1 - EMA_ALPHA) * learnedEventsPerBurst
-
-                // update EMA for burst gap (time from burst start to now is the burst duration,
-                // we care about the gap between bursts but as a proxy we use the observed gap)
-                val burstDuration = (SystemClock.uptimeMillis() - burstStartTime).toFloat()
-                if (burstDuration > 50f) {
-                    val newGap = (burstDuration * 1.5f).coerceIn(200f, 1200f)
-                    learnedBurstGapMs = EMA_ALPHA * newGap + (1 - EMA_ALPHA) * learnedBurstGapMs
-                }
-
-                totalBurstsSeen++
-                persistPattern()
-            }
-
-            currentBurstSize = 0
-        }
-
-        private fun schedulePendingEval() {
-            cancelPendingEval()
-            val evalDelay = getBurstGap() + 100
-            pendingBurstEval = Runnable {
-                if (currentBurstSize > 0) {
-                    evaluateBurst()
-                }
-            }
-            handler.postDelayed(pendingBurstEval!!, evalDelay)
-        }
-
-        private fun cancelPendingEval() {
-            pendingBurstEval?.let { handler.removeCallbacks(it) }
-            pendingBurstEval = null
-        }
-
-        private fun persistPattern() {
-            scope.launch {
-                try {
-                    scrollPatternDao.upsert(
-                        ScrollPatternEntity(
-                            packageName = packageName,
-                            learnedEventsPerBurst = learnedEventsPerBurst,
-                            learnedBurstGapMs = learnedBurstGapMs,
-                            totalBurstsSeen = totalBurstsSeen
-                        )
-                    )
-                } catch (_: Exception) { }
-            }
-        }
     }
 }

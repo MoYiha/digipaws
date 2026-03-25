@@ -125,6 +125,9 @@ androidComponents {
                 exec {
                     commandLine(adbPath, "shell", "settings", "put", "secure", "enabled_accessibility_services", "$appId/$appId.services.AppBlockerService")
                 }
+                exec {
+                    commandLine(adbPath, "shell", "settings", "put", "secure", "enabled_accessibility_services", "$appId/$appId.services.UsageTrackingService")
+                }
                 
                 // Launch MainActivity
                 exec {

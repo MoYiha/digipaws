@@ -50,6 +50,14 @@ class ReducersFragment : Fragment() {
             }
             startActivity(intent)
         }
+
+        val reelCounterCard = view.findViewById<MaterialCardView>(R.id.card_reel_counter)
+        reelCounterCard.setOnClickListener {
+            val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                putExtra("fragment", nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID)
+            }
+            startActivity(intent)
+        }
         
         return view
     }
