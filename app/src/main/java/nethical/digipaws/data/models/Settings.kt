@@ -12,5 +12,6 @@ data class Settings(
     val activeManualFocusGroupId: Pair<String?, Long> = Pair(null, 0),
 
     val reelBlockerConfig: ReelBlocker = ReelBlocker(),
-    val keywordBlockerConfig: KeywordBlocker = KeywordBlocker()
+    val keywordBlockerConfig: KeywordBlocker = KeywordBlocker(),
+    val isReelCounterOn: Boolean = true
 )
