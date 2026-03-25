@@ -6,7 +6,6 @@ import com.google.gson.reflect.TypeToken
 import nethical.digipaws.blockers.FocusModeData
 import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.data.models.AppUsageConfig
-import nethical.digipaws.services.UsageTrackingService.AttentionSpanVideoItem
 import nethical.digipaws.ui.activity.TimedActionActivity
 
 class SavedPreferencesLoader(private val context: Context) {
@@ -188,44 +187,6 @@ class SavedPreferencesLoader(private val context: Context) {
         return gson.fromJson(json, type)
     }
 
-
-    fun saveUsageHoursAttentionSpanData(attentionSpanListData: MutableMap<String, MutableList<AttentionSpanVideoItem>>) {
-        val sharedPreferences =
-            context.getSharedPreferences("attention_span_data", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        val gson = Gson()
-
-        val json = gson.toJson(attentionSpanListData)
-
-        editor.putString("attention_data", json)
-        editor.apply()
-    }
-
-    fun loadUsageHoursAttentionSpanData(): MutableMap<String, MutableList<AttentionSpanVideoItem>> {
-        val sharedPreferences =
-            context.getSharedPreferences("attention_span_data", Context.MODE_PRIVATE)
-        val gson = Gson()
-
-        val json = sharedPreferences.getString("attention_data", null)
-
-        if (json.isNullOrEmpty()) return mutableMapOf()
-
-        val type =
-            object : TypeToken<MutableMap<String, MutableList<AttentionSpanVideoItem>>>() {}.type
-        return gson.fromJson(json, type)
-    }
-
-    fun saveReelsScrolled(reelsData: MutableMap<String, Int>) {
-        val sharedPreferences =
-            context.getSharedPreferences("attention_span_data", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        val gson = Gson()
-
-        val json = gson.toJson(reelsData)
-
-        editor.putString("reels_data", json)
-        editor.apply()
-    }
 
     fun getReelsScrolled(): MutableMap<String, Int> {
         val sharedPreferences =

@@ -1,5 +1,12 @@
 package nethical.digipaws.trackers
 
+import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Context.RECEIVER_EXPORTED
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
@@ -25,6 +32,8 @@ import kotlin.math.roundToInt
 class ReelsCountTracker {
 
     companion object {
+        const val INTENT_ACTION_REFRESH_REEL_COUNTER = "nethical.digipaws.refresh.reel_counter"
+
         val SUPPORTED_APPS = hashSetOf(
             "com.ss.android.ugc.trill",
             "com.zhiliaoapp.musically",
@@ -56,6 +65,8 @@ class ReelsCountTracker {
         private const val COOLDOWN_MS = 300L
         private const val EMA_ALPHA = 0.15f
         private const val BOOTSTRAP_COUNT = 15
+
+        private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_VIEW_SCROLLED or AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
     }
 
     private lateinit var service: BaseBlockingService
@@ -64,7 +75,6 @@ class ReelsCountTracker {
     private lateinit var scrollPatternDao: ScrollPatternDao
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val handler = Handler(Looper.getMainLooper())
 
     private var isEnabled = true
     private var todayCount = 0
@@ -114,13 +124,24 @@ class ReelsCountTracker {
     }
 
     fun onEvent(event: AccessibilityEvent?) {
-        if (event == null) return
+        if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0) return
 
         try {
+            val pkg = event.packageName?.toString() ?: return
+
+            // show/hide overlay based on whether we're in a supported app
+            if (SUPPORTED_APPS.contains(pkg)) {
+                if (android.provider.Settings.canDrawOverlays(service)) {
+                    overlayManager.startDisplaying()
+                }
+            } else if (overlayManager.isOverlayVisible) {
+                overlayManager.removeOverlay()
+            }
+
             if (event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
                 && SystemClock.uptimeMillis() - lastContentChangeTimestamp > 2000
             ) {
-                if (SUPPORTED_APPS.contains(event.packageName)) {
+                if (SUPPORTED_APPS.contains(pkg)) {
                     ReelBlocker.BLOCKED_VIEW_ID_LIST.forEach { viewId ->
                         if (ReelBlocker.findElementById(service.rootInActiveWindow, viewId) == null) {
                             hideReelCounter()
@@ -134,7 +155,7 @@ class ReelsCountTracker {
 
             if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
                 if (isReelScrollEvent(event)) {
-                    handleScrollEvent(event.packageName.toString())
+                    handleScrollEvent(pkg)
                 }
             }
         } catch (_: Exception) { }
@@ -262,6 +283,31 @@ class ReelsCountTracker {
         service.lastBackPressTimeStamp = SystemClock.uptimeMillis()
     }
 
+
+    private val refreshReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                INTENT_ACTION_REFRESH_REEL_COUNTER -> setup(service,overlayManager)
+            }
+        }
+    }
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    fun setupReceivers(){
+        val filter = IntentFilter().apply {
+            addAction(INTENT_ACTION_REFRESH_REEL_COUNTER)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            service.registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            service.registerReceiver(refreshReceiver, filter)
+        }
+
+    }
+    fun  onDestroy(){
+        overlayManager.binding = null
+        service.unregisterReceiver(refreshReceiver)
+    }
     private fun hideReelCounter() {
         overlayManager.binding?.reelCounter?.visibility = View.GONE
         lastVideoViewFoundTime = null

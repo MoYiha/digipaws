@@ -1,18 +1,19 @@
 package nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter
 
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.data.db.AppDatabase
+import nethical.digipaws.trackers.ReelsCountTracker
 import nethical.digipaws.ui.views.WeeklyBarGraphView
 import nethical.digipaws.utils.DataStoreManager
-import nethical.digipaws.utils.TimeTools
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
@@ -58,6 +59,7 @@ class ReelCounterViewModel(application: Application) : AndroidViewModel(applicat
     fun setIsActive(isActive: Boolean) {
         viewModelScope.launch {
             dataStoreManager.updateReelCounterState(isActive)
+            requestReelCounterRefresh()
         }
     }
 
@@ -81,6 +83,11 @@ class ReelCounterViewModel(application: Application) : AndroidViewModel(applicat
             val selectedDate = weekStart.plusDays(index.toLong())
             loadDayStats(selectedDate)
         }
+    }
+
+    private fun requestReelCounterRefresh() {
+        val intent = Intent(ReelsCountTracker.INTENT_ACTION_REFRESH_REEL_COUNTER)
+        application.sendBroadcast(intent)
     }
 
     private suspend fun loadWeekData() = withContext(Dispatchers.IO) {

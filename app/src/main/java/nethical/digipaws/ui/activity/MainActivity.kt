@@ -341,8 +341,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.selectReelUsageStats.setOnClickListener {
-            val intent = Intent(this, ReelsMetricsActivity::class.java)
-            startActivity(intent, options.toBundle())
         }
         binding.btnSelectAppsToShowOverlay.setOnClickListener {
             val intent = Intent(this, SelectAppsActivity::class.java)

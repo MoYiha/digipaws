@@ -49,7 +49,6 @@ class TweakUsageTracker(
                 }
 
                 // Send broadcast to refresh UsageTrackingService
-                sendRefreshRequest(UsageTrackingService.INTENT_ACTION_REFRESH_USAGE_TRACKER)
                 dialog.dismiss()
             }
             .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
