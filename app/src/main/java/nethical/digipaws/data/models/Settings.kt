@@ -13,5 +13,6 @@ data class Settings(
 
     val reelBlockerConfig: ReelBlocker = ReelBlocker(),
     val keywordBlockerConfig: KeywordBlocker = KeywordBlocker(),
-    val isReelCounterOn: Boolean = true
+    val isReelCounterOn: Boolean = true,
+    val grayscaleGroups: List<GrayscaleGroup> = listOf()
 )

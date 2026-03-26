@@ -7,8 +7,6 @@ import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.os.SystemClock
 import android.view.View
 import android.view.accessibility.AccessibilityEvent
@@ -76,7 +74,7 @@ class ReelsCountTracker {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private var isEnabled = true
+    private var isOnDisplayCounter = true
     private var todayCount = 0
     private var lastVideoViewFoundTime: Long? = null
     private var lastContentChangeTimestamp = 0L
@@ -97,7 +95,7 @@ class ReelsCountTracker {
 
         scope.launch {
             service.dataStoreManager.settings.collectLatest { settings ->
-                isEnabled = settings.isReelCounterOn
+                isOnDisplayCounter = settings.isReelCounterOn
             }
         }
 
@@ -265,7 +263,7 @@ class ReelsCountTracker {
         todayCount++
         overlayManager.reelsScrolledThisSession = todayCount
 
-        if (isEnabled) {
+        if (isOnDisplayCounter) {
             overlayManager.binding?.reelCounter?.apply {
                 visibility = View.VISIBLE
                 text = todayCount.toString()

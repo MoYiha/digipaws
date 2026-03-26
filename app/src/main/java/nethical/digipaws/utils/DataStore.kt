@@ -92,4 +92,8 @@ class DataStoreManager(private val context: Context) {
     suspend fun updateReelCounterState(isActive: Boolean) {
         settingsDataStore.updateData { it.copy(isReelCounterOn = isActive) }
     }
+
+    suspend fun updateGrayscaleGroups(newGroups: List<nethical.digipaws.data.models.GrayscaleGroup>) {
+        settingsDataStore.updateData { it.copy(grayscaleGroups = newGroups) }
+    }
 }

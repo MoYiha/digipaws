@@ -6,12 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import nethical.digipaws.R
-import nethical.digipaws.data.models.AutoFocusGroup
 import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
 import nethical.digipaws.ui.fragments.installation.AccessibilityGuide
 import nethical.digipaws.ui.fragments.installation.WelcomeFragment
 import nethical.digipaws.ui.fragments.main.focus.FocusFragment
 import nethical.digipaws.ui.fragments.main.reducers.ReducersFragment
+import nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.grayscale.CreateGrayscaleGroupFragment
+import nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.grayscale.GrayscaleFragment
 import nethical.digipaws.ui.fragments.usage.AllAppsUsageFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.CreateAppGroupFragment
@@ -46,6 +47,8 @@ class FragmentActivity : AppCompatActivity() {
             AutoFocusFragment.FRAGMENT_ID,
             CreateAutoFocusGroupFragment.FRAGMENT_ID,
             nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID,
+            GrayscaleFragment.FRAGMENT_ID,
+            CreateGrayscaleGroupFragment.FRAGMENT_ID,
             KeywordBlockerFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
                 bottomNav.visibility = android.view.View.GONE
@@ -60,6 +63,8 @@ class FragmentActivity : AppCompatActivity() {
                     AutoFocusFragment.FRAGMENT_ID -> AutoFocusFragment()
                     CreateAutoFocusGroupFragment.FRAGMENT_ID -> CreateAutoFocusGroupFragment()
                     nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID -> nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment()
+                    GrayscaleFragment.FRAGMENT_ID -> GrayscaleFragment()
+                    CreateGrayscaleGroupFragment.FRAGMENT_ID -> CreateGrayscaleGroupFragment()
                     else -> AccessibilityGuide()
                 }
                 fragment.arguments = intent.extras

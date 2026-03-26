@@ -10,6 +10,7 @@ import nethical.digipaws.R
 import android.content.Intent
 import nethical.digipaws.ui.activity.FragmentActivity
 import com.google.android.material.card.MaterialCardView
+import nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.grayscale.GrayscaleFragment
 import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
 
 class ReducersFragment : Fragment() {
@@ -55,6 +56,14 @@ class ReducersFragment : Fragment() {
         reelCounterCard.setOnClickListener {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
                 putExtra("fragment", nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID)
+            }
+            startActivity(intent)
+        }
+        
+        val grayscaleCard = view.findViewById<MaterialCardView>(R.id.card_grayscale)
+        grayscaleCard.setOnClickListener {
+            val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                putExtra("fragment", GrayscaleFragment.FRAGMENT_ID)
             }
             startActivity(intent)
         }
