@@ -11,8 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.ui.views.WeeklyBarGraphView
-import nethical.digipaws.utils.SavedPreferencesLoader
-import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
 import nethical.digipaws.utils.getDefaultLauncherPackageName
 import java.time.DayOfWeek
@@ -24,7 +22,6 @@ import java.time.temporal.TemporalAdjusters
 class AllAppsUsageViewModel(application: Application) : AndroidViewModel(application) {
 
     private val usageStatsHelper = UsageStatsHelper(application)
-    private val savedPreferencesLoader = SavedPreferencesLoader(application)
 
     val ignoredPackages: MutableSet<String> = mutableSetOf()
 
@@ -71,7 +68,7 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             getDefaultLauncherPackageName(getApplication<Application>().packageManager)?.let {
                 ignoredPackages.add(it)
             }
-            ignoredPackages.addAll(savedPreferencesLoader.loadIgnoredAppUsageTracker())
+//            ignoredPackages.addAll(savedPreferencesLoader.loadIgnoredAppUsageTracker())
             loadWeekData()
         }
     }

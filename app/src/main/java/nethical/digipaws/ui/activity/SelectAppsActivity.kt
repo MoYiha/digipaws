@@ -24,7 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.R
-import nethical.digipaws.data.blockers.PackageWand
+import nethical.digipaws.data.packs.PackageWand
 import nethical.digipaws.databinding.ActivitySelectAppsBinding
 import nethical.digipaws.databinding.DialogAddKeywordBinding
 

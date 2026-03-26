@@ -53,7 +53,6 @@ import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.FragmentAllAppUsageBinding
 import nethical.digipaws.ui.activity.FragmentActivity
 import nethical.digipaws.ui.activity.SelectAppsActivity
-import nethical.digipaws.utils.SavedPreferencesLoader
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
 import java.text.SimpleDateFormat
@@ -78,14 +77,13 @@ class AllAppsUsageFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var viewModel: AllAppsUsageViewModel
-    private lateinit var savedPreferencesLoader: SavedPreferencesLoader
 
     val selectIgnoredAppsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                 selectedApps?.let {
-                    savedPreferencesLoader.saveIgnoredAppUsageTracker(it.toSet())
+//                    savedPreferencesLoader.saveIgnoredAppUsageTracker(it.toSet())
                     viewModel.ignoredPackages.addAll(it)
                     viewModel.reload()
                 }
@@ -133,7 +131,7 @@ class AllAppsUsageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        savedPreferencesLoader = SavedPreferencesLoader(requireContext())
+//        savedPreferencesLoader = SavedPreferencesLoader(requireContext())
         viewModel = ViewModelProvider(this)[AllAppsUsageViewModel::class.java]
 
         if (!hasUsageStatsPermission(requireContext())) {
@@ -176,10 +174,10 @@ class AllAppsUsageFragment : Fragment() {
                     R.id.select_ignored -> {
                         val intent =
                             Intent(requireContext(), SelectAppsActivity::class.java)
-                        intent.putStringArrayListExtra(
-                            "PRE_SELECTED_APPS",
-                            ArrayList(savedPreferencesLoader.loadIgnoredAppUsageTracker())
-                        )
+//                        intent.putStringArrayListExtra(
+//                            "PRE_SELECTED_APPS",
+//                            ArrayList(savedPreferencesLoader.loadIgnoredAppUsageTracker())
+//                        )
                         selectIgnoredAppsLauncher.launch(
                             intent,
                             ActivityOptionsCompat.makeCustomAnimation(
@@ -665,14 +663,14 @@ class AllAppsUsageFragment : Fragment() {
                     .setMessage("This action will cause the tracker to not display any stats from this app.")
                     .setCancelable(true)
                     .setPositiveButton("Okay") { _, _ ->
-                        val savedPreferencesLoader =
-                            SavedPreferencesLoader(requireContext())
-                        val ignoredAppsSP =
-                            savedPreferencesLoader.loadIgnoredAppUsageTracker()
-                                .toMutableSet()
-                        ignoredAppsSP.add(stats.packageName)
-                        viewModel.ignoredPackages.addAll(ignoredAppsSP)
-                        savedPreferencesLoader.saveIgnoredAppUsageTracker(ignoredAppsSP)
+//                        val savedPreferencesLoader =
+//                            SavedPreferencesLoader(requireContext())
+//                        val ignoredAppsSP =
+//                            savedPreferencesLoader.loadIgnoredAppUsageTracker()
+//                                .toMutableSet()
+//                        ignoredAppsSP.add(stats.packageName)
+//                        viewModel.ignoredPackages.addAll(ignoredAppsSP)
+//                        savedPreferencesLoader.saveIgnoredAppUsageTracker(ignoredAppsSP)
                         viewModel.reload()
                     }
                     .setNegativeButton("Cancel", null)

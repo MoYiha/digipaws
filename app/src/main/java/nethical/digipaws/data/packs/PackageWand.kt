@@ -1,4 +1,4 @@
-package nethical.digipaws.data.blockers
+package nethical.digipaws.data.packs
 
 class PackageWand {
     companion object {

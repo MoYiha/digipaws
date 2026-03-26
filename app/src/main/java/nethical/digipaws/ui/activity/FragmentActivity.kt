@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import nethical.digipaws.R
-import nethical.digipaws.ui.fragments.anti_uninstall.ChooseModeFragment
 import nethical.digipaws.ui.fragments.installation.AccessibilityGuide
 import nethical.digipaws.ui.fragments.installation.WelcomeFragment
 import nethical.digipaws.ui.fragments.main.focus.FocusFragment
@@ -38,7 +37,6 @@ class FragmentActivity : AppCompatActivity() {
         val selectedFragment = intent.getStringExtra("fragment") ?: AllAppsUsageFragment.FRAGMENT_ID
         
         when (selectedFragment) {
-            ChooseModeFragment.FRAGMENT_ID,
             WelcomeFragment.FRAGMENT_ID,
             AccessibilityGuide.FRAGMENT_ID,
             AppBlockerGroupsFragment.FRAGMENT_ID,
@@ -54,7 +52,6 @@ class FragmentActivity : AppCompatActivity() {
                 bottomNav.visibility = android.view.View.GONE
                 
                 val fragment = when (selectedFragment) {
-                    ChooseModeFragment.FRAGMENT_ID -> ChooseModeFragment()
                     WelcomeFragment.FRAGMENT_ID -> WelcomeFragment()
                     AppBlockerGroupsFragment.FRAGMENT_ID -> AppBlockerGroupsFragment()
                     CreateAppGroupFragment.FRAGMENT_ID -> CreateAppGroupFragment()

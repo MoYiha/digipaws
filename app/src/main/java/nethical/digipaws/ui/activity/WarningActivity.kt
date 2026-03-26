@@ -18,11 +18,10 @@ import com.google.gson.Gson
 import nethical.digipaws.Constants
 import nethical.digipaws.R
 import nethical.digipaws.blockers.AppBlocker
+import nethical.digipaws.blockers.ReelBlocker
 import nethical.digipaws.data.models.AppBlockerWarningScreenConfig
 import nethical.digipaws.databinding.DialogWarningOverlayBinding
 import nethical.digipaws.services.AppBlockerService
-import nethical.digipaws.services.ViewBlockerService
-import nethical.digipaws.utils.SavedPreferencesLoader
 import kotlin.random.Random
 
 class WarningActivity : AppCompatActivity() {
@@ -107,7 +106,7 @@ class WarningActivity : AppCompatActivity() {
                     ?.let { it1 ->
                         sendRefreshRequest(
                             it1,
-                            ViewBlockerService.INTENT_ACTION_REFRESH_VIEW_BLOCKER_COOLDOWN,
+                            ReelBlocker.INTENT_ACTION_REFRESH_REEL_BLOCKER_COOLDOWN,
                             binding.minsPicker.getValue()
                         )
                     }

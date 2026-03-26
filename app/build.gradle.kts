@@ -130,7 +130,7 @@ androidComponents {
                 
                 // Launch MainActivity
                 exec {
-                    commandLine(adbPath, "shell", "am", "start", "-n", "$appId/$appId.ui.activity.MainActivity")
+                    commandLine(adbPath, "shell", "am", "start", "-n", "$appId/$appId.ui.activity.FragmentActivity")
                 }
             }
         }

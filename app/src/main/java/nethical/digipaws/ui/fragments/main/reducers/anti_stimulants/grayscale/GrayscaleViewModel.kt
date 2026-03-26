@@ -12,7 +12,6 @@ import nethical.digipaws.anti_stimulants.GrayScaleFilter
 import nethical.digipaws.data.models.GrayscaleGroup
 import nethical.digipaws.data.models.TimeInterval
 import nethical.digipaws.utils.DataStoreManager
-import nethical.digipaws.services.GeneralFeaturesService
 
 class GrayscaleViewModel(application: Application) : AndroidViewModel(application) {
     private val dataStoreManager = DataStoreManager(application)

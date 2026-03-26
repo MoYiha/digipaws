@@ -29,13 +29,6 @@ import nethical.digipaws.utils.getCurrentKeyboardPackageName
 import nethical.digipaws.utils.getDefaultLauncherPackageName
 import java.util.Calendar
 
-data class FocusModeData(
-    var isTurnedOn: Boolean = false,
-    val endTime: Long = -1,
-    val modeType: Int = Constants.FOCUS_MODE_BLOCK_ALL_EX_SELECTED,
-    var selectedApps: HashSet<String> = hashSetOf()
-)
-
 class FocusModeBlocker : BaseBlocker() {
 
     private data class ManualFocusModeData(

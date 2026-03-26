@@ -4,13 +4,9 @@ import android.accessibilityservice.AccessibilityService
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import nethical.digipaws.utils.DataStoreManager
-import nethical.digipaws.utils.SavedPreferencesLoader
 import kotlin.lazy
 
 open class BaseBlockingService : AccessibilityService() {
-    val savedPreferencesLoader: SavedPreferencesLoader by lazy {
-        SavedPreferencesLoader(this)
-    }
 
     val dataStoreManager  by lazy {
         DataStoreManager(this)

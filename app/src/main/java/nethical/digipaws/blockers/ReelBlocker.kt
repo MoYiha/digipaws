@@ -23,10 +23,7 @@ import nethical.digipaws.data.models.ReelBlocker
 import nethical.digipaws.data.models.ReelBlockingType
 import nethical.digipaws.data.models.ReelTimeConfig
 import nethical.digipaws.services.BaseBlockingService
-import nethical.digipaws.services.ViewBlockerService.Companion.INTENT_ACTION_REFRESH_VIEW_BLOCKER
-import nethical.digipaws.services.ViewBlockerService.Companion.INTENT_ACTION_REFRESH_VIEW_BLOCKER_COOLDOWN
 import nethical.digipaws.ui.activity.WarningActivity
-import nethical.digipaws.utils.NotificationTimerManager
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.TimerNotification
 import java.util.Calendar
@@ -159,8 +156,8 @@ class ReelBlocker : BaseBlocker() {
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     fun setupReceivers(){
         val filter = IntentFilter().apply {
-            addAction(INTENT_ACTION_REFRESH_VIEW_BLOCKER)
-            addAction(INTENT_ACTION_REFRESH_VIEW_BLOCKER_COOLDOWN)
+            addAction(INTENT_ACTION_REFRESH_REEL_BLOCKER)
+            addAction(INTENT_ACTION_REFRESH_REEL_BLOCKER_COOLDOWN)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             service.registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)
@@ -178,9 +175,9 @@ class ReelBlocker : BaseBlocker() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent == null) return
             when (intent.action) {
-                INTENT_ACTION_REFRESH_VIEW_BLOCKER -> setupBlocker(service)
+                INTENT_ACTION_REFRESH_REEL_BLOCKER -> setupBlocker(service)
 
-                INTENT_ACTION_REFRESH_VIEW_BLOCKER_COOLDOWN -> {
+                INTENT_ACTION_REFRESH_REEL_BLOCKER_COOLDOWN -> {
                     val interval = intent.getIntExtra("selected_time", reelBlockerConfig.warningScreenConfig.timeInterval)
                     applyCooldown(
                         intent.getStringExtra("result_id") ?: "xxxxxxxxxxxxxx",
