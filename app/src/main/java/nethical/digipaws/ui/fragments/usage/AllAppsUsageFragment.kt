@@ -45,6 +45,8 @@ import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.R
@@ -83,7 +85,9 @@ class AllAppsUsageFragment : Fragment() {
             if (result.resultCode == RESULT_OK) {
                 val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                 selectedApps?.let {
-//                    savedPreferencesLoader.saveIgnoredAppUsageTracker(it.toSet())
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        nethical.digipaws.utils.DataStoreManager(requireContext()).updateUsageTrackerIgnoredApps(it)
+                    }
                     viewModel.ignoredPackages.addAll(it)
                     viewModel.reload()
                 }
@@ -131,7 +135,6 @@ class AllAppsUsageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//        savedPreferencesLoader = SavedPreferencesLoader(requireContext())
         viewModel = ViewModelProvider(this)[AllAppsUsageViewModel::class.java]
 
         if (!hasUsageStatsPermission(requireContext())) {
@@ -172,20 +175,24 @@ class AllAppsUsageFragment : Fragment() {
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.select_ignored -> {
-                        val intent =
-                            Intent(requireContext(), SelectAppsActivity::class.java)
-//                        intent.putStringArrayListExtra(
-//                            "PRE_SELECTED_APPS",
-//                            ArrayList(savedPreferencesLoader.loadIgnoredAppUsageTracker())
-//                        )
-                        selectIgnoredAppsLauncher.launch(
-                            intent,
-                            ActivityOptionsCompat.makeCustomAnimation(
-                                requireContext(),
-                                R.anim.fade_in,
-                                R.anim.fade_out
-                            )
-                        )
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val ignoredApps = nethical.digipaws.utils.DataStoreManager(requireContext()).settings.first().usageTrackerIgnoredApps
+                            withContext(Dispatchers.Main) {
+                                val intent = Intent(requireContext(), SelectAppsActivity::class.java)
+                                intent.putStringArrayListExtra(
+                                    "PRE_SELECTED_APPS",
+                                    ArrayList(ignoredApps)
+                                )
+                                selectIgnoredAppsLauncher.launch(
+                                    intent,
+                                    ActivityOptionsCompat.makeCustomAnimation(
+                                        requireContext(),
+                                        R.anim.fade_in,
+                                        R.anim.fade_out
+                                    )
+                                )
+                            }
+                        }
                         true
                     }
 
@@ -663,15 +670,18 @@ class AllAppsUsageFragment : Fragment() {
                     .setMessage("This action will cause the tracker to not display any stats from this app.")
                     .setCancelable(true)
                     .setPositiveButton("Okay") { _, _ ->
-//                        val savedPreferencesLoader =
-//                            SavedPreferencesLoader(requireContext())
-//                        val ignoredAppsSP =
-//                            savedPreferencesLoader.loadIgnoredAppUsageTracker()
-//                                .toMutableSet()
-//                        ignoredAppsSP.add(stats.packageName)
-//                        viewModel.ignoredPackages.addAll(ignoredAppsSP)
-//                        savedPreferencesLoader.saveIgnoredAppUsageTracker(ignoredAppsSP)
-                        viewModel.reload()
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val dataStore = nethical.digipaws.utils.DataStoreManager(requireContext())
+                            val ignoredAppsSP = dataStore.settings.first().usageTrackerIgnoredApps.toMutableList()
+                            if (!ignoredAppsSP.contains(stats.packageName)) {
+                                ignoredAppsSP.add(stats.packageName)
+                                dataStore.updateUsageTrackerIgnoredApps(ignoredAppsSP)
+                                withContext(Dispatchers.Main) {
+                                    viewModel.ignoredPackages.addAll(ignoredAppsSP)
+                                    viewModel.reload()
+                                }
+                            }
+                        }
                     }
                     .setNegativeButton("Cancel", null)
                     .show()

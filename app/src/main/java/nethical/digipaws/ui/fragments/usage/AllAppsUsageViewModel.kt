@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.ui.views.WeeklyBarGraphView
@@ -68,7 +69,8 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             getDefaultLauncherPackageName(getApplication<Application>().packageManager)?.let {
                 ignoredPackages.add(it)
             }
-//            ignoredPackages.addAll(savedPreferencesLoader.loadIgnoredAppUsageTracker())
+            val datastore = nethical.digipaws.utils.DataStoreManager(getApplication())
+            ignoredPackages.addAll(datastore.settings.first().usageTrackerIgnoredApps)
             loadWeekData()
         }
     }

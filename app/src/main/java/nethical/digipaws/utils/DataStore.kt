@@ -96,4 +96,8 @@ class DataStoreManager(private val context: Context) {
     suspend fun updateGrayscaleGroups(newGroups: List<nethical.digipaws.data.models.GrayscaleGroup>) {
         settingsDataStore.updateData { it.copy(grayscaleGroups = newGroups) }
     }
+
+    suspend fun updateUsageTrackerIgnoredApps(newApps: List<String>) {
+        settingsDataStore.updateData { it.copy(usageTrackerIgnoredApps = newApps) }
+    }
 }
