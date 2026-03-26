@@ -67,7 +67,7 @@ class TweakGrayScaleMode(
 
                 }
                 // Send broadcast to refresh UsageTrackingService
-                sendRefreshRequest(GeneralFeaturesService.INTENT_ACTION_REFRESH_GRAYSCALE)
+                sendRefreshRequest(nethical.digipaws.anti_stimulants.GrayScaleFilter.INTENT_ACTION_REFRESH_GRAYSCALE)
                 dialog.dismiss()
             }
             .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->

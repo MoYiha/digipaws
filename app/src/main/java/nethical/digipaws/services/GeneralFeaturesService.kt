@@ -8,28 +8,18 @@ import android.content.IntentFilter
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import nethical.digipaws.Constants
-import nethical.digipaws.utils.GrayscaleControl
-import nethical.digipaws.utils.getCurrentKeyboardPackageName
+import nethical.digipaws.anti_stimulants.GrayScaleFilter
 import java.util.Locale
 
 class GeneralFeaturesService : BaseBlockingService() {
 
     companion object {
         const val INTENT_ACTION_REFRESH_ANTI_UNINSTALL = "nethical.digipaws.refresh.anti_uninstall"
-        const val INTENT_ACTION_REFRESH_GRAYSCALE = "nethical.digipaws.refresh.grayscale"
     }
 
-
-    private var lastPackageName: String? = null // Store the last active app's package name
-
-    private var selectedGrayScaleApps: HashSet<String> = hashSetOf()
-    private var grayScaleMode = Constants.GRAYSCALE_MODE_ONLY_SELECTED
-
     private var isAntiUninstallOn = true
-    private val grayscaleControl = GrayscaleControl()
+    private val grayScaleFilter = GrayScaleFilter()
 
-    private var ignoredGrayScalePackages: List<String> = listOf()
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         super.onAccessibilityEvent(event)
 
@@ -40,36 +30,9 @@ class GeneralFeaturesService : BaseBlockingService() {
         }
 
         try {
-            if (event?.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-                val currentPackageName = event.packageName?.toString()
-                // Check if the app has changed
-                if (currentPackageName != null && currentPackageName != lastPackageName &&  !ignoredGrayScalePackages.contains(currentPackageName)) {
-                    lastPackageName = currentPackageName // Update the last package name
-
-                    when (grayScaleMode) {
-                        Constants.GRAYSCALE_MODE_ONLY_SELECTED -> {
-                            if (selectedGrayScaleApps.contains(event.packageName)) {
-                                grayscaleControl.enableGrayscale()
-                            } else {
-                                grayscaleControl.disableGrayscale()
-                            }
-                        }
-
-                        Constants.GRAYSCALE_MODE_ALL_EXCEPT_SELECTED -> {
-                            if (selectedGrayScaleApps.contains(event.packageName)) {
-                                grayscaleControl.disableGrayscale()
-                            } else {
-                                grayscaleControl.enableGrayscale()
-
-                            }
-                        }
-                    }
-                }
-            }
+            grayScaleFilter.doGrayscaleCheck(event)
         } catch (_: Exception) {
         }
-
-
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -77,7 +40,6 @@ class GeneralFeaturesService : BaseBlockingService() {
         super.onServiceConnected()
         val filter = IntentFilter().apply {
             addAction(INTENT_ACTION_REFRESH_ANTI_UNINSTALL)
-            addAction(INTENT_ACTION_REFRESH_GRAYSCALE)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)
@@ -85,36 +47,33 @@ class GeneralFeaturesService : BaseBlockingService() {
             registerReceiver(refreshReceiver, filter)
         }
         setupAntiUninstall()
-        setupGrayscale()
+        
+        grayScaleFilter.setup(this)
+        grayScaleFilter.setupReceivers()
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            unregisterReceiver(refreshReceiver)
+        } catch (_: Exception) {}
+        grayScaleFilter.unregisterReceivers()
     }
 
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-
             if (intent != null) {
                 when (intent.action) {
                     INTENT_ACTION_REFRESH_ANTI_UNINSTALL -> setupAntiUninstall()
-                    INTENT_ACTION_REFRESH_GRAYSCALE -> setupGrayscale()
                 }
             }
         }
     }
 
-
     fun setupAntiUninstall() {
         val info = getSharedPreferences("anti_uninstall", Context.MODE_PRIVATE)
         isAntiUninstallOn = info.getBoolean("is_anti_uninstall_on", false)
-
     }
-
-    fun setupGrayscale() {
-        ignoredGrayScalePackages = listOf( getCurrentKeyboardPackageName(this)?: "com.google.android.inputmethod.latin",
-        "com.android.systemui")
-        selectedGrayScaleApps = savedPreferencesLoader.loadGrayScaleApps().toHashSet()
-        val sp = getSharedPreferences("grayscale", MODE_PRIVATE)
-        grayScaleMode = sp.getInt("mode",Constants.GRAYSCALE_MODE_ONLY_SELECTED)
-    }
-
 
     private fun traverseNodesForKeywords(
         node: AccessibilityNodeInfo?

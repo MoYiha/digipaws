@@ -89,6 +89,13 @@ class GrayscaleFragment : Fragment() {
             
             holder.itemBinding.tvGroupDetails.text = "${group.packages.size} Apps"
             
+            holder.itemBinding.switchActive.setOnCheckedChangeListener(null)
+            holder.itemBinding.switchActive.isChecked = group.isActive
+            holder.itemBinding.switchActive.setOnCheckedChangeListener { _, isChecked ->
+                val updatedGroup = group.copy(isActive = isChecked)
+                viewModel.updateGroup(updatedGroup)
+            }
+            
             holder.itemView.setOnClickListener {
                 val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
                     putExtra("fragment", CreateGrayscaleGroupFragment.FRAGMENT_ID)

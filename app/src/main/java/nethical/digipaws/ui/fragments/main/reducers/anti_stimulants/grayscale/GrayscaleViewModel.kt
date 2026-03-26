@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import nethical.digipaws.anti_stimulants.GrayScaleFilter
 import nethical.digipaws.data.models.GrayscaleGroup
 import nethical.digipaws.data.models.TimeInterval
 import nethical.digipaws.utils.DataStoreManager
@@ -58,7 +59,7 @@ class GrayscaleViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun requestGrayscaleRefresh() {
-        val intent = Intent(GeneralFeaturesService.INTENT_ACTION_REFRESH_GRAYSCALE)
+        val intent = Intent(GrayScaleFilter.INTENT_ACTION_REFRESH_GRAYSCALE)
         getApplication<Application>().sendBroadcast(intent)
     }
 }

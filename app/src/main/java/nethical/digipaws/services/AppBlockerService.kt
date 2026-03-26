@@ -11,14 +11,12 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import nethical.digipaws.CrashLogger
+import nethical.digipaws.anti_stimulants.GrayScaleFilter
 import nethical.digipaws.blockers.AppBlocker
 import nethical.digipaws.blockers.FocusModeBlocker
 import nethical.digipaws.blockers.KeywordBlocker
 import nethical.digipaws.blockers.ReelBlocker
 
-/**
- * Responsible for handling blockers
- */
 @Suppress("DEPRECATION")
 class AppBlockerService : BaseBlockingService() {
 
@@ -26,6 +24,9 @@ class AppBlockerService : BaseBlockingService() {
     private val focusModeBlocker = FocusModeBlocker()
     private val reelBlocker = ReelBlocker()
     private var keywordBlocker = KeywordBlocker()
+
+
+    private var grayScaleFilter = GrayScaleFilter()
 
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
@@ -38,6 +39,11 @@ class AppBlockerService : BaseBlockingService() {
     override fun onCreate() {
         super.onCreate()
         crashLogger = CrashLogger(this)
+        try {
+            rikka.shizuku.ShizukuProvider.requestBinderForNonProviderProcess(this)
+        } catch (e: Exception) {
+            Log.e("Shizuku", "Failed to bind Shizuku in non-provider process", e)
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -45,6 +51,7 @@ class AppBlockerService : BaseBlockingService() {
 
         try {
             appBlocker.doAppBlockerCheck(event)
+            grayScaleFilter.doGrayscaleCheck(event)
             focusModeBlocker.doFocusModeCheck(event)
         } catch (t: Throwable) {
             Log.e("error",t.message.toString())
@@ -89,23 +96,29 @@ class AppBlockerService : BaseBlockingService() {
         focusModeBlocker.setupFocusMode(this)
         reelBlocker.setupBlocker(this)
         keywordBlocker.setupBlocker(this)
+        grayScaleFilter.setup(this)
 
         focusModeBlocker.setupReceivers()
         appBlocker.setupReceivers()
         reelBlocker.setupReceivers()
         keywordBlocker.setupReceivers()
+        grayScaleFilter.setupReceivers()
 
         startBackgroundWorker()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        focusModeBlocker.removeReceivers()
-        reelBlocker.removeReceivers()
-        appBlocker.onDestroy()
-        keywordBlocker.removeReceivers()
+        try {
 
-        eventChannel.close()
-        serviceScope.cancel()
+            focusModeBlocker.removeReceivers()
+            reelBlocker.removeReceivers()
+            appBlocker.onDestroy()
+            keywordBlocker.removeReceivers()
+            grayScaleFilter.unregisterReceivers()
+
+            eventChannel.close()
+            serviceScope.cancel()
+        }catch (_: Exception){}
     }
 }

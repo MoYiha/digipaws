@@ -200,7 +200,7 @@ class MainActivity : AppCompatActivity() {
                     val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                     selectedApps?.let {
                         savedPreferencesLoader.saveGrayScaleApps(it.toSet())
-                        sendRefreshRequest(GeneralFeaturesService.INTENT_ACTION_REFRESH_GRAYSCALE)
+                        sendRefreshRequest(nethical.digipaws.anti_stimulants.GrayScaleFilter.INTENT_ACTION_REFRESH_GRAYSCALE)
                     }
                 }
             }
