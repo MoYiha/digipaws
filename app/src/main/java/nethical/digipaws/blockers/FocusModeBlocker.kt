@@ -52,10 +52,20 @@ class FocusModeBlocker : BaseBlocker() {
     private val dismissedAutoFocusGroupIds = mutableSetOf<String>()
     private var autoFocusNotificationShown = false
     private var essentialPackages: Set<String> = emptySet()
+    private var currentActiveAutoFocusGroupId: String? = null
 
     private fun turnOffFocusMode() {
+        val groupId = focusModeData?.focusGroupData?.groupId
         focusModeData = null
         CoroutineScope(Dispatchers.IO).launch {
+            if (groupId != null) {
+                val db = nethical.digipaws.data.db.AppDatabase.getInstance(service)
+                val statsDao = db.focusStatsDao()
+                val runningSessions = statsDao.getRunningSessions().filter { !it.wasAutoFocus && it.groupId == groupId }
+                for (session in runningSessions) {
+                    statsDao.update(session.copy(status = 1, actualEndTimeInMillis = session.estimatedEndTimeInMillis))
+                }
+            }
             service.dataStoreManager.setManualFocusStateToInactive()
         }
         notificationManager.stopTimer()
@@ -92,6 +102,7 @@ class FocusModeBlocker : BaseBlocker() {
         val currentDay = if (calDay == Calendar.SUNDAY) 6 else calDay - 2
         val currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
         var anyAutoFocusActive = false
+        var activeAutoFocusGroupId: String? = null
 
         for (group in autoFocusGroups) {
             if (dismissedAutoFocusGroupIds.contains(group.groupId)) continue
@@ -100,6 +111,7 @@ class FocusModeBlocker : BaseBlocker() {
             if (!isInInterval) continue
 
             anyAutoFocusActive = true
+            activeAutoFocusGroupId = group.groupId
             val blocked = when (group.blockMode) {
                 FocusBlockMode.BLOCK_SELECTED -> group.packages.contains(packageName)
                 FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED ->
@@ -112,7 +124,7 @@ class FocusModeBlocker : BaseBlocker() {
         }
 
         if (anyAutoFocusActive && !autoFocusNotificationShown) {
-            showAutoFocusNotification()
+            showAutoFocusNotification(activeAutoFocusGroupId!!)
         } else if (!anyAutoFocusActive && autoFocusNotificationShown) {
             hideAutoFocusNotification()
             dismissedAutoFocusGroupIds.clear()
@@ -129,8 +141,26 @@ class FocusModeBlocker : BaseBlocker() {
         }
     }
 
-    private fun showAutoFocusNotification() {
+    private fun showAutoFocusNotification(groupId: String) {
         autoFocusNotificationShown = true
+        currentActiveAutoFocusGroupId = groupId
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = nethical.digipaws.data.db.AppDatabase.getInstance(service)
+            val statsDao = db.focusStatsDao()
+            val runningSessions = statsDao.getRunningSessions().filter { it.wasAutoFocus && it.groupId == groupId }
+            if (runningSessions.isEmpty()) {
+                val session = nethical.digipaws.data.db.FocusStatsEntity(
+                    groupId = groupId,
+                    wasAutoFocus = true,
+                    startTimeInMillis = System.currentTimeMillis(),
+                    estimatedEndTimeInMillis = System.currentTimeMillis(),
+                    actualEndTimeInMillis = 0L,
+                    status = 0
+                )
+                statsDao.insert(session)
+            }
+        }
+
         val nm = service.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val hasExitable = autoFocusGroups.any { it.exitable && !dismissedAutoFocusGroupIds.contains(it.groupId) }
 
@@ -154,10 +184,22 @@ class FocusModeBlocker : BaseBlocker() {
         nm.notify(AUTO_FOCUS_NOTIFICATION_ID, builder.build())
     }
 
-    private fun hideAutoFocusNotification() {
+    private fun hideAutoFocusNotification(wasForceStopped: Boolean = false) {
         autoFocusNotificationShown = false
         val nm = service.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(AUTO_FOCUS_NOTIFICATION_ID)
+        
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = nethical.digipaws.data.db.AppDatabase.getInstance(service)
+            val statsDao = db.focusStatsDao()
+            val runningSessions = statsDao.getRunningSessions().filter { it.wasAutoFocus && it.groupId == currentActiveAutoFocusGroupId }
+            val now = System.currentTimeMillis()
+            for (session in runningSessions) {
+                val newStatus = if (wasForceStopped) 2 else 1
+                statsDao.update(session.copy(status = newStatus, actualEndTimeInMillis = now))
+            }
+            currentActiveAutoFocusGroupId = null
+        }
     }
 
     private fun createAutoFocusNotificationChannel() {
@@ -201,6 +243,17 @@ class FocusModeBlocker : BaseBlocker() {
         essentialPackages = essential
 
         CoroutineScope(Dispatchers.IO).launch {
+            val db = nethical.digipaws.data.db.AppDatabase.getInstance(service)
+            val statsDao = db.focusStatsDao()
+            val runningSessions = statsDao.getRunningSessions()
+            for (session in runningSessions) {
+                if (!session.wasAutoFocus && session.estimatedEndTimeInMillis < System.currentTimeMillis()) {
+                     statsDao.update(session.copy(status = 1, actualEndTimeInMillis = session.estimatedEndTimeInMillis))
+                }
+            }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->
 
                 if (settings.activeManualFocusGroupId.first != null) {
@@ -240,7 +293,7 @@ class FocusModeBlocker : BaseBlocker() {
                     autoFocusGroups.filter { it.exitable }.forEach {
                         dismissedAutoFocusGroupIds.add(it.groupId)
                     }
-                    hideAutoFocusNotification()
+                    hideAutoFocusNotification(wasForceStopped = true)
                     lastPackage = ""
                 }
             }

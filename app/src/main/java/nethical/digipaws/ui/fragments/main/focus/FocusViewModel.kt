@@ -19,10 +19,16 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
     var newGroupSelectedApps = hashSetOf<String>()
 
     private val dataStoreManager = DataStoreManager(application)
+    private val db = nethical.digipaws.data.db.AppDatabase.getInstance(application)
+    private val statsDao = db.focusStatsDao()
 
-    private val _groups = MutableStateFlow<List<ManualFocusGroup>>(emptyList())
-    val groups: StateFlow<List<ManualFocusGroup>> = _groups
+    private val _groups = MutableStateFlow<List<nethical.digipaws.data.models.ManualFocusGroup>>(emptyList())
+    val groups: StateFlow<List<nethical.digipaws.data.models.ManualFocusGroup>> = _groups
 
+    val allSessions = statsDao.getAllSessionsFlow()
+
+    private val _autoFocusGroups = MutableStateFlow<List<nethical.digipaws.data.models.AutoFocusGroup>>(emptyList())
+    val autoFocusGroups: StateFlow<List<nethical.digipaws.data.models.AutoFocusGroup>> = _autoFocusGroups
     var selectedMins = 25
 
     var selectedGroup : ManualFocusGroup? = null
@@ -40,8 +46,15 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             dataStoreManager.settings.collectLatest { settings ->
                 _groups.value = settings.manualFocusGroups
+                _autoFocusGroups.value = settings.autoFocusGroups
                 _currentRunningFocus.value = settings.activeManualFocusGroupId
-                if(_currentRunningFocus.value.second < System.currentTimeMillis()) forceStopFocus() else requestFocusBlockerRefresh()
+                if(settings.activeManualFocusGroupId.first != null) {
+                    if (settings.activeManualFocusGroupId.second < System.currentTimeMillis()) {
+                        forceStopFocus(wasMidwayExit = false)
+                    } else {
+                        requestFocusBlockerRefresh()
+                    }
+                }
             }
         }
     }
@@ -58,16 +71,39 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
         application.sendBroadcast(intent)
     }
 
-    fun forceStopFocus(){
+    fun forceStopFocus(wasMidwayExit: Boolean = false){
         viewModelScope.launch {
+            val runningSessions = statsDao.getRunningSessions().filter { !it.wasAutoFocus }
+            val now = System.currentTimeMillis()
+            for (session in runningSessions) {
+                if (wasMidwayExit) {
+                    statsDao.update(session.copy(status = 2, actualEndTimeInMillis = now))
+                } else {
+                    val actEnd = if (session.estimatedEndTimeInMillis < now) session.estimatedEndTimeInMillis else now
+                    statsDao.update(session.copy(status = 1, actualEndTimeInMillis = actEnd))
+                }
+            }
             dataStoreManager.setManualFocusStateToInactive()
             requestFocusBlockerRefresh()
         }
     }
     fun startFocusing(){
         if(selectedGroup == null) return
+        val durationMs = selectedMins * 60_000L
+        val startTime = System.currentTimeMillis()
+        val endTime = startTime + durationMs
         viewModelScope.launch {
-            dataStoreManager.setManualFocusStateToActive(selectedGroup!!.groupId,selectedMins * 60_000L)
+            val session = nethical.digipaws.data.db.FocusStatsEntity(
+                groupId = selectedGroup!!.groupId,
+                wasAutoFocus = false,
+                startTimeInMillis = startTime,
+                estimatedEndTimeInMillis = endTime,
+                actualEndTimeInMillis = 0L,
+                status = 0
+            )
+            statsDao.insert(session)
+            
+            dataStoreManager.setManualFocusStateToActive(selectedGroup!!.groupId, durationMs)
             requestFocusBlockerRefresh()
         }
     }
