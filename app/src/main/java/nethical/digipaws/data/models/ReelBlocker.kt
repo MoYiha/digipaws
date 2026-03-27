@@ -46,5 +46,27 @@ data class ReelUsageConfig(
 }
 
 data class ReelCountConfig(
-    var maxReelsAllowed: Int = 10
-)
+    var isDailyUniform: Boolean = true,
+    var uniformLimit: Int = 10,
+    val dailyLimits: IntArray = IntArray(7) { 0 } // 0=Sunday
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ReelCountConfig
+
+        if (isDailyUniform != other.isDailyUniform) return false
+        if (uniformLimit != other.uniformLimit) return false
+        if (!dailyLimits.contentEquals(other.dailyLimits)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = isDailyUniform.hashCode()
+        result = 31 * result + uniformLimit.hashCode()
+        result = 31 * result + dailyLimits.contentHashCode()
+        return result
+    }
+}
