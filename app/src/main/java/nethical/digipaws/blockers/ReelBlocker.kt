@@ -16,18 +16,20 @@ import android.view.accessibility.AccessibilityNodeInfo
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import nethical.digipaws.Constants
 import nethical.digipaws.data.models.ReelBlocker
 import nethical.digipaws.data.models.ReelBlockingType
 import nethical.digipaws.data.models.ReelTimeConfig
+import nethical.digipaws.data.models.ReelCountConfig
+import nethical.digipaws.data.db.AppDatabase
 import nethical.digipaws.services.BaseBlockingService
 import nethical.digipaws.ui.activity.WarningActivity
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.TimerNotification
 import java.util.Calendar
-
 
 class ReelBlocker : BaseBlocker() {
 
@@ -42,7 +44,7 @@ class ReelBlocker : BaseBlocker() {
             try {
                 targetNode = node.findAccessibilityNodeInfosByViewId(id!!)[0]
             } catch (e: Exception) {
-                //	e.printStackTrace();
+                //e.printStackTrace();
             }
             return targetNode
         }
@@ -63,7 +65,12 @@ class ReelBlocker : BaseBlocker() {
     private lateinit var service : BaseBlockingService
 
     private var reelBlockerConfig: ReelBlocker = ReelBlocker(isActive = false)
-    private var  timeBAsedConfig : ReelTimeConfig? = null
+    private var timeBAsedConfig : ReelTimeConfig? = null
+    private var countBasedConfig : ReelCountConfig? = null
+    private var currentDailyCount: Int = 0
+    private var settingsJob: Job? = null
+    private var countJob: Job? = null
+    
     private val cooldownViewIdsList = mutableMapOf<String, Long>()
     private var screenWidth: Int = 0
     private var screenHeight: Int = 0
@@ -92,7 +99,6 @@ class ReelBlocker : BaseBlocker() {
             return
         }
 
-
         val node = service.rootInActiveWindow
         if(node==null) return
 
@@ -110,11 +116,14 @@ class ReelBlocker : BaseBlocker() {
                         if(endAllowedMillis==null) {
                             showWarningScreen(viewId)
                         }
-                        Log.d("stuff","stuff")
-
                     }
                     ReelBlockingType.USAGE -> TODO()
-                    ReelBlockingType.REEL_COUNT -> TODO()
+                    ReelBlockingType.REEL_COUNT -> {
+                        val limit = getDailyReelCountLimit()
+                        if (limit != null && limit > 0 && currentDailyCount >= limit) {
+                            showWarningScreen(viewId)
+                        }
+                    }
                 }
 
             }
@@ -138,7 +147,10 @@ class ReelBlocker : BaseBlocker() {
         screenHeight = displayMetrics.heightPixels
         screenWidth = displayMetrics.widthPixels
 
-        CoroutineScope(Dispatchers.IO).launch {
+        settingsJob?.cancel()
+        countJob?.cancel()
+
+        settingsJob = CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->
                 reelBlockerConfig = settings.reelBlockerConfig
                 when(reelBlockerConfig.blockingType) {
@@ -147,8 +159,18 @@ class ReelBlocker : BaseBlocker() {
                             ReelTimeConfig::class.java)
                     }
                     ReelBlockingType.USAGE -> TODO()
-                    ReelBlockingType.REEL_COUNT -> TODO()
+                    ReelBlockingType.REEL_COUNT -> {
+                        countBasedConfig = Gson().fromJson<ReelCountConfig>(settings.reelBlockerConfig.settings,
+                            ReelCountConfig::class.java)
+                    }
                 }
+            }
+        }
+
+        val db = AppDatabase.getInstance(service)
+        countJob = CoroutineScope(Dispatchers.IO).launch {
+            db.reelStatsDao().getCountFlow(TimeTools.getCurrentDate()).collectLatest { count ->
+                currentDailyCount = count ?: 0
             }
         }
     }
@@ -169,6 +191,8 @@ class ReelBlocker : BaseBlocker() {
     fun removeReceivers(){
         service.unregisterReceiver(refreshReceiver)
         notificationManager.release()
+        settingsJob?.cancel()
+        countJob?.cancel()
     }
 
     private val refreshReceiver = object : BroadcastReceiver() {
@@ -205,6 +229,17 @@ class ReelBlocker : BaseBlocker() {
         val isOffScreenLeft = nodeRect.right <= 0
         val isOffScreenRight = nodeRect.left >= screenWidth
         return (viewNode != null && !isOffScreenLeft && !isOffScreenRight)
+    }
+
+    private fun getDailyReelCountLimit(): Int? {
+        val config = countBasedConfig ?: return null
+        if (config.isDailyUniform) {
+            return config.uniformLimit
+        } else {
+            val calendar = Calendar.getInstance()
+            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1 // 0=Sunday, 1=Monday...
+            return config.dailyLimits[dayOfWeek]
+        }
     }
 
     /**

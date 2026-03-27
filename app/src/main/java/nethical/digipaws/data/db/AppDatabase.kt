@@ -26,7 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "digipaws_db"
-                ).fallbackToDestructiveMigration().build().also { INSTANCE = it }
+                ).enableMultiInstanceInvalidation().fallbackToDestructiveMigration().build().also { INSTANCE = it }
             }
         }
     }
