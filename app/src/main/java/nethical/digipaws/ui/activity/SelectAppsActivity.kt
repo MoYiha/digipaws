@@ -75,34 +75,43 @@ class SelectAppsActivity : AppCompatActivity() {
 
         binding.selectAppsMagic.setOnClickListener {
             val popupMenu = PopupMenu(this, binding.selectAppsMagic)
-            popupMenu.menuInflater.inflate(R.menu.app_wand, popupMenu.menu)
+            
+            val categoriesMap = mapOf(
+                ApplicationInfo.CATEGORY_AUDIO to "Audio",
+                ApplicationInfo.CATEGORY_GAME to "Games",
+                ApplicationInfo.CATEGORY_IMAGE to "Images",
+                ApplicationInfo.CATEGORY_MAPS to "Maps",
+                ApplicationInfo.CATEGORY_NEWS to "News",
+                ApplicationInfo.CATEGORY_PRODUCTIVITY to "Productivity",
+                ApplicationInfo.CATEGORY_SOCIAL to "Social",
+                ApplicationInfo.CATEGORY_VIDEO to "Video",
+                ApplicationInfo.CATEGORY_UNDEFINED to "Undefined"
+            )
+
+            val availableCategories = appItemList.mapNotNull { it.appInfo?.category }.toSet().sorted()
+
+            availableCategories.forEach { category ->
+                val title = "Auto Select ${categoriesMap[category] ?: "Category $category"}"
+                popupMenu.menu.add(0, category, 0, title)
+            }
+            
+            popupMenu.menu.add(0, 1000, 0, "Add a custom android package")
+
             popupMenu.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    R.id.select_social_media -> {
-                        appItemList.forEach { item ->
-                            if (PackageWand.SOCIAL_MEDIA_APPS.contains(item.packageName)) {
-                                selectedAppList.add(item.packageName)
-                            }
+                if (menuItem.itemId == 1000) {
+                    makeAddCustomPackageDialog()
+                    true
+                } else {
+                    val categoryToSelect = menuItem.itemId
+                    appItemList.forEach { item ->
+                        if (item.appInfo?.category == categoryToSelect) {
+                            selectedAppList.add(item.packageName)
                         }
-                        val slist = sortSelectedItemsToTop(appItemList)
-                        (binding.appList.adapter as ApplicationAdapter).updateData(slist)
-                        true
                     }
-                    R.id.select_productive_apps -> {
-                        appItemList.forEach { item ->
-                            if (PackageWand.PRODUCTIVE_APPS.contains(item.packageName)) {
-                                selectedAppList.add(item.packageName)
-                            }
-                        }
-                        val slist = sortSelectedItemsToTop(appItemList)
-                        (binding.appList.adapter as ApplicationAdapter).updateData(slist)
-                        true
-                    }
-                    R.id.add_a_custom_package -> {
-                        makeAddCustomPackageDialog()
-                        true
-                    }
-                    else -> false
+                    val slist = sortSelectedItemsToTop(appItemList)
+                    (binding.appList.adapter as ApplicationAdapter).updateData(slist)
+                    updateSelectAllButton()
+                    true
                 }
             }
             popupMenu.show()

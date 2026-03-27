@@ -85,7 +85,8 @@
                     android:id="@+id/rb_type_usage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Usage Based" />
+                    android:text="Usage Based"
+                    android:visibility="gone" />
 
                 <RadioButton
                     android:id="@+id/rb_type_count"
