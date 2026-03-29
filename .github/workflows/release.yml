@@ -38,14 +38,14 @@ jobs:
           gradle-version: wrapper # Use nightly via gradlew if configured in wrapper
           arguments: clean
 
-      - name: Build Lite Release APK
-        run: ./gradlew assembleLiteRelease
+      - name: Build Fdroid Release APK
+        run: ./gradlew assembleFdroidRelease
 
-      - name: Sign Lite Variant APKs
+      - name: Sign Fdroid Variant APKs
         uses: r0adkll/sign-android-release@v1
-        id: sign_app_lite
+        id: sign_app_fdroid
         with:
-          releaseDirectory: app/build/outputs/apk/lite/release
+          releaseDirectory: app/build/outputs/apk/fdroid/release
           signingKeyBase64: ${{ secrets.SIGNING_KEY }}
           alias: ${{ secrets.ALIAS }}
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -54,7 +54,7 @@ jobs:
       - name: Get APK Info
         id: apk_info
         run: |
-          APK_PATH=${{ steps.sign_app_lite.outputs.signedReleaseFile }}
+          APK_PATH=${{ steps.sign_app_fdroid.outputs.signedReleaseFile }}
           APK_NAME=$(basename "$APK_PATH")
           APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
           echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
@@ -141,8 +141,8 @@ jobs:
             -F "parse_mode=Markdown" \
             "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument"
 
-      - name: Upload Signed Lite Release APK
+      - name: Upload Signed Fdroid Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: lite-release-apk
-          path: ${{ steps.sign_app_lite.outputs.signedReleaseFile }}
+          name: fdroid-release-apk
+          path: ${{ steps.sign_app_fdroid.outputs.signedReleaseFile }}

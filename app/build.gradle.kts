@@ -20,21 +20,21 @@ android {
         applicationId = "neth.iecal.curbox"
         minSdk = 26
         targetSdk = 34
-        versionCode = 23
-        versionName = "2.3-alpha"
+        versionCode = 50
+        versionName = "5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     productFlavors {
-        create("lite") {
+        create("fdroid") {
             dimension = "version"
-            versionNameSuffix = "-lite"
+            versionNameSuffix = "-fdroid"
             buildConfigField("Boolean", "FDROID_VARIANT", "true")
         }
 
-        create("play-store") {
+        create("playstore") {
             dimension = "version"
-            versionNameSuffix = "-full"
+            versionNameSuffix = "-playstore"
             buildConfigField("Boolean", "FDROID_VARIANT", "false")
         }
     }
@@ -58,11 +58,11 @@ android {
             // required because of hardcoded f-droid values
             applicationVariants.all {
                 val variant = this
-                if (variant.flavorName == "lite") {
+                if (variant.flavorName == "fdroid") {
                     variant.outputs
                         .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
                         .forEach { output ->
-                            val outputFileName = "app-lite-universal-release-unsigned.apk"
+                            val outputFileName = "app-fdroid-universal-release-unsigned.apk"
                             println("OutputFileName: $outputFileName")
                             output.outputFileName = outputFileName
                         }
