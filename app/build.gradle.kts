@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "nethical.digipaws"
+    namespace = "neth.iecal.curbox"
     compileSdk = 34
     flavorDimensions += "version"
 
@@ -17,7 +17,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "nethical.digipaws"
+        applicationId = "neth.iecal.curbox"
         minSdk = 26
         targetSdk = 34
         versionCode = 23
@@ -124,7 +124,7 @@ androidComponents {
             
             doLast {
                 val adbPath = sdkComponents.adb.get().asFile.absolutePath
-                val appId = "nethical.digipaws"
+                val appId = "neth.iecal.curbox"
                 Thread.sleep(2000)
                 // Grant Accessibility Permission
                 exec {

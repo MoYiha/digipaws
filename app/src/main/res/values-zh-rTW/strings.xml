@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">DigiPaws</string>
+    <string name="app_name" translatable="false">Curbox</string>
     <string name="launcher_options">啟動器選項</string>
     <string name="focus_mode">專注模式</string>
     <string name="app_blocker">應用程式封鎖器</string>
@@ -9,7 +9,7 @@
     <string name="usage_tracker">使用量追蹤 (測試版)</string>
     <string name="disabled">已停用</string>
     <string name="select_pinned_apps">選擇釘選的應用程式</string>
-    <string name="warning_launcher_settings">請將 DigiPaws 設定為預設啟動器以存取此選項</string>
+    <string name="warning_launcher_settings">請將 Curbox 設定為預設啟動器以存取此選項</string>
     <string name="select_blocked_apps">選擇要封鎖的應用程式</string>
     <string name="start_focus_mode">開始專注模式</string>
     <string name="warning_general_settings">請啟用一般協助工具服務以存取此選項</string>
@@ -65,22 +65,22 @@
     <string name="app_icon">應用程式圖示</string>
 
     <string name="accessibility_permission_app_blocker">
-        啟用此功能將解鎖 DigiPaws 的以下功能：\n1. 應用程式封鎖\n2. 專注模式\n\n        DigiPaws 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。
-        這讓 DigiPaws 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。\n\n        請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。
+        啟用此功能將解鎖 Curbox 的以下功能：\n1. 應用程式封鎖\n2. 專注模式\n\n        Curbox 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。
+        這讓 Curbox 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。\n\n        請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。
         \n\n    </string>
     <string name="accessibility_permission_view_blocker">
-        啟用此功能將解鎖 DigiPaws 的以下功能：\n1. 檢視封鎖\n2. 封鎖 Instagram Reels、TikTok 和 YouTube Shorts\n\n        DigiPaws 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。
-        這讓 DigiPaws 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。\n\n        請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。
+        啟用此功能將解鎖 Curbox 的以下功能：\n1. 檢視封鎖\n2. 封鎖 Instagram Reels、TikTok 和 YouTube Shorts\n\n        Curbox 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。
+        這讓 Curbox 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。\n\n        請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。
         \n\n    </string>
     <string name="accessibility_permission_usage_tracker">
         此功能需要「顯示在其他應用程式上層」權限才能運作。請先啟用該權限，然後再啟用此服務。若服務運作異常，請重新啟動。\n\n
-        啟用此功能將解鎖 DigiPaws 的以下功能：\n1. 計算瀏覽的 Reels/TikTok 數量\n2. 顯示已用時間的懸浮視窗\n\n        DigiPaws 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。
-        這讓 DigiPaws 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。\n\n        請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。
+        啟用此功能將解鎖 Curbox 的以下功能：\n1. 計算瀏覽的 Reels/TikTok 數量\n2. 顯示已用時間的懸浮視窗\n\n        Curbox 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。
+        這讓 Curbox 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。\n\n        請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。
         \n\n    </string>
-    <string name="accessibility_permission_keyword_blocker">啟用此功能將解鎖 DigiPaws 的以下功能：1. 封鎖自定義關鍵字 2. 封鎖成人內容等。DigiPaws 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。這讓 DigiPaws 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。</string>
+    <string name="accessibility_permission_keyword_blocker">啟用此功能將解鎖 Curbox 的以下功能：1. 封鎖自定義關鍵字 2. 封鎖成人內容等。Curbox 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。這讓 Curbox 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。</string>
 
-    <string name="accessibility_permission_general_features">啟用此功能將解鎖 DigiPaws 的以下功能：1. 防解除安裝（需完成設定後執行）。DigiPaws 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。這讓 DigiPaws 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。</string>
-    <string name="admin_permission_desc">DigiPaws 防解除安裝</string>
+    <string name="accessibility_permission_general_features">啟用此功能將解鎖 Curbox 的以下功能：1. 防解除安裝（需完成設定後執行）。Curbox 需要協助工具資料的存取權限，以便在您開啟應用程式中的特定功能（如社交媒體動態或遊戲）時獲得通知。這讓 Curbox 能根據您的偏好為您封鎖這些功能，協助您保持專注並減少螢幕干擾。請放心，所有協助工具資料都會安全地儲存在您的裝置上——我們絕不分享或傳輸您的資料，確保您的隱私始終受到保護。</string>
+    <string name="admin_permission_desc">Curbox 防解除安裝</string>
     <string name="title">標題</string>
     <string name="close">關閉</string>
     <string name="proceed">繼續</string>
@@ -123,23 +123,23 @@
     <string name="from">從</string>
     <string name="end">結束</string>
     <string name="accept">接受</string>
-    <string name="accessibility_perm_desc">DigiPaws 使用協助工具權限來提供應用程式監測和使用量追蹤等功能，以提升您的使用體驗。此權限讓 DigiPaws 能偵測應用程式活動並協助有效管理裝置使用。請放心，所有資料皆在您的裝置上本機處理，絕不會傳送至任何伺服器或第三方。您的隱私和資料安全是我們的首要任務。按下接受即表示您知悉並同意上述內容。</string>
+    <string name="accessibility_perm_desc">Curbox 使用協助工具權限來提供應用程式監測和使用量追蹤等功能，以提升您的使用體驗。此權限讓 Curbox 能偵測應用程式活動並協助有效管理裝置使用。請放心，所有資料皆在您的裝置上本機處理，絕不會傳送至任何伺服器或第三方。您的隱私和資料安全是我們的首要任務。按下接受即表示您知悉並同意上述內容。</string>
     <string name="reject">拒絕</string>
     <string name="peel_the_onions">剝洋蔥</string>
     <string name="fix_your_life">改善您的生活</string>
     <string name="perform_actions_like_a_back_press">執行如返回按鍵的動作</string>
     <string name="read_content_on_screen">讀取螢幕上的內容</string>
-    <string name="this_will_allow_digipaws_to">這將允許 DigiPaws：</string>
+    <string name="this_will_allow_curbox_to">這將允許 Curbox：</string>
     <string name="enable_2">啟用 %1$s</string>
-    <string name="device_admin_perm">DigiPaws 使用裝置管理員權限來增強安全性，並在指定期間內防止解除安裝 DigiPaws。所有資料皆安全地儲存在您的裝置上，絕不會對外分享。</string>
+    <string name="device_admin_perm">Curbox 使用裝置管理員權限來增強安全性，並在指定期間內防止解除安裝 Curbox。所有資料皆安全地儲存在您的裝置上，絕不會對外分享。</string>
     <string name="prevent_uninstallation_attempts_until_a_set_condition_is_met">在滿足設定條件前防止解除安裝嘗試</string>
 
-    <string name="device_perm_draw_over_other_apps">DigiPaws 使用「顯示在其他應用程式上層」權限來在螢幕上顯示一個小型懸浮視窗。此視窗會追蹤觀看的 Reels 數量和花費的時間，協助使用者即時掌握自己的使用狀況。</string>
+    <string name="device_perm_draw_over_other_apps">Curbox 使用「顯示在其他應用程式上層」權限來在螢幕上顯示一個小型懸浮視窗。此視窗會追蹤觀看的 Reels 數量和花費的時間，協助使用者即時掌握自己的使用狀況。</string>
     <string name="show_time_elapsed_on_phone">顯示手機已用時間</string>
     <string name="calculate_how_many_reels_tiktok_short_videos_you_scroll_per_day">計算您每天瀏覽了多少 Reels/TikTok/短影音</string>
     <string name="plan_a_robbery">策劃搶劫</string>
     <string name="please_provide_display_over_other_apps_permission_to_access_this_feature">請提供「顯示在其他應用程式上層」權限以存取此功能</string>
-    <string name="find_digipaws_and_press_enable">找到 DigiPaws 並按下啟用</string>
+    <string name="find_curbox_and_press_enable">找到 Curbox 並按下啟用</string>
     <string name="discard_changes">捨棄變更？</string>
     <string name="are_you_sure_you_want_to_discard_all_changes_and_exit">您確定要捨棄所有變更並結束嗎？</string>
     <string name="yes">是</string>

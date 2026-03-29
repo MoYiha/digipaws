@@ -89,7 +89,7 @@
                     style="@style/TextAppearance.Material3.BodyMedium"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:lineSpacingExtra="4dp"
-                    android:text="Hello, this is Nethical, the creator of digipaws. I'm a 17-year-old high school student with a passion for technology and computers. A few years ago, I couldn't find any free app blocker solution that perfectly suited my needs, so I decided to build one myself. If you find digipaws useful, please consider donating even a small amount to support its continued development. Thank you!"
+                    android:text="Hello, this is Nethical, the creator of curbox. I'm a 17-year-old high school student with a passion for technology and computers. A few years ago, I couldn't find any free app blocker solution that perfectly suited my needs, so I decided to build one myself. If you find curbox useful, please consider donating even a small amount to support its continued development. Thank you!"
                     android:layout_marginBottom="24dp"/>
 
                 <com.google.android.material.button.MaterialButton
@@ -184,7 +184,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="\@DigiPawsApp"
+                        android:text="\@CurboxApp"
                         style="@style/TextAppearance.Material3.LabelLarge"
                         android:textStyle="bold"
                         android:gravity="center"/>
@@ -218,7 +218,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="\@DigiPawsApp"
+                        android:text="\@CurboxApp"
                         style="@style/TextAppearance.Material3.LabelLarge"
                         android:textStyle="bold"
                         android:gravity="center"
@@ -271,7 +271,7 @@
                     android:layout_marginBottom="16dp"
                     style="@style/TextAppearance.Material3.BodyMedium"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:text="View and share application crash logs to help improve DigiPaws."/>
+                    android:text="View and share application crash logs to help improve Curbox."/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_action_crash_logs"

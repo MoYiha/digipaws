@@ -138,7 +138,7 @@
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Weekly activity section (outside card, more breathing room) -->
-        <nethical.digipaws.ui.views.WeeklyBarGraphView
+        <neth.iecal.curbox.ui.views.WeeklyBarGraphView
             android:id="@+id/weekly_bar_graph"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -237,7 +237,7 @@
         tools:visibility="visible"
         android:elevation="10dp">
         
-        <nethical.digipaws.ui.views.WalkingPawsLoadingView
+        <neth.iecal.curbox.ui.views.WalkingPawsLoadingView
             android:layout_width="160dp"
             android:layout_height="80dp" />
             

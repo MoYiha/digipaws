@@ -1,23 +1,23 @@
 <div align="center">
   <img src="fastlane/metadata/android/en-US/images/icon.png" style="width: 30%;" />
-   <h2>DigiPaws</h2>
+   <h2>Curbox</h2>
    
-   [![GitHub contributors](https://img.shields.io/github/contributors/nethical6/digipaws)](https://github.com/nethical6/digipaws/graphs/contributors)
+   [![GitHub contributors](https://img.shields.io/github/contributors/nethical6/curbox)](https://github.com/nethical6/curbox/graphs/contributors)
    [![Discord Server](https://img.shields.io/badge/Discord%20Server-white?style=flat&logo=discord)](https://discord.com/invite/Vs9mwUtuCN)
-   [![Telegram Group](https://img.shields.io/badge/Telegram%20Group-blue?style=flat&logo=telegram)](https://t.me/digipaws6)
-   [![Total downloads](https://img.shields.io/github/downloads/nethical6/digipaws/total)](https://github.com/nethical6/digipaws/releases)
-   [![Repository Size](https://img.shields.io/github/repo-size/nethical6/digipaws)](https://github.com/nethical6/digipaws)
+   [![Telegram Group](https://img.shields.io/badge/Telegram%20Group-blue?style=flat&logo=telegram)](https://t.me/curbox6)
+   [![Total downloads](https://img.shields.io/github/downloads/nethical6/curbox/total)](https://github.com/nethical6/curbox/releases)
+   [![Repository Size](https://img.shields.io/github/repo-size/nethical6/curbox)](https://github.com/nethical6/curbox)
 
 </div>
 
 <div align="center">
-<a href="https://f-droid.org/packages/nethical.digipaws/">
+<a href="https://f-droid.org/packages/neth.iecal.curbox/">
     <img alt="Get it on F-Droid"
         height="80"
         src="https://f-droid.org/badge/get-it-on.png" />
 </a>
 </div>
-DigiPaws is an open-source Android productivity utility designed to help users reduce screen addiction. The application offers two modes namely the Base mode and the Gamified mode (The gamification mode is being separated and developed as a new app knows as 
+Curbox is an open-source Android productivity utility designed to help users reduce screen addiction. The application offers two modes namely the Base mode and the Gamified mode (The gamification mode is being separated and developed as a new app knows as 
 
 
 [Questphone](https://github.com/QuestPhone/questphone)
@@ -26,16 +26,16 @@ DigiPaws is an open-source Android productivity utility designed to help users r
 
 > [!CAUTION]
 > Please switch to the latest beta build if you face issues [Github Actions](
-https://github.com/nethical6/digipaws/actions)
+https://github.com/nethical6/curbox/actions)
 
 > [!CAUTION]
-> I am rewriting the project as the old code was a mess. For stable local builds, please try [this commit](https://github.com/nethical6/digipaws/tree/7ab40881d27ef6f83c9690cc03b97a763ea3d009). 
+> I am rewriting the project as the old code was a mess. For stable local builds, please try [this commit](https://github.com/nethical6/curbox/tree/7ab40881d27ef6f83c9690cc03b97a763ea3d009). 
 
 > [!CAUTION]
-> This project is experimental and not yet ready for full production. [Donate](https://digipaws.life/donate)
+> This project is experimental and not yet ready for full production. [Donate](https://curbox.life/donate)
 
 > [!CAUTION]
-> DigiPaws was recently removed from the Play Store for an unknown reason that Google refuses to
+> Curbox was recently removed from the Play Store for an unknown reason that Google refuses to
 > disclose or discuss upon. "We didn't like your app restricting screen usage, so go fuck yourself"
 > type shi
 
@@ -98,11 +98,11 @@ by.
 
 ## Configuring
 
-1. Launch DigiPaws on your Android device.
+1. Launch Curbox on your Android device.
 2. Provide all necessary permissions like Accessibility service, Notification, Draw over other apps etc
 3. On Android 13+ devices, you need to additionally allow restricted settings before enabling the accessibility permission. Watch a tutorial [here](https://youtu.be/91B72lEpcqc?si=PCKKUSwM1aLdELqJ)
 4. Configure the apps and views you want to block and set your preferences.
-5. Start using your device with DigiPaws managing your screen time.
+5. Start using your device with Curbox managing your screen time.
 
 
 > [!TIP]  
@@ -135,22 +135,22 @@ Developing codes for accessibility services and blockers can be exceptionally co
 
 ## Thanks
 - [Usage Direct](https://codeberg.org/fynngodau/usageDirect): I had an extremely tough time figuring out and fixing the app usage stats. Extremely thanks to this app for saving me.
-- [ShizuTools](https://github.com/legendsayantan/ShizuTools): [ShizukuRunner.kt](https://github.com/nethical6/digipaws/blob/kt-rewrite/app/src/main/java/nethical/digipaws/utils/ShizukuRunner.kt) has been derived from this project
+- [ShizuTools](https://github.com/legendsayantan/ShizuTools): [ShizukuRunner.kt](https://github.com/nethical6/curbox/blob/kt-rewrite/app/src/main/java/neth/iecal/curbox/utils/ShizukuRunner.kt) has been derived from this project
 - [MPAndroidChart](https://github.com/PhilJay/MPAndroidChart): All charts and graphs were made using this library
 
 ## License
 
-DigiPaws is licensed under the [GPL 3 or later licence](LICENSE). You are free to use, modify, and distribute this software in accordance with the license.
+Curbox is licensed under the [GPL 3 or later licence](LICENSE). You are free to use, modify, and distribute this software in accordance with the license.
 
 ## Contact
 
-For questions, suggestions, or feedback, please open an issue on the [GitHub repository](https://github.com/nethical6/digipaws/issues) or contact me at:
+For questions, suggestions, or feedback, please open an issue on the [GitHub repository](https://github.com/nethical6/curbox/issues) or contact me at:
 1. Discord: @nethical
 2. Telegram: @nethicalps
 
 ## Common Questions
 
-### Q: Is Digipaws safe?
+### Q: Is Curbox safe?
 
 **A:** Yes, way safer than any closed source app blocker on play-store.
 
@@ -161,9 +161,9 @@ For questions, suggestions, or feedback, please open an issue on the [GitHub rep
 ### Q: I am unable to turn on accessibility settings. It says to enable "Restricted Settings"
 
 **A:** Try downloading the app directly from f-droid app, instead of an .apk file. Read more on this
-forum -> https://forum.f-droid.org/t/cant-activate-permissions-for-digipaws-on-android-14/30539
+forum -> https://forum.f-droid.org/t/cant-activate-permissions-for-curbox-on-android-14/30539
 
 
 ---
 
-Thank you for using DigiPaws! Together, we can create healthier digital habits.
+Thank you for using Curbox! Together, we can create healthier digital habits.

@@ -87,7 +87,7 @@
         </LinearLayout>
 
         <!-- Weekly Graph -->
-        <nethical.digipaws.ui.views.WeeklyBarGraphView
+        <neth.iecal.curbox.ui.views.WeeklyBarGraphView
             android:id="@+id/weekly_bar_graph"
             android:layout_width="match_parent"
             android:layout_height="180dp"

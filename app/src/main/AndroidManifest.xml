@@ -15,14 +15,14 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:name=".Digipaws"
+        android:name=".Curbox"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.DigiPaws"
+        android:theme="@style/Theme.Curbox"
         tools:targetApi="34">
 
         <activity
@@ -30,7 +30,7 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.Digipaws.TransparentDialog" />
+            android:theme="@style/Theme.Curbox.TransparentDialog" />
         
         <activity
             android:name=".ui.activity.FragmentActivity"
@@ -115,7 +115,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="nethical.digipaws.reels.WIDGET_REFRESH" />
+                <action android:name="neth.iecal.curbox.reels.WIDGET_REFRESH" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -128,7 +128,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="nethical.digipaws.screentime.WIDGET_REFRESH" />
+                <action android:name="neth.iecal.curbox.screentime.WIDGET_REFRESH" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

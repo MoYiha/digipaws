@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">DigiPaws</string>
+    <string name="app_name" translatable="false">Curbox</string>
     <string name="focus_mode">Focus Mode</string>
     <string name="add">Add</string>
     <string name="save">Save</string>
@@ -9,23 +9,23 @@
     <string name="app_icon">app_icon</string>
 
     <string name="accessibility_permission_app_blocker">
-        Enabling this would unlock the following in DigiPaws:\n1. App Blocking\n2, Focus Mode \n\n
-        DigiPaws needs access to accessibility data to know when you open a specific feature within an app, like a social media feed or a game.
-        This lets DigiPaws block those features for you based on your preferences, helping you stay focused and reduce screen distractions.\n\n
+        Enabling this would unlock the following in Curbox:\n1. App Blocking\n2, Focus Mode \n\n
+        Curbox needs access to accessibility data to know when you open a specific feature within an app, like a social media feed or a game.
+        This lets Curbox block those features for you based on your preferences, helping you stay focused and reduce screen distractions.\n\n
         Rest assured, all accessibility data stays securely on your device—we never share or transmit your data, ensuring your privacy is always protected.
         \n\n
     </string>
     <string name="accessibility_permission_usage_tracker">
         THIS FEATURE REQUIRES DISPLAY OVER OTHER APPS (DRAW OVER OTHER APPS) PERMISSION TO WORK. PLEASE ENABLE IT FIRST AND THEN ENABLE THIS. RESTART IF SERVICE MALFUNCTIONS.\n\n
 
-        Enabling this would unlock the following in DigiPaws:\n1. Count number of reels/tiktoks scrolled\n2. A floating overlay that shows time elapsed\n\n
-        DigiPaws needs access to accessibility data to know when you open a specific feature within an app, like a social media feed or a game.
-        This lets DigiPaws block those features for you based on your preferences, helping you stay focused and reduce screen distractions.\n\n
+        Enabling this would unlock the following in Curbox:\n1. Count number of reels/tiktoks scrolled\n2. A floating overlay that shows time elapsed\n\n
+        Curbox needs access to accessibility data to know when you open a specific feature within an app, like a social media feed or a game.
+        This lets Curbox block those features for you based on your preferences, helping you stay focused and reduce screen distractions.\n\n
         Rest assured, all accessibility data stays securely on your device—we never share or transmit your data, ensuring your privacy is always protected.
         \n\n
     </string>
 
-    <string name="admin_permission_desc">Digipaws Anti-Uninstall</string>
+    <string name="admin_permission_desc">Curbox Anti-Uninstall</string>
     <string name="close">Close</string>
     <string name="proceed">Proceed</string>
     <string name="cancel">Cancel</string>
