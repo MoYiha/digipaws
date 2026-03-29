@@ -123,9 +123,9 @@ androidComponents {
                 Thread.sleep(2000)
                 // Grant Accessibility Permission
                 exec {
-                    commandLine(adbPath, "shell", "settings", "put", "secure", "enabled_accessibility_services", "$appId/$appId.services.AppBlockerService")
-                    commandLine(adbPath, "shell", "settings", "put", "secure", "enabled_accessibility_services", "$appId/$appId.services.UsageTrackingService")
+                    val combinedServices = "$appId/$appId.services.AppBlockerService:$appId/$appId.services.UsageTrackingService"
 
+                    commandLine(adbPath, "shell", "settings", "put", "secure", "enabled_accessibility_services", combinedServices)
                 }
                 
                 // Launch MainActivity
