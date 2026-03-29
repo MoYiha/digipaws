@@ -1,5 +1,7 @@
 package neth.iecal.curbox.blockers
 
+import neth.iecal.curbox.R
+
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
 import android.accessibilityservice.GestureDescription
@@ -161,7 +163,7 @@ class KeywordBlocker : BaseBlocker() {
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(
                     service,
-                    "Blocked keyword $word was found.",
+                    service.getString(R.string.blocked_keyword_word_was_found),
                     Toast.LENGTH_LONG
                 ).show()
             }

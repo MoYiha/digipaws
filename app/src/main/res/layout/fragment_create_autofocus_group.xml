@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Create AutoFocus Group" />
+            app:title="@string/create_autofocus_group" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -33,7 +33,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Group Name"
+                android:hint="@string/group_name"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
                 app:boxCornerRadiusTopEnd="16dp"
@@ -52,7 +52,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="APPS TO BLOCK/ALLOW"
+                android:text="@string/apps_to_blockallow"
                 android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:letterSpacing="0.1"
@@ -62,7 +62,7 @@
                 android:id="@+id/btn_select_apps"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:text="Select Apps (0)"
+                android:text="@string/select_apps_0"
                 app:icon="@drawable/ic_app_blocker_aesthetic"
                 app:backgroundTint="?attr/colorSurfaceContainerHigh"
                 android:textColor="?attr/colorOnSurface"
@@ -73,7 +73,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BLOCKING MODE"
+                android:text="@string/blocking_mode"
                 android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:letterSpacing="0.1"
@@ -99,7 +99,7 @@
                         android:id="@+id/rb_block_selected"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Block Selected"
+                        android:text="@string/block_selected"
                         android:checked="true"
                         android:textSize="16sp"/>
 
@@ -107,7 +107,7 @@
                         android:id="@+id/rb_block_all_except_selected"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Block All Except Selected"
+                        android:text="@string/block_all_except_selected"
                         android:textSize="16sp"/>
                 </RadioGroup>
             </com.google.android.material.card.MaterialCardView>
@@ -116,7 +116,7 @@
                 android:id="@+id/btn_configure_schedule"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:text="Configure Schedule"
+                android:text="@string/configure_schedule"
                 app:icon="@drawable/ic_timer_aesthetic"
                 app:backgroundTint="?attr/colorSurfaceVariant"
                 android:textColor="?attr/colorOnSurfaceVariant"
@@ -149,7 +149,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Exitable"
+                            android:text="@string/exitable"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -158,7 +158,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="Allow focus mode to be exited manually"
+                            android:text="@string/allow_focus_mode_to_be_exited"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="13sp" />
                     </LinearLayout>
@@ -180,7 +180,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
-        android:text="Done"
+        android:text="@string/done"
         app:icon="@drawable/baseline_done_24"
         app:backgroundTint="?attr/colorPrimary"
         android:textColor="?attr/colorOnPrimary"

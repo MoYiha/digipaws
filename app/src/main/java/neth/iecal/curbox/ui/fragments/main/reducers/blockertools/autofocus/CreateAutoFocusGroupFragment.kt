@@ -96,7 +96,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
                         binding.toolbar.setOnMenuItemClickListener { item ->
                             if (item.itemId == 1001) {
                                 viewModel.removeGroup(group)
-                                Toast.makeText(requireContext(), "Group deleted", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(requireContext(), getString(R.string.group_deleted), Toast.LENGTH_SHORT).show()
                                 requireActivity().finish()
                                 true
                             } else {
@@ -126,7 +126,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
             }
             
             if (selectedApps.isEmpty()) {
-                Toast.makeText(requireContext(), "Please select at least one app", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.please_select_at_least_one_app), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -153,7 +153,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
                 viewModel.addGroup(newGroup)
             }
 
-            Toast.makeText(requireContext(), "Group saved successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.group_saved_successfully), Toast.LENGTH_SHORT).show()
             requireActivity().finish()
         }
     }

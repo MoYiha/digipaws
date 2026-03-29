@@ -50,7 +50,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
-                    android:text="All Groups"
+                    android:text="@string/all_groups"
                     android:textAppearance="?attr/textAppearanceBodyMedium" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -80,7 +80,7 @@
                             android:id="@+id/tvTotalSessions"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0"
+                            android:text="@string/val_0"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="22sp"
                             android:textStyle="bold" />
@@ -115,7 +115,7 @@
                             android:id="@+id/tvTotalDuration"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0m"
+                            android:text="@string/val_0m"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="22sp"
                             android:textStyle="bold" />
@@ -150,7 +150,7 @@
                             android:id="@+id/tvStreak"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0"
+                            android:text="@string/val_0"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="22sp"
                             android:textStyle="bold" />
@@ -193,7 +193,7 @@
                             android:id="@+id/tvAvgDuration"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0m"
+                            android:text="@string/val_0m"
                             android:textColor="?attr/colorTertiary"
                             android:textSize="22sp"
                             android:textStyle="bold" />
@@ -228,7 +228,7 @@
                             android:id="@+id/tvCompletionRate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0%"
+                            android:text="@string/val_0_1"
                             android:textColor="?attr/colorTertiary"
                             android:textSize="22sp"
                             android:textStyle="bold" />

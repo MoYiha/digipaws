@@ -1,5 +1,7 @@
 package neth.iecal.curbox.ui.fragments.main
 
+import neth.iecal.curbox.R
+
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -92,7 +94,7 @@ class InfoFragment : Fragment() {
             .setNegativeButton("Close", null)
             .setNeutralButton("Clear") { _, _ ->
                 if (logFile.exists() && logFile.delete()) {
-                    Toast.makeText(requireContext(), "Crash logs cleared", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.crash_logs_cleared), Toast.LENGTH_SHORT).show()
                 }
             }
             .show()
@@ -100,7 +102,7 @@ class InfoFragment : Fragment() {
 
     private fun shareCrashLogs(content: String) {
         if (content == "No crash logs available." || content == "Error reading crash logs.") run {
-            Toast.makeText(requireContext(), "Nothing to share.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.nothing_to_share), Toast.LENGTH_SHORT).show()
             return
         }
         val intent = Intent(Intent.ACTION_SEND).apply {

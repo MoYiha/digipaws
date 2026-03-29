@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24dp"
             android:layout_marginBottom="16dp"
-            android:text="Set limits for each day"
+            android:text="@string/set_limits_for_each_day"
             android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
             android:textColor="?android:attr/textColorSecondary"
             android:textAllCaps="true"
@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:text="Save" />
+            android:text="@string/save" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

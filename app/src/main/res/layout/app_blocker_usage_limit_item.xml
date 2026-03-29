@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:hint="Hours"
+            android:hint="@string/hours"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:hint="Minutes"
+            android:hint="@string/minutes_1"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium">
 
             <com.google.android.material.textfield.TextInputEditText

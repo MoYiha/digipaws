@@ -18,7 +18,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Monday"
+            android:text="@string/monday"
             android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:paddingHorizontal="0dp"
-        android:text="Add Time Range"
+        android:text="@string/add_time_range"
         app:icon="@drawable/baseline_add_24" />
 
     <com.google.android.material.divider.MaterialDivider

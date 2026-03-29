@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
-                android:text="What are you making room for?"
+                android:text="@string/what_are_you_making_room_for"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
@@ -38,7 +38,7 @@
                 android:layout_marginTop="24dp"
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.2"
-                android:text="Mindless scrolling leaves us with brain fog instead of actual rest. What would you rather be doing with those recovered hours?"
+                android:text="@string/mindless_scrolling_leaves_us_with_brain"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -66,7 +66,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Focusing on deep work/studying"
+                        android:text="@string/focusing_on_deep_workstudying"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -86,7 +86,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Learning a new skill (like guitar or coding)"
+                        android:text="@string/learning_a_new_skill_like_guitar"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -106,7 +106,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Being present with friends and family"
+                        android:text="@string/being_present_with_friends_and_family"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -126,7 +126,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Getting actual, restful sleep"
+                        android:text="@string/getting_actual_restful_sleep"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
@@ -148,7 +148,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:enabled="false"
-            android:text="Commit to these goals."
+            android:text="@string/commit_to_these_goals"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

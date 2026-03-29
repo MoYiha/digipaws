@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
-                android:text="Let's look at the numbers."
+                android:text="@string/lets_look_at_the_numbers"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
@@ -38,7 +38,7 @@
                 android:layout_marginTop="24dp"
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.2"
-                android:text="How many hours a day do you think you spend on your phone?"
+                android:text="@string/how_many_hours_a_day_do"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -48,7 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
-                android:text="4 hrs"
+                android:text="@string/val_4_hrs"
                 android:textColor="?attr/colorPrimary"
                 android:textStyle="bold" />
 
@@ -72,7 +72,7 @@
                 android:layout_marginTop="32dp"
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.2"
-                android:text="Over a year, that is 60 full days of your life staring at a screen."
+                android:text="@string/over_a_year_that_is_60"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textStyle="italic" />
@@ -93,7 +93,7 @@
             style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="I want my time back."
+            android:text="@string/i_want_my_time_back"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -334,10 +334,10 @@ class SelectAppsActivity : AppCompatActivity() {
                         // Optionally add to selected list
                         selectedAppList.add(packageName)
 
-                        Toast.makeText(this, "Added Successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.added_successfully), Toast.LENGTH_SHORT).show()
                     } else {
                         // Show a message if package already exists
-                        Toast.makeText(this, "Package already exists", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, getString(R.string.package_already_exists), Toast.LENGTH_SHORT).show()
                     }
                 }
                 dialog.dismiss()

@@ -26,7 +26,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="A few final steps"
+                    android:text="@string/a_few_final_steps"
                     android:textAppearance="?attr/textAppearanceTitleLarge"
                     android:textStyle="bold" />
 
@@ -34,7 +34,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Select what apps you'd like to get blocked"
+                    android:text="@string/select_what_apps_youd_like_to"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -94,7 +94,7 @@
                     android:id="@+id/textView30"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Create a new group"
+                    android:text="@string/create_a_new_group"
                     android:textAppearance="?attr/textAppearanceTitleLarge"
                     android:textStyle="bold" />
 
@@ -103,7 +103,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Use a Focus Group to instantly launch a focus session with your chosen apps."
+                    android:text="@string/use_a_focus_group_to_instantly"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -116,7 +116,7 @@
                         android:id="@+id/group_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Enter Group Name" />
+                        android:hint="@string/enter_group_name" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <LinearLayout
@@ -130,7 +130,7 @@
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Select Apps" />
+                        android:text="@string/select_apps" />
 
                     <Space
                         android:layout_width="0dp"
@@ -141,7 +141,7 @@
                         android:id="@+id/selected_app_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Selected: 0"
+                        android:text="@string/selected_0"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -152,7 +152,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="What action would you like to be taken when a user opens a selected app?"
+                    android:text="@string/what_action_would_you_like_to"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -170,14 +170,14 @@
                         style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Block Selected" />
+                        android:text="@string/block_selected" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_block_all_excpt_selected"
                         style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Block All Except Selected" />
+                        android:text="@string/block_all_except_selected" />
 
                 </com.google.android.material.button.MaterialButtonToggleGroup>
 
@@ -187,14 +187,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:checked="true"
-                    android:text="Let me quit mid-sessions" />
+                    android:text="@string/let_me_quit_midsessions" />
 
                 <Button
                     android:id="@+id/save_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Save Group" />
+                    android:text="@string/save_group" />
 
             </LinearLayout>
         </LinearLayout>

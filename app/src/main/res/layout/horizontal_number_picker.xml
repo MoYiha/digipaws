@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="-"
+        android:text="@string/str_empty"
         android:textSize="18sp"
         tools:ignore="HardcodedText" />
 
@@ -35,7 +35,7 @@
             android:inputType="number"
             android:maxLength="3"
             android:minEms="2"
-            android:text="0"
+            android:text="@string/val_0"
             android:textSize="24sp"
             android:textStyle="bold"
             tools:ignore="HardcodedText,LabelFor" />
@@ -57,7 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="+"
+        android:text="@string/str_empty_1"
         android:textSize="18sp"
         tools:ignore="HardcodedText" />
 </LinearLayout>

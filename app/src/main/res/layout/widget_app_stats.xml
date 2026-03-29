@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Screen time"
+                android:text="@string/screen_time"
                 style="@style/TextAppearance.Material3.BodyMedium"
                 android:textColor="?android:attr/textColorPrimary" />
 
@@ -48,7 +48,7 @@
             android:layout_weight="3"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:text="0h 0m"
+            android:text="@string/val_0h_0m"
             android:textColor="?android:attr/textColorPrimary"
             android:textStyle="bold" />
 
@@ -61,7 +61,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:text="1h App"
+            android:text="@string/val_1h_app"
             android:textColor="?android:attr/textColorPrimary" />
 
 
@@ -74,7 +74,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:text="1h App"
+            android:text="@string/val_1h_app"
             android:textColor="?android:attr/textColorPrimary" />
 
 
@@ -87,7 +87,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:text="1h App"
+            android:text="@string/val_1h_app"
             android:textColor="?android:attr/textColorPrimary" />
 
     </LinearLayout>

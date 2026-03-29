@@ -1,5 +1,7 @@
 package neth.iecal.curbox.services
 
+import neth.iecal.curbox.R
+
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
@@ -48,7 +50,7 @@ class UsageTrackingService : BaseBlockingService() {
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(
                 this,
-                "Please provide 'Draw over other apps' permission to make this service work properly. ",
+                getString(R.string.please_provide_draw_over_other_apps),
                 Toast.LENGTH_LONG
             ).show()
 

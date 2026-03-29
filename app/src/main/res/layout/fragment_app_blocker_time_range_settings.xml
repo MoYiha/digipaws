@@ -17,7 +17,7 @@
             android:layout_marginHorizontal="8dp"
             android:layout_marginBottom="16dp"
             android:letterSpacing="0.1"
-            android:text="Allowed Time Ranges"
+            android:text="@string/allowed_time_ranges"
             android:textAllCaps="true"
             android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
             android:textColor="?android:attr/textColorSecondary" />
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Apply to every day"
+            android:text="@string/apply_to_every_day"
             android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
 
         <LinearLayout
@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:paddingHorizontal="0dp"
-                android:text="Add Time Range"
+                android:text="@string/add_time_range"
                 app:icon="@drawable/baseline_add_24" />
 
             <com.google.android.material.divider.MaterialDivider
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:padding="16dp"
-            android:text="Save Time Ranges" />
+            android:text="@string/save_time_ranges" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Reel Blocker" />
+            app:title="@string/reel_blocker" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -34,7 +34,7 @@
                 android:id="@+id/switch_enable_blocker"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enable Reel Blocker"
+                android:text="@string/enable_reel_blocker"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_marginBottom="24dp" />
 
@@ -42,7 +42,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Warning Screen"
+                android:text="@string/warning_screen"
                 android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
                 android:textColor="?android:attr/textColorSecondary"
                 android:textAllCaps="true"
@@ -54,7 +54,7 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Configure Warning Screen"
+                android:text="@string/configure_warning_screen_1"
                 app:icon="@drawable/baseline_settings_24"
                 android:layout_marginBottom="32dp" />
 
@@ -62,7 +62,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Blocking Basis"
+                android:text="@string/blocking_basis"
                 android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
                 android:textColor="?android:attr/textColorSecondary"
                 android:textAllCaps="true"
@@ -79,20 +79,20 @@
                     android:id="@+id/rb_type_time"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Time Based" />
+                    android:text="@string/time_based" />
 
                 <RadioButton
                     android:id="@+id/rb_type_usage"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Usage Based"
+                    android:text="@string/usage_based"
                     android:visibility="gone" />
 
                 <RadioButton
                     android:id="@+id/rb_type_count"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Reel Count Based" />
+                    android:text="@string/reel_count_based" />
             </RadioGroup>
 
             <!-- Configure Limits -->
@@ -101,7 +101,7 @@
                 style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Configure Limits"
+                android:text="@string/configure_limits"
                 android:layout_marginBottom="32dp" />
 
         </LinearLayout>

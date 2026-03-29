@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="Give us the keys."
+                android:text="@string/give_us_the_keys"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
 
@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
-                android:text="To create friction and give you your time back, we need deep system access. We never read your messages or track browsing."
+                android:text="@string/to_create_friction_and_give_you"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
             <!-- 1. Overlay Perm -->
@@ -64,7 +64,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Display over other apps"
+                        android:text="@string/display_over_other_apps"
                         android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
@@ -102,7 +102,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Usage Access"
+                        android:text="@string/usage_access"
                         android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
@@ -140,7 +140,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Send Notifications"
+                        android:text="@string/send_notifications"
                         android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
@@ -178,7 +178,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="App Blocker (Accessibility)"
+                        android:text="@string/app_blocker_accessibility"
                         android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
@@ -216,7 +216,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Usage Tracker (Accessibility)"
+                        android:text="@string/usage_tracker_accessibility"
                         android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
@@ -234,7 +234,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
                 android:gravity="center"
-                android:text="Do you want to restore a previously saved backup? You won't be allowed to restore later."
+                android:text="@string/do_you_want_to_restore_a"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
             <com.google.android.material.card.MaterialCardView
@@ -262,7 +262,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Restore Backup"
+                        android:text="@string/restore_backup"
                         android:textColor="?attr/colorOnSurface" />
 
                     <ImageView
@@ -290,7 +290,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:enabled="false"
-            android:text="Enable Permissions"
+            android:text="@string/enable_permissions"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

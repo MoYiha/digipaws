@@ -47,7 +47,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Usage Timeline"
+                    android:text="@string/usage_timeline"
                     android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
 
                 <com.github.mikephil.charting.charts.LineChart
@@ -82,7 +82,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:alpha="0.7"
-                        android:text="Today's Screentime"
+                        android:text="@string/todays_screentime"
                         android:textAppearance="@style/TextAppearance.Material3.LabelMedium" />
 
                     <TextView
@@ -111,7 +111,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:alpha="0.7"
-                        android:text="App Opens"
+                        android:text="@string/app_opens"
                         android:textAppearance="@style/TextAppearance.Material3.LabelMedium" />
 
                     <TextView
@@ -149,7 +149,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add to Blocked Apps"
+                    android:text="@string/add_to_blocked_apps"
                     android:textAppearance="@style/TextAppearance.Material3.LabelLarge" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

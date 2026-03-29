@@ -26,7 +26,7 @@
             android:id="@+id/textView28"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="It’s a temporary block that appears when your time is up. Instead of just locking you out, it gives you a choice: close the app immediately or &quot;borrow&quot; a few more minutes before the reminder shows up again." />
+            android:text="@string/its_a_temporary_block_that_appears" />
 
         <RadioGroup
             android:id="@+id/warning_radio_group"
@@ -38,25 +38,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="Skip this screen and go back immediately" />
+                android:text="@string/skip_this_screen_and_go_back" />
 
             <RadioButton
                 android:id="@+id/dynamic_timing_rb"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Let me decide how many extra minutes I need right then" />
+                android:text="@string/let_me_decide_how_many_extra" />
 
             <RadioButton
                 android:id="@+id/predefined_time_rb"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Use a pre-defined limit, like 5 minutes, every time" />
+                android:text="@string/use_a_predefined_limit_like_5" />
 
             <RadioButton
                 android:id="@+id/disable_proceed_rb"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Show me the warning screen but don't let me proceed" />
+                android:text="@string/show_me_the_warning_screen_but" />
         </RadioGroup>
 
         <LinearLayout
@@ -71,7 +71,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp"
-                android:text="How long to unlock for after proceeding?" />
+                android:text="@string/how_long_to_unlock_for_after" />
 
             <neth.iecal.curbox.views.HorizontalNumberPicker
                 android:id="@+id/select_mins"
@@ -93,7 +93,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:padding="8dp"
-                android:text="How long to wait before being able to press the proceed button. Prevents from instantly pressing the button without reading the message." />
+                android:text="@string/how_long_to_wait_before_being" />
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/proceed_delay_chips"
@@ -109,28 +109,28 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checkable="true"
-                    android:text="3 sec" />
+                    android:text="@string/val_3_sec" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/nine_sec_chip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checkable="true"
-                    android:text="9 sec" />
+                    android:text="@string/val_9_sec" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/fifteen_sec_chip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checkable="true"
-                    android:text="15 sec" />
+                    android:text="@string/val_15_sec" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/thirty_sec_chip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checkable="true"
-                    android:text="30 sec" />
+                    android:text="@string/val_30_sec" />
 
             </com.google.android.material.chip.ChipGroup>
         </LinearLayout>
@@ -153,7 +153,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginVertical="16dp"
-            android:text="Save" />
+            android:text="@string/save" />
 
     </LinearLayout>
 </ScrollView>

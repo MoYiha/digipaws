@@ -26,7 +26,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
-                android:text="Choose your first target."
+                android:text="@string/choose_your_first_target"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
@@ -39,7 +39,7 @@
                 android:layout_marginTop="24dp"
                 android:gravity="center"
                 android:lineSpacingMultiplier="1.2"
-                android:text="Don't try to change everything at once. Pick one app that drains your energy the most."
+                android:text="@string/dont_try_to_change_everything_at"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -64,7 +64,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Instagram"
+                        android:text="@string/instagram"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -83,7 +83,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="TikTok"
+                        android:text="@string/tiktok"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -102,7 +102,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="YouTube"
+                        android:text="@string/youtube"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -121,7 +121,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Reddit"
+                        android:text="@string/reddit"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
                 
@@ -140,7 +140,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Other (Select later)"
+                        android:text="@string/other_select_later"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
 
@@ -151,7 +151,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Daily Limit"
+                android:text="@string/daily_limit"
                 android:textColor="?attr/colorOnSurface" />
 
             <com.google.android.material.chip.ChipGroup
@@ -168,7 +168,7 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="15 min" />
+                    android:text="@string/val_15_min" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_30m"
@@ -176,21 +176,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="30 min" />
+                    android:text="@string/val_30_min" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_1h"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1 hour" />
+                    android:text="@string/val_1_hour" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_2h"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2 hours" />
+                    android:text="@string/val_2_hours" />
 
             </com.google.android.material.chip.ChipGroup>
         </LinearLayout>
@@ -210,7 +210,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:enabled="false"
-            android:text="Add friction to this app."
+            android:text="@string/add_friction_to_this_app"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

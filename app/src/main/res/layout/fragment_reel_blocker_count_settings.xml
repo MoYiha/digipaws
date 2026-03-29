@@ -17,7 +17,7 @@
             android:layout_marginHorizontal="8dp"
             android:layout_marginBottom="16dp"
             android:letterSpacing="0.1"
-            android:text="Reel Limits"
+            android:text="@string/reel_limits"
             android:textAllCaps="true"
             android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
             android:textColor="?android:attr/textColorSecondary" />
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
             android:layout_marginBottom="8dp"
-            android:text="Apply same limit to every day"
+            android:text="@string/apply_same_limit_to_every_day"
             android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
 
         <LinearLayout
@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:hint="Maximum Reels Allowed">
+                android:hint="@string/maximum_reels_allowed">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_everyday_limit"
@@ -72,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:padding="16dp"
-            android:text="Save Limits" />
+            android:text="@string/save_limits" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

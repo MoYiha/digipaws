@@ -1,5 +1,7 @@
 package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker
 
+import neth.iecal.curbox.R
+
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -73,7 +75,7 @@ class KeywordBlockerFragment : Fragment() {
                         .removePrefix("www.")
                     Toast.makeText(
                         requireContext(),
-                        "WARNING: Link blocker may not work everywhere.",
+                        getString(R.string.warning_link_blocker_may_not_work),
                         Toast.LENGTH_LONG
                     ).show()
                 }

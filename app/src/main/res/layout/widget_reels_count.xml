@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Reels Today"
+                android:text="@string/reels_today"
                 android:textColor="?android:attr/textColorPrimary" />
 
             <ImageView
@@ -47,7 +47,7 @@
             android:ellipsize="none"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:text="1.3k"
+            android:text="@string/val_13k"
             android:textColor="?android:attr/textColorPrimary"
             android:textStyle="bold" />
 
@@ -59,7 +59,7 @@
             android:layout_marginTop="4dp"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:text="+100%"
+            android:text="@string/val_100"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp" />
 

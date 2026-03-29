@@ -109,7 +109,7 @@ class AllAppsUsageFragment : Fragment() {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 requireContext(),
-                                "Data exported successfully",
+                                getString(R.string.data_exported_successfully),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -118,7 +118,7 @@ class AllAppsUsageFragment : Fragment() {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 requireContext(),
-                                "Failed to export data",
+                                getString(R.string.failed_to_export_data),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -246,7 +246,7 @@ class AllAppsUsageFragment : Fragment() {
                                 }
                                 .show()
                         } else {
-                            Toast.makeText(requireContext(), "Pinning widgets is not supported on this launcher", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), getString(R.string.pinning_widgets_is_not_supported_on), Toast.LENGTH_SHORT).show()
                         }
                         true
                     }
@@ -481,7 +481,7 @@ class AllAppsUsageFragment : Fragment() {
     }
 
     private fun generateAndExportCsv(startMs: Long, endMs: Long, mode: Int) {
-        Toast.makeText(requireContext(), "Generating Analysis CSV...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), getString(R.string.generating_analysis_csv), Toast.LENGTH_SHORT).show()
 
         lifecycleScope.launch(Dispatchers.IO) {
             val sb = StringBuilder()

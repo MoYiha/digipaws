@@ -1,5 +1,7 @@
 package neth.iecal.curbox.blockers
 
+import neth.iecal.curbox.R
+
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -79,7 +81,7 @@ class FocusModeBlocker : BaseBlocker() {
         fun performBlock() {
             service.pressHome()
             lastPackage = ""
-            Toast.makeText(service, "This app is currently under focus mode", Toast.LENGTH_LONG).show()
+            Toast.makeText(service, service.getString(R.string.this_app_is_currently_under_focus), Toast.LENGTH_LONG).show()
         }
 
         if (focusModeData != null) {

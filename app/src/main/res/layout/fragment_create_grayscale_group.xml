@@ -15,7 +15,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Create Grayscale Group" />
+            app:title="@string/create_grayscale_group" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -33,7 +33,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Group Name"
+                android:hint="@string/group_name"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
                 app:boxCornerRadiusTopEnd="16dp"
@@ -52,7 +52,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="APPS TO GREYSCALE"
+                android:text="@string/apps_to_greyscale"
                 android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:letterSpacing="0.1"
@@ -62,7 +62,7 @@
                 android:id="@+id/btn_select_apps"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:text="Select Apps (0)"
+                android:text="@string/select_apps_0"
                 app:icon="@drawable/ic_app_blocker_aesthetic"
                 app:backgroundTint="?attr/colorSurfaceContainerHigh"
                 android:textColor="?attr/colorOnSurface"
@@ -74,7 +74,7 @@
                 android:id="@+id/btn_configure_schedule"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:text="Configure Schedule"
+                android:text="@string/configure_schedule"
                 app:icon="@drawable/ic_timer_aesthetic"
                 app:backgroundTint="?attr/colorSurfaceVariant"
                 android:textColor="?attr/colorOnSurfaceVariant"
@@ -91,7 +91,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
-        android:text="Done"
+        android:text="@string/done"
         app:icon="@drawable/baseline_done_24"
         app:backgroundTint="?attr/colorPrimary"
         android:textColor="?attr/colorOnPrimary"

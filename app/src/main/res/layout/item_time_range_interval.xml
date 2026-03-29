@@ -18,14 +18,14 @@
         android:focusable="true"
         android:gravity="center"
         android:padding="12dp"
-        android:text="09:00 AM"
+        android:text="@string/val_0900_am"
         android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="12dp"
-        android:text="to"
+        android:text="@string/to"
         android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
         android:textColor="?android:attr/textColorSecondary" />
 
@@ -39,7 +39,7 @@
         android:focusable="true"
         android:gravity="center"
         android:padding="12dp"
-        android:text="05:00 PM"
+        android:text="@string/val_0500_pm"
         android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
 
     <ImageButton
