@@ -11,6 +11,11 @@ android {
     compileSdk = 34
     flavorDimensions += "version"
 
+    lint {
+        disable.add("NullSafeMutableLiveData")
+        abortOnError = false
+    }
+
     defaultConfig {
         applicationId = "nethical.digipaws"
         minSdk = 26

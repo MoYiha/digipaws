@@ -51,7 +51,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nethical.digipaws.R
 import nethical.digipaws.databinding.AppUsageItemBinding
-import nethical.digipaws.databinding.DialogPermissionInfoBinding
+
 import nethical.digipaws.databinding.FragmentAllAppUsageBinding
 import nethical.digipaws.ui.activity.FragmentActivity
 import nethical.digipaws.ui.activity.SelectAppsActivity
