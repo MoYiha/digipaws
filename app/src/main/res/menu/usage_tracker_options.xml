@@ -4,8 +4,8 @@
         android:id="@+id/select_ignored"
         android:title="Select Ignored Apps" />
     <item
-        android:id="@+id/add_shortcut_usage_tracker"
-        android:title="Add Shotcut to Homescreen" />
+        android:id="@+id/add_widget_usage_tracker"
+        android:title="Add Widget to Homescreen" />
 
     <item
         android:id="@+id/export_as_csv"

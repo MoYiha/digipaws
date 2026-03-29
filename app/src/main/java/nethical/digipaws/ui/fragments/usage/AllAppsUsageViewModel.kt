@@ -26,6 +26,9 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
 
     val ignoredPackages: MutableSet<String> = mutableSetOf()
 
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
     // Current week offset: 0 = current week, -1 = last week, etc.
     private val _weekOffset = MutableLiveData(0)
     val weekOffset: LiveData<Int> = _weekOffset
@@ -95,10 +98,12 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
     fun selectDay(index: Int) {
         _selectedDayIndex.value = index
         viewModelScope.launch(Dispatchers.IO) {
+            withContext(Dispatchers.Main) { _isLoading.value = true }
             val weekStart = getWeekStart(_weekOffset.value ?: 0)
             val selectedDate = weekStart.plusDays(index.toLong())
             loadDayStats(selectedDate)
             computeComparison(selectedDate)
+            withContext(Dispatchers.Main) { _isLoading.value = false }
         }
     }
 
@@ -109,6 +114,8 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
     }
 
     private suspend fun loadWeekData() {
+        withContext(Dispatchers.Main) { _isLoading.value = true }
+
         val offset = withContext(Dispatchers.Main) { _weekOffset.value ?: 0 }
         val weekStart = getWeekStart(offset)
         val weekEnd = weekStart.plusDays(6)
@@ -223,6 +230,7 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
 
         withContext(Dispatchers.Main) {
             _comparisonText.value = text
+            _isLoading.value = false
         }
     }
 

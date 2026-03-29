@@ -228,55 +228,26 @@ class AllAppsUsageFragment : Fragment() {
                         true
                     }
 
-                    R.id.add_shortcut_usage_tracker -> {
-                        val intent =
-                            Intent(requireContext(), FragmentActivity::class.java).apply {
-                                action = Intent.ACTION_CREATE_SHORTCUT
-                            }
+                    R.id.add_widget_usage_tracker -> {
+                        val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(requireContext())
 
-                        intent.putExtra("fragment", FRAGMENT_ID)
-                        val shortcutInfo =
-                            ShortcutInfoCompat.Builder(
-                                requireContext(),
-                                "digipaws_usage_tracker"
-                            )
-                                .setShortLabel("Usage Stats")
-                                .setLongLabel("Usage Stats")
-                                .setIntent(intent)
-                                .setIcon(
-                                    IconCompat.createWithResource(
-                                        requireContext(),
-                                        R.drawable.baseline_query_stats_24
-                                    )
-                                )
-                                .build()
-
-                        val supported =
-                            ShortcutManagerCompat.isRequestPinShortcutSupported(requireContext())
-                        val dynamicShortcuts =
-                            ShortcutManagerCompat.getDynamicShortcuts(requireContext())
-
-                        if (supported) {
-                            if (dynamicShortcuts.contains(shortcutInfo)) {
-                                return@setOnMenuItemClickListener false
-                            }
+                        if (appWidgetManager.isRequestPinAppWidgetSupported) {
+                            val options = arrayOf("Screentime Stats", "Reels Stats")
+                            MaterialAlertDialogBuilder(requireContext())
+                                .setTitle("Select Widget to Pin")
+                                .setItems(options) { dialog, which ->
+                                    val myProvider = if (which == 0) {
+                                        android.content.ComponentName(requireContext(), nethical.digipaws.ui.widgets.ScreentimeWidgetProvider::class.java)
+                                    } else {
+                                        android.content.ComponentName(requireContext(), nethical.digipaws.ui.widgets.ReelsWidgetProvider::class.java)
+                                    }
+                                    appWidgetManager.requestPinAppWidget(myProvider, null, null)
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        } else {
+                            Toast.makeText(requireContext(), "Pinning widgets is not supported on this launcher", Toast.LENGTH_SHORT).show()
                         }
-                        val pinnedShortcutCallbackIntent =
-                            Intent("example.intent.action.SHORTCUT_CREATED")
-
-                        val successCallback = PendingIntent.getBroadcast(
-                            requireContext(),
-                            3000,
-                            pinnedShortcutCallbackIntent,
-                            FLAG_IMMUTABLE
-                        )
-
-                        ShortcutManagerCompat.requestPinShortcut(
-                            requireContext(),
-                            shortcutInfo,
-                            successCallback.intentSender
-                        )
-
                         true
                     }
 
@@ -358,6 +329,30 @@ class AllAppsUsageFragment : Fragment() {
 
         viewModel.dateSublabel.observe(viewLifecycleOwner) { label ->
             binding.dateSublabel.text = label
+        }
+
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading) {
+                binding.loadingOverlay.animate().cancel()
+                binding.main.animate().cancel()
+                
+                binding.loadingOverlay.animate().alpha(1f).setDuration(250).withStartAction {
+                    binding.loadingOverlay.visibility = View.VISIBLE
+                }
+                binding.main.animate().alpha(0f).setDuration(250).withEndAction {
+                    binding.main.visibility = View.INVISIBLE
+                }
+            } else {
+                binding.loadingOverlay.animate().cancel()
+                binding.main.animate().cancel()
+                
+                binding.loadingOverlay.animate().alpha(0f).setDuration(350).withEndAction {
+                    binding.loadingOverlay.visibility = View.GONE
+                }
+                binding.main.animate().alpha(1f).setDuration(350).withStartAction {
+                    binding.main.visibility = View.VISIBLE
+                }
+            }
         }
     }
 
