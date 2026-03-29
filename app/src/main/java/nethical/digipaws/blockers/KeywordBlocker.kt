@@ -94,7 +94,7 @@ class KeywordBlocker : BaseBlocker() {
         val keywords = parseTextForKeywords(url)
         for (word in keywords) {
             if (blockedKeyword.contains(word)) { // word is already lowercased in parseTextForKeywords
-//                Log.d("blocked word found ", word)
+                Log.d("blocked word found ", word)
                 // Cache the bad word and return
                 detectionCache.put(url, word)
                 return word
@@ -257,6 +257,8 @@ class KeywordBlocker : BaseBlocker() {
             goBtnNode.getChild(urlBarInfo.suggestionBoxIndexOfGoBtn)
                 ?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
         }
+
+        Thread.sleep(2000)
     }
 
     private fun searchKeywordsInWebViewTitle(rootNode: AccessibilityNodeInfo): String? {
