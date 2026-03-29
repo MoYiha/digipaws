@@ -55,6 +55,8 @@ import nethical.digipaws.databinding.DialogPermissionInfoBinding
 import nethical.digipaws.databinding.FragmentAllAppUsageBinding
 import nethical.digipaws.ui.activity.FragmentActivity
 import nethical.digipaws.ui.activity.SelectAppsActivity
+import nethical.digipaws.ui.fragments.installation.onboarding.OnboardingFragment
+import nethical.digipaws.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
 import nethical.digipaws.utils.TimeTools
 import nethical.digipaws.utils.UsageStatsHelper
 import java.text.SimpleDateFormat
@@ -137,22 +139,22 @@ class AllAppsUsageFragment : Fragment() {
 
         viewModel = ViewModelProvider(this)[AllAppsUsageViewModel::class.java]
 
-        if (!hasUsageStatsPermission(requireContext())) {
-            makeUsageStatsPermissoinDialog()
+        if (!nethical.digipaws.utils.PermissionUtils.hasAllRequiredPermissions(requireContext())) {
+            val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                putExtra("fragment", OnboardingFragment.FRAGMENT_ID)
+            }
+            startActivity(intent)
+
         }
 
-        // Setup RecyclerView
         val adapter = AppUsageAdapter(emptyList())
         binding.appUsageRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.appUsageRecyclerView.adapter = adapter
 
-        // Setup PieChart
         setupPieChart()
 
-        // Observe ViewModel
         observeViewModel(adapter)
 
-        // Setup week navigation
         binding.btnPrevWeek.setOnClickListener {
             viewModel.goToPreviousWeek()
         }
@@ -375,38 +377,6 @@ class AllAppsUsageFragment : Fragment() {
         super.onResume()
         if (::viewModel.isInitialized) {
             viewModel.reload()
-        }
-    }
-
-    private fun makeUsageStatsPermissoinDialog() {
-        val dialogBinding =
-            DialogPermissionInfoBinding.inflate(layoutInflater)
-        dialogBinding.title.text =
-            getString(R.string.enable_2, "Device Usage Access")
-
-        dialogBinding.desc.text =
-            "DigiPaws requires device usage access to monitor apps, helping you manage screen time effectively and stay focused on your goals. Rest assured, all data stays securely on your device and is never shared with anyone, ensuring your privacy is fully protected."
-
-        dialogBinding.point1.text = "Track what apps you use"
-        dialogBinding.point2.visibility = View.GONE
-        val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setView(dialogBinding.root)
-            .setCancelable(false)
-            .show()
-
-        dialogBinding.btnReject.setOnClickListener {
-            dialog.dismiss()
-            activity?.finish()
-        }
-        dialogBinding.btnAccept.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                "Find 'Digipaws' and press enable",
-                Toast.LENGTH_LONG
-            )
-                .show()
-            requestUsageStatsPermission(requireContext())
-            dialog.dismiss()
         }
     }
 
@@ -718,30 +688,7 @@ class AllAppsUsageFragment : Fragment() {
         override fun getItemCount(): Int = appUsageStats.size
     }
 
-    fun hasUsageStatsPermission(context: Context): Boolean {
-        val appOpsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            appOpsManager.unsafeCheckOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                android.os.Process.myUid(),
-                context.packageName
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            appOpsManager.checkOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                android.os.Process.myUid(),
-                context.packageName
-            )
-        }
-        return mode == AppOpsManager.MODE_ALLOWED
-    }
 
-    fun requestUsageStatsPermission(context: Context) {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        context.startActivity(intent)
-    }
 
     class Stat(
         val packageName: String,

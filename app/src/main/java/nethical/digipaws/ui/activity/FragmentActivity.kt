@@ -7,7 +7,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import nethical.digipaws.R
 import nethical.digipaws.ui.fragments.installation.AccessibilityGuide
-import nethical.digipaws.ui.fragments.installation.WelcomeFragment
+import nethical.digipaws.ui.fragments.installation.onboarding.OnboardingFragment
 import nethical.digipaws.ui.fragments.main.focus.FocusFragment
 import nethical.digipaws.ui.fragments.main.reducers.ReducersFragment
 import nethical.digipaws.ui.fragments.main.reducers.anti_stimulants.grayscale.CreateGrayscaleGroupFragment
@@ -34,10 +34,15 @@ class FragmentActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
 
-        val selectedFragment = intent.getStringExtra("fragment") ?: AllAppsUsageFragment.FRAGMENT_ID
+        val sharedPreferences = getSharedPreferences("AppPreferences", android.content.Context.MODE_PRIVATE)
+        val isFirstLaunchComplete = sharedPreferences.getBoolean("isFirstLaunchComplete", false)
+        var selectedFragment = intent.getStringExtra("fragment") ?: AllAppsUsageFragment.FRAGMENT_ID
+        if (!isFirstLaunchComplete && intent.getStringExtra("fragment") == null) {
+            selectedFragment = OnboardingFragment.FRAGMENT_ID
+        }
         
         when (selectedFragment) {
-            WelcomeFragment.FRAGMENT_ID,
+            OnboardingFragment.FRAGMENT_ID,
             AccessibilityGuide.FRAGMENT_ID,
             AppBlockerGroupsFragment.FRAGMENT_ID,
             CreateAppGroupFragment.FRAGMENT_ID,
@@ -52,7 +57,7 @@ class FragmentActivity : AppCompatActivity() {
                 bottomNav.visibility = android.view.View.GONE
                 
                 val fragment = when (selectedFragment) {
-                    WelcomeFragment.FRAGMENT_ID -> WelcomeFragment()
+                    OnboardingFragment.FRAGMENT_ID -> OnboardingFragment()
                     AppBlockerGroupsFragment.FRAGMENT_ID -> AppBlockerGroupsFragment()
                     CreateAppGroupFragment.FRAGMENT_ID -> CreateAppGroupFragment()
                     ReelBlockerFragment.FRAGMENT_ID -> ReelBlockerFragment()
