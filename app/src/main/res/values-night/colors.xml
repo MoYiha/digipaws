@@ -146,4 +146,5 @@
 
 
     <color name="text_color">#FFFFFF</color>
+    <color name="error_color">#F44336</color>
 </resources>
