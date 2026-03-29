@@ -6,7 +6,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.io.File
 import nethical.digipaws.databinding.FragmentInfoBinding
 
 class InfoFragment : Fragment() {
@@ -46,6 +49,10 @@ class InfoFragment : Fragment() {
         binding.cardTiktok.setOnClickListener {
             openUrl("https://tiktok.com/@digipaws.app")
         }
+
+        binding.btnActionCrashLogs.setOnClickListener {
+            showCrashLogs()
+        }
     }
 
     private fun openUrl(url: String) {
@@ -55,6 +62,53 @@ class InfoFragment : Fragment() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun showCrashLogs() {
+        val logFile = File(requireContext().filesDir, "crash_log.txt")
+        val content = if (logFile.exists()) {
+            try {
+                val text = logFile.readText()
+                if (text.isBlank()) "No crash logs available." else text
+            } catch (e: Exception) {
+                "Error reading crash logs."
+            }
+        } else {
+            "No crash logs available."
+        }
+        
+        val displayContent = if (content.length > 50000) {
+            "...${content.takeLast(50000)}"
+        } else {
+            content
+        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Crash Logs")
+            .setMessage(displayContent)
+            .setPositiveButton("Share") { _, _ ->
+                shareCrashLogs(content)
+            }
+            .setNegativeButton("Close", null)
+            .setNeutralButton("Clear") { _, _ ->
+                if (logFile.exists() && logFile.delete()) {
+                    Toast.makeText(requireContext(), "Crash logs cleared", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
+    }
+
+    private fun shareCrashLogs(content: String) {
+        if (content == "No crash logs available." || content == "Error reading crash logs.") run {
+            Toast.makeText(requireContext(), "Nothing to share.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, "DigiPaws Crash Logs")
+            putExtra(Intent.EXTRA_TEXT, content)
+        }
+        startActivity(Intent.createChooser(intent, "Share Crash Logs"))
     }
 
     override fun onDestroyView() {
