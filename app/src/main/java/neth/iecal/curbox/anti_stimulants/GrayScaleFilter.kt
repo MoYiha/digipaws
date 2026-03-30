@@ -75,6 +75,7 @@ class GrayScaleFilter : BaseBlocker() {
         }
 
         if (shouldGrayscale) {
+            Log.d("Enabling monochrome",currentPackageName)
             grayscaleControl.enableGrayscale()
         } else {
             grayscaleControl.disableGrayscale()

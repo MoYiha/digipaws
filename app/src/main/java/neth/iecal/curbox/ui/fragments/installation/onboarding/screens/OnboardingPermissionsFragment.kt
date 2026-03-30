@@ -175,6 +175,26 @@ class OnboardingPermissionsFragment : Fragment() {
             }
         }
 
+        binding.shizukuPermRoot.setOnClickListener {
+            if (neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()) return@setOnClickListener
+            showExplanationDialog(
+                title = "Shizuku Permission",
+                rationale = "This permission is optional. It allows Curbox to perform more complex tasks and operations efficiently.",
+                openSourceExplanation = "\uD83D\uDEE1\uFE0F Optional Power: While basic features work without this, granting Shizuku access enables deeper system-level integrations transparently."
+            ) {
+                if (neth.iecal.curbox.utils.PermissionUtils.isShizukuAvailable()) {
+                    try {
+                        rikka.shizuku.Shizuku.requestPermission(1001)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://shizuku.rikka.app/"))
+                    startActivity(intent)
+                }
+            }
+        }
+
         binding.restoreRoot.setOnClickListener {
             ZipUtils.showRestorePicker(restorePicker)
         }
@@ -211,12 +231,14 @@ class OnboardingPermissionsFragment : Fragment() {
         val hasNotif = neth.iecal.curbox.utils.PermissionUtils.isNotificationPermissionGiven(requireContext())
         val hasBlocker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), AppBlockerService::class.java)
         val hasTracker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), UsageTrackingService::class.java)
+        val hasShizuku = neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()
 
         setPermissionIcon(hasOverlay, binding.overlayPermIcon)
         setPermissionIcon(hasUsageStats, binding.usageStatsPermIcon)
         setPermissionIcon(hasNotif, binding.notifPermIcon)
         setPermissionIcon(hasBlocker, binding.blockerAccPermIcon)
         setPermissionIcon(hasTracker, binding.trackerAccPermIcon)
+        setPermissionIcon(hasShizuku, binding.shizukuPermIcon)
 
         // Enforce Sequence
         binding.overlayPermRoot.isEnabled = !hasOverlay
@@ -237,6 +259,10 @@ class OnboardingPermissionsFragment : Fragment() {
         val canDoTracker = canDoBlocker && hasBlocker
         binding.trackerAccPermRoot.isEnabled = canDoTracker && !hasTracker
         binding.trackerAccPermRoot.alpha = if (canDoTracker) (if (hasTracker) 0.5f else 1.0f) else 0.3f
+
+        val canDoShizuku = canDoTracker && hasTracker
+        binding.shizukuPermRoot.isEnabled = canDoShizuku && !hasShizuku
+        binding.shizukuPermRoot.alpha = if (canDoShizuku) (if (hasShizuku) 0.5f else 1.0f) else 0.3f
 
         val allGranted = hasOverlay && hasUsageStats && hasNotif && hasBlocker && hasTracker
         binding.btnAction.isEnabled = allGranted

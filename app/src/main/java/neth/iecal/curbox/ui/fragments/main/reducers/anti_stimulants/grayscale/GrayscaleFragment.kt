@@ -18,6 +18,8 @@ import neth.iecal.curbox.data.models.GrayscaleGroup
 import neth.iecal.curbox.databinding.FragmentGrayscaleBinding
 import neth.iecal.curbox.databinding.ItemGrayscaleGroupBinding
 import neth.iecal.curbox.ui.activity.FragmentActivity
+import neth.iecal.curbox.utils.PermissionUtils
+import android.net.Uri
 
 class GrayscaleFragment : Fragment() {
 
@@ -106,6 +108,32 @@ class GrayscaleFragment : Fragment() {
         }
 
         override fun getItemCount() = groupList.size
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkShizuku()
+    }
+
+    private fun checkShizuku() {
+        val hasShizuku = PermissionUtils.hasShizukuPermission()
+        if (!hasShizuku) {
+            binding.cardShizukuWarning.visibility = View.VISIBLE
+            binding.btnActionShizuku.setOnClickListener {
+                if (PermissionUtils.isShizukuAvailable()) {
+                    try {
+                        rikka.shizuku.Shizuku.requestPermission(1001)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://shizuku.rikka.app/"))
+                    startActivity(intent)
+                }
+            }
+        } else {
+            binding.cardShizukuWarning.visibility = View.GONE
+        }
     }
 
     override fun onDestroyView() {
