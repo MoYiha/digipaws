@@ -399,6 +399,7 @@ class AllAppsUsageFragment : Fragment() {
             entries.add(PieEntry(othersTime.toFloat()))
         }
 
+        val pm = requireContext().packageManager
         val colorPrimary = MaterialColors.getColor(
             requireView(),
             com.google.android.material.R.attr.colorPrimary
@@ -416,7 +417,25 @@ class AllAppsUsageFragment : Fragment() {
             com.google.android.material.R.attr.colorSurfaceVariant
         )
 
-        val sliceColors = listOf(colorPrimary, colorSecondary, colorTertiary, colorSurfaceVariant)
+        val colorSurface = MaterialColors.getColor(
+            requireView(),
+            com.google.android.material.R.attr.colorSurface
+        )
+        val fallbackColors = listOf(colorPrimary, colorSecondary, colorTertiary, colorSurfaceVariant)
+        val sliceColors = mutableListOf<Int>()
+        
+        topApps.forEachIndexed { index, stat ->
+            try {
+                val appInfo = pm.getApplicationInfo(stat.packageName, 0)
+                val icon = appInfo.loadIcon(pm)
+                val dominantColor = neth.iecal.curbox.utils.ColorUtils.getDominantColor(icon)
+                val mutedColor = MaterialColors.layer(colorSurface, dominantColor, 0.6f)
+                sliceColors.add(mutedColor)
+            } catch (e: Exception) {
+                sliceColors.add(fallbackColors.getOrElse(index) { colorSurfaceVariant })
+            }
+        }
+        sliceColors.add(colorSurfaceVariant)
 
         val pieDataSet = PieDataSet(entries, "").apply {
             colors = sliceColors
@@ -435,7 +454,6 @@ class AllAppsUsageFragment : Fragment() {
         }
 
         // Build legend: colored dot + app name
-        val pm = requireContext().packageManager
         val density = resources.displayMetrics.density
 
         topApps.forEachIndexed { index, stat ->
