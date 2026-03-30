@@ -52,6 +52,8 @@ class CreateAppGroupFragment : Fragment() {
 
 
 
+    private var isDeleting = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -97,6 +99,7 @@ class CreateAppGroupFragment : Fragment() {
                         deleteItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
                         binding.toolbar.setOnMenuItemClickListener { item ->
                             if (item.itemId == 1001) {
+                                isDeleting = true
                                 viewModel.deleteGroup(group.id)
                                 Toast.makeText(requireContext(), getString(R.string.group_deleted), Toast.LENGTH_SHORT).show()
                                 requireActivity().finish()
@@ -137,7 +140,7 @@ class CreateAppGroupFragment : Fragment() {
     }
 
     private fun saveGroup() {
-        if (_binding == null) return
+        if (_binding == null || isDeleting) return
         val name = binding.etGroupName.text.toString().trim()
         if (name.isEmpty() || selectedApps.isEmpty()) {
             return
