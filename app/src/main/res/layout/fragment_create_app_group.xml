@@ -137,16 +137,4 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fab_save_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
-        android:text="@string/done"
-        app:icon="@drawable/baseline_done_24"
-        app:backgroundTint="?attr/colorPrimary"
-        android:textColor="?attr/colorOnPrimary"
-        app:iconTint="?attr/colorOnPrimary" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

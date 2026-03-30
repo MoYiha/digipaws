@@ -129,49 +129,51 @@ class CreateAppGroupFragment : Fragment() {
             AppBlockerWarningConfigFragment().show(parentFragmentManager,
                 AppBlockerWarningConfigFragment.FRAGMENT_ID)
         }
+    }
 
+    override fun onPause() {
+        super.onPause()
+        saveGroup()
+    }
 
-        binding.fabSaveGroup.setOnClickListener {
-            val name = binding.etGroupName.text.toString().trim()
-            if (name.isEmpty()) {
-                binding.etGroupName.error = "Please enter a group name"
-                return@setOnClickListener
-            }
-            
-            if (selectedApps.isEmpty()) {
-                Toast.makeText(requireContext(), getString(R.string.please_select_at_least_one_app), Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+    private fun saveGroup() {
+        if (_binding == null) return
+        val name = binding.etGroupName.text.toString().trim()
+        if (name.isEmpty() || selectedApps.isEmpty()) {
+            return
+        }
 
-            val isUsageBased = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
-            val blockingType = if (isUsageBased) AppBlockingType.Usage else AppBlockingType.Timed
+        val isUsageBased = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
+        val blockingType = if (isUsageBased) AppBlockingType.Usage else AppBlockingType.Timed
 
-            val savedGroupId = arguments?.getString("group_id")
-            val isEditingRecord = savedGroupId != null
-            val targetExistingGroup = viewModel.groups.value.find { it.id == savedGroupId }
+        val savedGroupId = arguments?.getString("group_id")
+        val isEditingRecord = savedGroupId != null
+        val targetExistingGroup = viewModel.groups.value.find { it.id == savedGroupId }
 
-            val newGroup = AppGroup(
-                id = if (isEditingRecord && targetExistingGroup != null) targetExistingGroup.id else UUID.randomUUID().toString(),
-                name = name,
-                selectedPackages = selectedApps.toList(),
-                blockingType = blockingType,
-                isActive = if (isEditingRecord && targetExistingGroup != null) targetExistingGroup.isActive else true,
-                setting = if(isUsageBased){
-                    Gson().toJson(viewModel.currentUsageConfig)
-                } else {
-                    Gson().toJson(viewModel.currentTimeConfig)
-                },
-                warningScreenConfig = viewModel.warningScrnConfig
-            )
+        val newGroupId = if (isEditingRecord && targetExistingGroup != null) targetExistingGroup.id else UUID.randomUUID().toString()
 
-            if (isEditingRecord && targetExistingGroup != null) {
-                viewModel.updateGroupById(newGroup)
+        val newGroup = AppGroup(
+            id = newGroupId,
+            name = name,
+            selectedPackages = selectedApps.toList(),
+            blockingType = blockingType,
+            isActive = if (isEditingRecord && targetExistingGroup != null) targetExistingGroup.isActive else true,
+            setting = if(isUsageBased) {
+                Gson().toJson(viewModel.currentUsageConfig)
             } else {
-                viewModel.addGroup(newGroup)
-            }
+                Gson().toJson(viewModel.currentTimeConfig)
+            },
+            warningScreenConfig = viewModel.warningScrnConfig
+        )
 
-            Toast.makeText(requireContext(), getString(R.string.group_saved_successfully), Toast.LENGTH_SHORT).show()
-            requireActivity().finish()
+        if (isEditingRecord && targetExistingGroup != null) {
+            viewModel.updateGroupById(newGroup)
+        } else {
+            viewModel.addGroup(newGroup)
+            if (arguments == null) {
+                arguments = Bundle()
+            }
+            arguments?.putString("group_id", newGroupId)
         }
     }
 }
