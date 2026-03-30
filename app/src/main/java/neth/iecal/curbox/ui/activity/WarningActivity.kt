@@ -34,17 +34,20 @@ class WarningActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val layoutParams = window.attributes
-        layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL
-        window.attributes = layoutParams
-
         val mode = intent.getIntExtra("mode", 0)
 
         val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
             intent.getStringExtra("warning_config"),
             AppBlockerWarningScreenConfig::class.java
         )
-        triggerRandomizedVibration(maxOf(3000L, (warningScreenConfig.proceedDelayInSecs / 2) * 1000L))
+
+        if (warningScreenConfig.vibrateAndIncBrightness) {
+            val layoutParams = window.attributes
+            layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL
+            window.attributes = layoutParams
+
+            triggerRandomizedVibration(maxOf(3000L, (warningScreenConfig.proceedDelayInSecs / 2) * 1000L))
+        }
 
         val binding = DialogWarningOverlayBinding.inflate(layoutInflater)
         val isHomePressRequested = intent.getBooleanExtra("is_press_home", false)

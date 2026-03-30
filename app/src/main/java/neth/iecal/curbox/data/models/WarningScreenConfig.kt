@@ -7,5 +7,6 @@ data class AppBlockerWarningScreenConfig(
     val isDynamicIntervalSettingAllowed: Boolean = false,
     val isProceedDisabled: Boolean = false,
     val isWarningDialogHidden: Boolean = false, // perform back/home action directly without showing warning screen
-    val proceedDelayInSecs: Int = 15
+    val proceedDelayInSecs: Int = 15,
+    val vibrateAndIncBrightness: Boolean = true,
 )

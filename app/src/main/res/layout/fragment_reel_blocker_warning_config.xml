@@ -148,6 +148,13 @@
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switch_vibrate_brightness"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Vibrate and increase brightness on warning" />
+
         <Button
             android:id="@+id/saveconfigs"
             android:layout_width="match_parent"

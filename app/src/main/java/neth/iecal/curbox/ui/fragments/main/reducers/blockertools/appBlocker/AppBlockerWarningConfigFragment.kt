@@ -60,6 +60,7 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
         binding.proceedDelayChips.check(initialChipId)
         binding.warningMsgEdit.setText(config.message)
         binding.selectMins.setValue(config.timeInterval / 60000)
+        binding.switchVibrateBrightness.isChecked = config.vibrateAndIncBrightness
     }
 
     private fun setupListeners() {
@@ -84,7 +85,8 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
                 isDynamicIntervalSettingAllowed = binding.dynamicTimingRb.isChecked,
                 isProceedDisabled = binding.disableProceedRb.isChecked,
                 isWarningDialogHidden = binding.directBackRb.isChecked,
-                proceedDelayInSecs = selectedProceedDelay
+                proceedDelayInSecs = selectedProceedDelay,
+                vibrateAndIncBrightness = binding.switchVibrateBrightness.isChecked
             )
             dismiss()
         }
