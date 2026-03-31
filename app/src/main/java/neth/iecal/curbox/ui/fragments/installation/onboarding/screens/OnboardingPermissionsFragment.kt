@@ -152,6 +152,22 @@ class OnboardingPermissionsFragment : Fragment() {
             }
         }
 
+        binding.dndPermRoot.setOnClickListener {
+            val notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            if (notificationManager.isNotificationPolicyAccessGranted) return@setOnClickListener
+            
+            showExplanationDialog(
+                title = "Do Not Disturb",
+                rationale = "Curbox needs permission to control Do Not Disturb to automatically hide distractions when you are focusing.",
+                openSourceExplanation = "\uD83D\uDEE1\uFE0F We respect your peace: Curbox uses this permission to mute distractions exactly when you want."
+            ) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                    startActivity(intent)
+                }
+            }
+        }
+
         binding.blockerAccPermRoot.setOnClickListener {
             if (neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), AppBlockerService::class.java)) return@setOnClickListener
             showExplanationDialog(
@@ -229,6 +245,7 @@ class OnboardingPermissionsFragment : Fragment() {
         val hasOverlay = Settings.canDrawOverlays(requireContext())
         val hasUsageStats = neth.iecal.curbox.utils.PermissionUtils.hasUsageStatsPermission(requireContext())
         val hasNotif = neth.iecal.curbox.utils.PermissionUtils.isNotificationPermissionGiven(requireContext())
+        val hasDnd = (requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager).isNotificationPolicyAccessGranted
         val hasBlocker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), AppBlockerService::class.java)
         val hasTracker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), UsageTrackingService::class.java)
         val hasShizuku = neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()
@@ -236,6 +253,7 @@ class OnboardingPermissionsFragment : Fragment() {
         setPermissionIcon(hasOverlay, binding.overlayPermIcon)
         setPermissionIcon(hasUsageStats, binding.usageStatsPermIcon)
         setPermissionIcon(hasNotif, binding.notifPermIcon)
+        setPermissionIcon(hasDnd, binding.dndPermIcon)
         setPermissionIcon(hasBlocker, binding.blockerAccPermIcon)
         setPermissionIcon(hasTracker, binding.trackerAccPermIcon)
         setPermissionIcon(hasShizuku, binding.shizukuPermIcon)
@@ -252,7 +270,11 @@ class OnboardingPermissionsFragment : Fragment() {
         binding.notifPermRoot.isEnabled = canDoNotif && !hasNotif
         binding.notifPermRoot.alpha = if (canDoNotif) (if (hasNotif) 0.5f else 1.0f) else 0.3f
 
-        val canDoBlocker = canDoNotif && hasNotif
+        val canDoDnd = canDoNotif && hasNotif
+        binding.dndPermRoot.isEnabled = canDoDnd && !hasDnd
+        binding.dndPermRoot.alpha = if (canDoDnd) (if (hasDnd) 0.5f else 1.0f) else 0.3f
+
+        val canDoBlocker = canDoDnd && hasDnd
         binding.blockerAccPermRoot.isEnabled = canDoBlocker && !hasBlocker
         binding.blockerAccPermRoot.alpha = if (canDoBlocker) (if (hasBlocker) 0.5f else 1.0f) else 0.3f
 
@@ -264,7 +286,7 @@ class OnboardingPermissionsFragment : Fragment() {
         binding.shizukuPermRoot.isEnabled = canDoShizuku && !hasShizuku
         binding.shizukuPermRoot.alpha = if (canDoShizuku) (if (hasShizuku) 0.5f else 1.0f) else 0.3f
 
-        val allGranted = hasOverlay && hasUsageStats && hasNotif && hasBlocker && hasTracker
+        val allGranted = hasOverlay && hasUsageStats && hasNotif && hasDnd && hasBlocker && hasTracker
         binding.btnAction.isEnabled = allGranted
         if (allGranted) {
             binding.btnAction.text = "Finish Onboarding"
