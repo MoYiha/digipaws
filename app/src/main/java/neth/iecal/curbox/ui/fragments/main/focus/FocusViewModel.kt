@@ -112,6 +112,21 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
         updateGroups(updatedGroups)
     }
 
+    fun removeGroup(group: ManualFocusGroup) {
+        val currentGroups = _groups.value.toMutableList()
+        currentGroups.remove(group)
+        updateGroups(currentGroups)
+    }
+
+    fun updateGroup(group: ManualFocusGroup) {
+        val currentGroups = _groups.value.toMutableList()
+        val index = currentGroups.indexOfFirst { it.groupId == group.groupId }
+        if (index != -1) {
+            currentGroups[index] = group
+            updateGroups(currentGroups)
+        }
+    }
+
 
     fun startTimer( endTime: Long) {
         // Stop any existing timer before starting a new one

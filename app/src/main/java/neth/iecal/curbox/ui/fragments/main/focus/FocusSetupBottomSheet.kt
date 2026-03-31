@@ -17,6 +17,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.FocusBlockMode
@@ -54,6 +55,14 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
         setupGroupSelectionDropdown()
         observeViewModel()
         binding.btnCreateGroup.setOnClickListener {
+            // clear if creating new
+            viewModel.selectedGroup = null
+            binding.groupName.setText("")
+            viewModel.newGroupSelectedApps = HashSet()
+            binding.selectedAppCount.text = "Selected: 0"
+            binding.exitable.isChecked = true
+            binding.autoTurnOnDnd.isChecked = false
+            
             binding.createGroup.visibility = View.VISIBLE
             binding.selectGrouo.visibility = View.GONE
         }
@@ -67,6 +76,45 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
             val clickedItem = parent.getItemAtPosition(position)
             val selectedGroup = clickedItem as ManualFocusGroup
             viewModel.selectedGroup = selectedGroup
+            binding.btnEditGroup.visibility = View.VISIBLE
+            binding.btnDeleteGroup.visibility = View.VISIBLE
+        }
+
+        binding.btnEditGroup.setOnClickListener {
+            val group = viewModel.selectedGroup ?: return@setOnClickListener
+            // Pre-fill the create group form with this group's details
+            binding.createGroup.visibility = View.VISIBLE
+            binding.selectGrouo.visibility = View.GONE
+            
+            binding.groupName.setText(group.groupName)
+            viewModel.newGroupSelectedApps = HashSet(group.packages)
+            binding.selectedAppCount.text = "Selected: ${group.packages.size}"
+            if (group.blockMode == FocusBlockMode.BLOCK_SELECTED) {
+                binding.selectedBlockAction.check(R.id.btn_selected)
+            } else {
+                binding.selectedBlockAction.check(R.id.btn_block_all_excpt_selected)
+            }
+            binding.exitable.isChecked = group.exitable
+            binding.autoTurnOnDnd.isChecked = group.autoTurnOnDnd
+            
+            // Note: we can either save as new or overwrite
+            // To overwrite, we delete the old group before saving
+        }
+
+        binding.btnDeleteGroup.setOnClickListener {
+            val group = viewModel.selectedGroup ?: return@setOnClickListener
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Delete Focus Group")
+                .setMessage("Are you sure you want to delete this group? All associated focus statistics will also be deleted.")
+                .setPositiveButton("Delete") { _, _ ->
+                    viewModel.removeGroup(group)
+                    viewModel.selectedGroup = null
+                    binding.groupDropdown.setText("", false)
+                    binding.btnEditGroup.visibility = View.GONE
+                    binding.btnDeleteGroup.visibility = View.GONE
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
 
         // code dealing with new group creation
@@ -87,15 +135,30 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.saveGroup.setOnClickListener {
-            viewModel.addGroup(ManualFocusGroup(
+            val isEditing = viewModel.selectedGroup != null
+            val newGroup = ManualFocusGroup(
+                groupId = if (isEditing) viewModel.selectedGroup!!.groupId else java.util.UUID.randomUUID().toString(),
                 groupName = binding.groupName.text.toString(),
                 packages = viewModel.newGroupSelectedApps,
                 blockMode = if(binding.selectedBlockAction.checkedButtonId == R.id.btn_selected) FocusBlockMode.BLOCK_SELECTED else FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED,
                 exitable = binding.exitable.isChecked,
                 autoTurnOnDnd = binding.autoTurnOnDnd.isChecked
-            ))
+            )
+            
+            if (isEditing) {
+                viewModel.updateGroup(newGroup)
+            } else {
+                viewModel.addGroup(newGroup)
+            }
+            
             binding.createGroup.visibility = View.GONE
             binding.selectGrouo.visibility = View.VISIBLE
+            
+            // Re-select it if it was edited
+            if (isEditing) {
+                viewModel.selectedGroup = newGroup
+                binding.groupDropdown.setText(newGroup.toString(), false)
+            }
         }
         binding.selectedBlockAction.checkedButtonId
     }
