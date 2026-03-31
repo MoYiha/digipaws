@@ -91,10 +91,7 @@
                             android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
                             android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold"
-                            android:shadowColor="?attr/colorSurface"
-                            android:shadowDx="2"
-                            android:shadowDy="2"
-                            android:shadowRadius="5"
+                            android:textSize="50sp"
                             tools:text="4h 12m" />
 
                         <TextView
@@ -105,10 +102,6 @@
                             android:textStyle="bold"
                             android:text="@string/total_today"
                             android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:shadowColor="?attr/colorSurface"
-                            android:shadowDx="2"
-                            android:shadowDy="2"
                             android:shadowRadius="2" />
                     </LinearLayout>
                 </FrameLayout>

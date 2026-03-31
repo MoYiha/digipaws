@@ -7,6 +7,8 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.toColor
 import com.google.android.material.color.MaterialColors
 
 class WeeklyBarGraphView @JvmOverloads constructor(
@@ -31,11 +33,6 @@ class WeeklyBarGraphView @JvmOverloads constructor(
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
     }
-    private val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textAlign = Paint.Align.CENTER
-        letterSpacing = 0.15f
-    }
-
     private val barRadius = 8f
     private val barRect = RectF()
     private val minBarHeight = 6f // dp
@@ -58,15 +55,12 @@ class WeeklyBarGraphView @JvmOverloads constructor(
 
     private fun resolveColors() {
         val colorPrimary = MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimary)
-        val colorSurfaceVariant = MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurfaceVariant)
         val colorOnSurfaceVariant = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant)
 
-        barPaint.color = colorSurfaceVariant
+        barPaint.color = ColorUtils.setAlphaComponent(colorPrimary, 192)
         selectedBarPaint.color = colorPrimary
         labelPaint.color = colorOnSurfaceVariant
         labelPaint.textSize = 11f * resources.displayMetrics.density
-        titlePaint.color = colorOnSurfaceVariant
-        titlePaint.textSize = 10f * resources.displayMetrics.density
     }
 
     override fun onAttachedToWindow() {
@@ -138,9 +132,6 @@ class WeeklyBarGraphView @JvmOverloads constructor(
             canvas.drawText(days[i].label, cx, labelY, paint)
         }
 
-        // Draw "WEEKLY ACTIVITY" title
-        val titleY = height.toFloat() - bottomPadding
-        canvas.drawText("WEEKLY ACTIVITY", width / 2f, titleY, titlePaint)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {

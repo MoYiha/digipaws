@@ -26,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.app.ActivityOptionsCompat
@@ -376,10 +377,7 @@ class AllAppsUsageFragment : Fragment() {
             requireView(),
             com.google.android.material.R.attr.colorSurfaceContainerHigh
         )
-        val colorOnSurface = MaterialColors.getColor(
-            requireView(),
-            com.google.android.material.R.attr.colorOnSurface
-        )
+        val colorOnSurface = Color.WHITE
         val colorSurfaceVariant = MaterialColors.getColor(
             requireView(),
             com.google.android.material.R.attr.colorSurfaceVariant
@@ -396,7 +394,7 @@ class AllAppsUsageFragment : Fragment() {
                 val appInfo = pm.getApplicationInfo(stat.packageName, 0)
                 val icon = appInfo.loadIcon(pm)
                 val dominantColor = neth.iecal.curbox.utils.ColorUtils.getDominantColor(icon)
-                MaterialColors.layer(colorOnSurface, dominantColor, 0.35f)
+                MaterialColors.layer(colorOnSurface, dominantColor, 0.45f)
             } catch (e: Exception) {
                 fallbackColors.getOrElse(index) { colorSurfaceVariant }
             }
