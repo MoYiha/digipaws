@@ -35,6 +35,7 @@ class GrayscaleTimeSettingsFragment : BottomSheetDialogFragment() {
 
     private val dayBindings = mutableMapOf<Int, ItemDayTimeRangesBinding>()
     private val intervalViews = mutableMapOf<ViewGroup, MutableList<TimeIntervalViewData>>()
+    private val everydayIntervals = mutableListOf<TimeIntervalViewData>()
 
     data class TimeIntervalViewData(
         val binding: ItemTimeRangeIntervalBinding,
@@ -54,6 +55,15 @@ class GrayscaleTimeSettingsFragment : BottomSheetDialogFragment() {
 
         setupDayViews()
 
+        binding.switchEveryDay.setOnCheckedChangeListener { _, isChecked ->
+            binding.daysListContainer.visibility = if (isChecked) View.GONE else View.VISIBLE
+            binding.everydayContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
+        }
+        
+        binding.btnAddEverydayInterval.setOnClickListener {
+            addTimeIntervalView(binding.everydayIntervalsContainer, isEveryday = true)
+        }
+
         binding.saveSettings.setOnClickListener {
             saveSettings()
             dismiss()
@@ -65,12 +75,26 @@ class GrayscaleTimeSettingsFragment : BottomSheetDialogFragment() {
     private fun loadExistingSettings() {
         val config = viewModel.currentDailyIntervals
         
+        val isEveryday = if (config.isNotEmpty() && config.size == 7) {
+            val firstDayIntervals = config[0] ?: emptyList()
+            (1..6).all { config[it] == firstDayIntervals } && firstDayIntervals.isNotEmpty()
+        } else false
+        
+        binding.switchEveryDay.isChecked = isEveryday
+        
+        if (isEveryday) {
+            val firstDayIntervals = config[0] ?: emptyList()
+            firstDayIntervals.forEach { interval ->
+                addTimeIntervalView(binding.everydayIntervalsContainer, interval, isEveryday = true)
+            }
+        }
+        
         config.forEach { (dayIndex, intervals) ->
             val dayBinding = dayBindings[dayIndex]
             if (dayBinding != null) {
                 dayBinding.switchDayActive.isChecked = intervals.isNotEmpty()
                 intervals.forEach { interval ->
-                    addTimeIntervalView(dayBinding.intervalsContainer, interval)
+                    addTimeIntervalView(dayBinding.intervalsContainer, interval, isEveryday = false)
                 }
             }
         }
@@ -98,7 +122,7 @@ class GrayscaleTimeSettingsFragment : BottomSheetDialogFragment() {
         }
 
         dayBinding.btnAddInterval.setOnClickListener {
-            addTimeIntervalView(dayBinding.intervalsContainer)
+            addTimeIntervalView(dayBinding.intervalsContainer, isEveryday = false)
         }
         
         // Initial state
@@ -108,12 +132,17 @@ class GrayscaleTimeSettingsFragment : BottomSheetDialogFragment() {
 
     private fun addTimeIntervalView(
         container: ViewGroup, 
-        interval: TimeInterval = TimeInterval(9, 0, 17, 0)
+        interval: TimeInterval = TimeInterval(9, 0, 17, 0),
+        isEveryday: Boolean = false
     ) {
         val intervalBinding = ItemTimeRangeIntervalBinding.inflate(layoutInflater, container, true)
         val viewData = TimeIntervalViewData(intervalBinding, interval.copy())
         
-        intervalViews[container]?.add(viewData)
+        if (isEveryday) {
+            everydayIntervals.add(viewData)
+        } else {
+            intervalViews[container]?.add(viewData)
+        }
         
         updateTimeText(intervalBinding.llStartTime, viewData.interval.startHour, viewData.interval.startMinute)
         updateTimeText(intervalBinding.llEndTime, viewData.interval.endHour, viewData.interval.endMinute)
@@ -128,7 +157,11 @@ class GrayscaleTimeSettingsFragment : BottomSheetDialogFragment() {
 
         intervalBinding.btnRemove.setOnClickListener {
             container.removeView(intervalBinding.root)
-            intervalViews[container]?.remove(viewData)
+            if (isEveryday) {
+                everydayIntervals.remove(viewData)
+            } else {
+                intervalViews[container]?.remove(viewData)
+            }
         }
     }
 
@@ -174,10 +207,17 @@ class GrayscaleTimeSettingsFragment : BottomSheetDialogFragment() {
     private fun saveSettings() {
         val newIntervals = mutableMapOf<Int, MutableList<TimeInterval>>()
         
-        dayBindings.forEach { (index, dayBinding) ->
-            if (dayBinding.switchDayActive.isChecked) {
-                val intervals = intervalViews[dayBinding.intervalsContainer]?.map { it.interval } ?: emptyList()
-                newIntervals[index] = intervals.toMutableList()
+        if (binding.switchEveryDay.isChecked) {
+            val intervals = everydayIntervals.map { it.interval }
+            for (i in 0..6) {
+                newIntervals[i] = intervals.map { it.copy() }.toMutableList()
+            }
+        } else {
+            dayBindings.forEach { (index, dayBinding) ->
+                if (dayBinding.switchDayActive.isChecked) {
+                    val intervals = intervalViews[dayBinding.intervalsContainer]?.map { it.interval } ?: emptyList()
+                    newIntervals[index] = intervals.map { it.copy() }.toMutableList()
+                }
             }
         }
         
