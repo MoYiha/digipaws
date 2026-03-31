@@ -53,6 +53,14 @@ class OnboardingPermissionsFragment : Fragment() {
             updatePermissionsState()
         }
 
+    private val shizukuPermissionListener = rikka.shizuku.Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+        if (requestCode == 1001 && grantResult == PackageManager.PERMISSION_GRANTED) {
+            activity?.runOnUiThread {
+                runShizukuGrantAllCommand()
+            }
+        }
+    }
+
     private val restorePicker: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             result.data?.data?.let { uri ->
@@ -61,6 +69,15 @@ class OnboardingPermissionsFragment : Fragment() {
                 unzipSharedPreferencesFromUri(requireContext(), uri)
             }
         }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (neth.iecal.curbox.utils.PermissionUtils.isShizukuAvailable()) {
+            try {
+                rikka.shizuku.Shizuku.addRequestPermissionResultListener(shizukuPermissionListener)
+            } catch (e: Exception) { e.printStackTrace() }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -215,6 +232,18 @@ class OnboardingPermissionsFragment : Fragment() {
             ZipUtils.showRestorePicker(restorePicker)
         }
 
+        binding.btnShizukuGrantAll.setOnClickListener {
+            if (!neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()) {
+                try {
+                    rikka.shizuku.Shizuku.requestPermission(1001)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            } else {
+                runShizukuGrantAllCommand()
+            }
+        }
+
         updatePermissionsState()
     }
 
@@ -225,9 +254,22 @@ class OnboardingPermissionsFragment : Fragment() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (neth.iecal.curbox.utils.PermissionUtils.isShizukuAvailable()) {
+            try {
+                rikka.shizuku.Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener)
+            } catch (e: Exception) { e.printStackTrace() }
+        }
     }
 
     private fun showExplanationDialog(title: String, rationale: String, openSourceExplanation: String, onProceed: () -> Unit) {
@@ -241,6 +283,59 @@ class OnboardingPermissionsFragment : Fragment() {
             .show()
     }
 
+    private fun runShizukuGrantAllCommand() {
+        binding.btnShizukuGrantAll.isEnabled = false
+        binding.btnShizukuGrantAll.text = "Granting Permissions..."
+
+        val pkg = requireContext().packageName
+        val svc1 = "$pkg/${AppBlockerService::class.java.name}"
+        val svc2 = "$pkg/${UsageTrackingService::class.java.name}"
+
+        val command = """
+            appops set $pkg SYSTEM_ALERT_WINDOW allow
+            appops set $pkg GET_USAGE_STATS allow
+            pm grant $pkg android.permission.POST_NOTIFICATIONS
+            cmd notification allow_dnd $pkg
+            
+            CURRENT_ACC_SVCS=${'$'}(settings get secure enabled_accessibility_services)
+            if [ "${'$'}CURRENT_ACC_SVCS" = "null" ] || [ -z "${'$'}CURRENT_ACC_SVCS" ]; then
+                settings put secure enabled_accessibility_services "$svc1:$svc2"
+            else
+                NEW_SVCS="${'$'}CURRENT_ACC_SVCS"
+                case "${'$'}CURRENT_ACC_SVCS" in
+                    *"$svc1"*) ;;
+                    *) NEW_SVCS="${'$'}NEW_SVCS:$svc1" ;;
+                esac
+                case "${'$'}CURRENT_ACC_SVCS" in
+                    *"$svc2"*) ;;
+                    *) NEW_SVCS="${'$'}NEW_SVCS:$svc2" ;;
+                esac
+                settings put secure enabled_accessibility_services "${'$'}NEW_SVCS"
+            fi
+            settings put secure accessibility_enabled 1
+        """.trimIndent()
+
+        neth.iecal.curbox.utils.ShizukuRunner.executeCommand(command, object : neth.iecal.curbox.utils.ShizukuRunner.CommandResultListener {
+            override fun onCommandResult(output: String, done: Boolean) {
+                if (done) {
+                    activity?.runOnUiThread {
+                        binding.btnShizukuGrantAll.text = "Permissions Granted!"
+                        binding.btnShizukuGrantAll.isEnabled = true
+                        updatePermissionsState()
+                    }
+                }
+            }
+
+            override fun onCommandError(error: String) {
+                activity?.runOnUiThread {
+                    binding.btnShizukuGrantAll.isEnabled = true
+                    binding.btnShizukuGrantAll.text = "Error, Tap to Retry"
+                    updatePermissionsState()
+                }
+            }
+        })
+    }
+
     private fun updatePermissionsState() {
         val hasOverlay = Settings.canDrawOverlays(requireContext())
         val hasUsageStats = neth.iecal.curbox.utils.PermissionUtils.hasUsageStatsPermission(requireContext())
@@ -249,6 +344,12 @@ class OnboardingPermissionsFragment : Fragment() {
         val hasBlocker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), AppBlockerService::class.java)
         val hasTracker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), UsageTrackingService::class.java)
         val hasShizuku = neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()
+        
+        if (neth.iecal.curbox.utils.PermissionUtils.isShizukuAvailable()) {
+            binding.btnShizukuGrantAll.visibility = View.VISIBLE
+        } else {
+            binding.btnShizukuGrantAll.visibility = View.GONE
+        }
 
         setPermissionIcon(hasOverlay, binding.overlayPermIcon)
         setPermissionIcon(hasUsageStats, binding.usageStatsPermIcon)
