@@ -110,7 +110,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="24dp"
-            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh">
+            app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
             <LinearLayout
                 android:layout_width="match_parent"
