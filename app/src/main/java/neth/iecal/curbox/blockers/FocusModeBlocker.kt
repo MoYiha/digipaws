@@ -64,7 +64,9 @@ class FocusModeBlocker : BaseBlocker() {
     private fun updateSuspendedPackages(serviceContext: Context) {
         val newSuspendedPackages = mutableSetOf<String>()
 
+                var shouldDndBeOn = false
         focusModeData?.focusGroupData?.let { group ->
+            if (group.autoTurnOnDnd) shouldDndBeOn = true
             newSuspendedPackages.addAll(
                 AppSuspendHelper.getPackagesToSuspend(serviceContext, group.blockMode, group.packages, essentialPackages)
             )
@@ -79,7 +81,8 @@ class FocusModeBlocker : BaseBlocker() {
             if (dismissedAutoFocusGroupIds.contains(group.groupId)) continue
             val intervals = group.dailyIntervals[currentDay] ?: continue
             val isInInterval = intervals.any { isWithinInterval(currentMinutes, it) }
-            if (isInInterval) {
+                        if (isInInterval) {
+                if (group.autoTurnOnDnd) shouldDndBeOn = true
                 newSuspendedPackages.addAll(
                     AppSuspendHelper.getPackagesToSuspend(serviceContext, group.blockMode, group.packages, essentialPackages)
                 )
@@ -96,7 +99,29 @@ class FocusModeBlocker : BaseBlocker() {
             AppSuspendHelper.unsuspendApps(toUnsuspend.toList())
         }
 
-        currentlySuspendedPackages = newSuspendedPackages
+                currentlySuspendedPackages = newSuspendedPackages
+        
+        applyDndState(serviceContext, shouldDndBeOn)
+    }
+
+    private var wasDndTurnedOnByUs = false
+
+    private fun applyDndState(context: Context, shouldBeOn: Boolean) {
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (!nm.isNotificationPolicyAccessGranted) return
+        
+        val currentFilter = nm.currentInterruptionFilter
+        if (shouldBeOn) {
+            if (currentFilter == NotificationManager.INTERRUPTION_FILTER_ALL) {
+                nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+                wasDndTurnedOnByUs = true
+            }
+        } else {
+            if (wasDndTurnedOnByUs && currentFilter != NotificationManager.INTERRUPTION_FILTER_ALL) {
+                nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_ALL)
+                wasDndTurnedOnByUs = false
+            }
+        }
     }
 
     private fun turnOffFocusMode() {

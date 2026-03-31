@@ -2,6 +2,8 @@ package neth.iecal.curbox.ui.fragments.main.focus
 
 import android.app.Activity
 import android.app.Dialog
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -72,12 +74,25 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
             val intent = Intent(requireContext(), SelectAppsActivity::class.java)
             selectAppsLauncher.launch(intent)
         }
+                binding.autoTurnOnDnd.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                val nm = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                if (!nm.isNotificationPolicyAccessGranted) {
+                    binding.autoTurnOnDnd.isChecked = false
+                    val intent = Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                    startActivity(intent)
+                    android.widget.Toast.makeText(requireContext(), "Please grant Do Not Disturb access to use this feature", android.widget.Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
         binding.saveGroup.setOnClickListener {
             viewModel.addGroup(ManualFocusGroup(
                 groupName = binding.groupName.text.toString(),
                 packages = viewModel.newGroupSelectedApps,
                 blockMode = if(binding.selectedBlockAction.checkedButtonId == R.id.btn_selected) FocusBlockMode.BLOCK_SELECTED else FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED,
-                exitable = binding.exitable.isChecked
+                exitable = binding.exitable.isChecked,
+                autoTurnOnDnd = binding.autoTurnOnDnd.isChecked
             ))
             binding.createGroup.visibility = View.GONE
             binding.selectGrouo.visibility = View.VISIBLE

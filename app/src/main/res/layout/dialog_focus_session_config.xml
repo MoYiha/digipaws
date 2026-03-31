@@ -189,6 +189,14 @@
                     android:checked="true"
                     android:text="@string/let_me_quit_midsessions" />
 
+                <CheckBox
+                    android:id="@+id/autoTurnOnDnd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:checked="false"
+                    android:text="Turn on Do Not Disturb automatically" />
+
                 <Button
                     android:id="@+id/save_group"
                     android:layout_width="match_parent"

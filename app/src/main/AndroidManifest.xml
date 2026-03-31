@@ -12,8 +12,7 @@
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
 <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
-    <uses-permission android:name="android.permission.VIBRATE" />
-
+    <uses-permission android:name="android.permission.VIBRATE" /><uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <application
         android:name=".Curbox"
         android:allowBackup="true"

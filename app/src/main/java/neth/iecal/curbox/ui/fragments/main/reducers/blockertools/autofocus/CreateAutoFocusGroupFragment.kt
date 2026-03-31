@@ -1,5 +1,7 @@
 package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autofocus
 
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -89,6 +91,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
                         }
                         
                         binding.switchExitable.isChecked = group.exitable
+                        binding.switchDnd.isChecked = group.autoTurnOnDnd
 
                         binding.toolbar.menu.clear()
                         val deleteItem = binding.toolbar.menu.add(0, 1001, 0, "Delete")
@@ -104,6 +107,18 @@ class CreateAutoFocusGroupFragment : Fragment() {
                             }
                         }
                     }
+                }
+            }
+        }
+
+                binding.switchDnd.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                val nm = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                if (!nm.isNotificationPolicyAccessGranted) {
+                    binding.switchDnd.isChecked = false
+                    val intent = Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                    startActivity(intent)
+                    Toast.makeText(requireContext(), "Please grant Do Not Disturb access to use this feature", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -133,6 +148,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
             val isBlockSelected = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_block_selected
             val blockMode = if (isBlockSelected) FocusBlockMode.BLOCK_SELECTED else FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED
             val exitable = binding.switchExitable.isChecked
+            val autoTurnOnDnd = binding.switchDnd.isChecked
 
             val savedGroupId = arguments?.getString("group_id")
             val isEditingRecord = savedGroupId != null
@@ -144,7 +160,8 @@ class CreateAutoFocusGroupFragment : Fragment() {
                 packages = HashSet(selectedApps),
                 blockMode = blockMode,
                 exitable = exitable,
-                dailyIntervals = viewModel.currentDailyIntervals
+                dailyIntervals = viewModel.currentDailyIntervals,
+                autoTurnOnDnd = autoTurnOnDnd
             )
 
             if (isEditingRecord && targetExistingGroup != null) {
