@@ -70,6 +70,15 @@ class FocusFragment : Fragment() {
     }
     override fun onResume() {
         super.onResume()
+        viewLifecycleOwner.lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val db = neth.iecal.curbox.data.db.AppDatabase.getInstance(requireContext())
+            val runningSessions = db.focusStatsDao().getRunningSessions()
+            if (runningSessions.isEmpty()) {
+                val intent = android.content.Intent(neth.iecal.curbox.blockers.FocusModeBlocker.INTENT_ACTION_UNSUSPEND_ALL)
+                intent.setPackage(requireContext().packageName)
+                requireContext().sendBroadcast(intent)
+            }
+        }
     }
 
     private fun setupClicks() {

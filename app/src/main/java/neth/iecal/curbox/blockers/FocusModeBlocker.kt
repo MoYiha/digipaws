@@ -26,6 +26,7 @@ import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.data.models.ManualFocusGroup
 import neth.iecal.curbox.data.models.TimeInterval
 import neth.iecal.curbox.services.BaseBlockingService
+import neth.iecal.curbox.utils.AppSuspendHelper
 import neth.iecal.curbox.utils.TimerNotification
 import neth.iecal.curbox.utils.getCurrentKeyboardPackageName
 import neth.iecal.curbox.utils.getDefaultLauncherPackageName
@@ -41,6 +42,7 @@ class FocusModeBlocker : BaseBlocker() {
     companion object {
         const val INTENT_ACTION_REFRESH_FOCUS_MODE = "neth.iecal.curbox.refresh.focus_mode"
         const val INTENT_ACTION_EXIT_AUTO_FOCUS = "neth.iecal.curbox.exit.auto_focus"
+        const val INTENT_ACTION_UNSUSPEND_ALL = "neth.iecal.curbox.unsuspend_all_apps"
         private const val AUTO_FOCUS_NOTIFICATION_ID = 2001
         private const val AUTO_FOCUS_CHANNEL_ID = "AutoFocusChannel"
     }
@@ -55,6 +57,47 @@ class FocusModeBlocker : BaseBlocker() {
     private var autoFocusNotificationShown = false
     private var essentialPackages: Set<String> = emptySet()
     private var currentActiveAutoFocusGroupId: String? = null
+
+    private var currentlySuspendedPackages = setOf<String>()
+    private var lastEvaluatedMinute = -1
+
+    private fun updateSuspendedPackages(serviceContext: Context) {
+        val newSuspendedPackages = mutableSetOf<String>()
+
+        focusModeData?.focusGroupData?.let { group ->
+            newSuspendedPackages.addAll(
+                AppSuspendHelper.getPackagesToSuspend(serviceContext, group.blockMode, group.packages, essentialPackages)
+            )
+        }
+
+        val now = Calendar.getInstance()
+        val calDay = now.get(Calendar.DAY_OF_WEEK)
+        val currentDay = if (calDay == Calendar.SUNDAY) 6 else calDay - 2
+        val currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+
+        for (group in autoFocusGroups) {
+            if (dismissedAutoFocusGroupIds.contains(group.groupId)) continue
+            val intervals = group.dailyIntervals[currentDay] ?: continue
+            val isInInterval = intervals.any { isWithinInterval(currentMinutes, it) }
+            if (isInInterval) {
+                newSuspendedPackages.addAll(
+                    AppSuspendHelper.getPackagesToSuspend(serviceContext, group.blockMode, group.packages, essentialPackages)
+                )
+            }
+        }
+
+        val toSuspend = newSuspendedPackages - currentlySuspendedPackages
+        val toUnsuspend = currentlySuspendedPackages - newSuspendedPackages
+
+        if (toSuspend.isNotEmpty()) {
+            AppSuspendHelper.suspendApps(toSuspend.toList())
+        }
+        if (toUnsuspend.isNotEmpty()) {
+            AppSuspendHelper.unsuspendApps(toUnsuspend.toList())
+        }
+
+        currentlySuspendedPackages = newSuspendedPackages
+    }
 
     private fun turnOffFocusMode() {
         val groupId = focusModeData?.focusGroupData?.groupId
@@ -71,6 +114,7 @@ class FocusModeBlocker : BaseBlocker() {
             service.dataStoreManager.setManualFocusStateToInactive()
         }
         notificationManager.stopTimer()
+        updateSuspendedPackages(service)
     }
 
     fun doFocusModeCheck(event: AccessibilityEvent?) {
@@ -103,6 +147,12 @@ class FocusModeBlocker : BaseBlocker() {
         // UI saves: 0=Mon,1=Tue,...,6=Sun. Calendar: 1=Sun,2=Mon,...,7=Sat
         val currentDay = if (calDay == Calendar.SUNDAY) 6 else calDay - 2
         val currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+        
+        if (currentMinutes != lastEvaluatedMinute) {
+            updateSuspendedPackages(service)
+            lastEvaluatedMinute = currentMinutes
+        }
+        
         var anyAutoFocusActive = false
         var activeAutoFocusGroupId: String? = null
 
@@ -221,6 +271,7 @@ class FocusModeBlocker : BaseBlocker() {
         val filter = IntentFilter().apply {
             addAction(INTENT_ACTION_REFRESH_FOCUS_MODE)
             addAction(INTENT_ACTION_EXIT_AUTO_FOCUS)
+            addAction(INTENT_ACTION_UNSUSPEND_ALL)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             service.registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)
@@ -282,6 +333,7 @@ class FocusModeBlocker : BaseBlocker() {
 
                 autoFocusGroups = settings.autoFocusGroups
                 dismissedAutoFocusGroupIds.clear()
+                updateSuspendedPackages(service)
             }
         }
     }
@@ -297,6 +349,10 @@ class FocusModeBlocker : BaseBlocker() {
                     }
                     hideAutoFocusNotification(wasForceStopped = true)
                     lastPackage = ""
+                    updateSuspendedPackages(service)
+                }
+                INTENT_ACTION_UNSUSPEND_ALL -> {
+                    AppSuspendHelper.unsuspendAllApps(context ?: service)
                 }
             }
         }
