@@ -25,6 +25,8 @@ import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.AppUsageConfig
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.activity.WarningActivity
+import neth.iecal.curbox.utils.AppSuspendHelper
+import neth.iecal.curbox.utils.ShizukuRunner
 import neth.iecal.curbox.utils.TimeTools
 import neth.iecal.curbox.utils.TimerNotification
 import neth.iecal.curbox.utils.UsageStatsHelper
@@ -81,6 +83,7 @@ class AppBlocker() : BaseBlocker() {
         if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0) return
 
         val packageName = event.packageName?.toString() ?: return
+
         if (lastPackage == packageName || packageName == service.packageName || packageName == "com.android.systemui") return
 
         lastPackage = packageName
@@ -308,6 +311,10 @@ class AppBlocker() : BaseBlocker() {
         notificationManager.stopTimer()
         service.pressHome()
         lastPackage = ""
+
+        if (AppSuspendHelper.isShizukuAvailable()) {
+            ShizukuRunner.executeCommand("am force-stop $packageName", object : ShizukuRunner.CommandResultListener {})
+        }
 
         if (appBlockerWarningScrnConfgs[packageName]?.isWarningDialogHidden == true) return
 
