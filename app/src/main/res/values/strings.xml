@@ -159,7 +159,7 @@
     <string name="search_recursively_for_blocked_keywords_on">Search recursively for blocked keywords on every text field on screen</string>
     <string name="block_all_browsers_except_supported_ones">Block all browsers except supported ones</string>
     <string name="select_ignored_apps">Select Ignored Apps</string>
-    <string name="activity">ACTIVITY</string>
+    <string name="activity_powered_by">POWERED BY CURBOX</string>
     <string name="your_digital_wellbeing">Your Digital Well-being</string>
     <string name="total_today">TOTAL TODAY</string>
     <string name="most_used">MOST USED</string>

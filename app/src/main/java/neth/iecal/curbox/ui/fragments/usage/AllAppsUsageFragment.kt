@@ -32,15 +32,13 @@ import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.core.graphics.toColor
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.github.mikephil.charting.animation.Easing
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
+
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -53,6 +51,7 @@ import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.AppUsageItemBinding
 
 import neth.iecal.curbox.databinding.FragmentAllAppUsageBinding
+import neth.iecal.curbox.ui.views.PebbleBubbleView
 import neth.iecal.curbox.ui.activity.FragmentActivity
 import neth.iecal.curbox.ui.activity.SelectAppsActivity
 import neth.iecal.curbox.ui.fragments.installation.onboarding.OnboardingFragment
@@ -151,7 +150,6 @@ class AllAppsUsageFragment : Fragment() {
         binding.appUsageRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.appUsageRecyclerView.adapter = adapter
 
-        setupPieChart()
 
         observeViewModel(adapter)
 
@@ -266,33 +264,7 @@ class AllAppsUsageFragment : Fragment() {
         }
     }
 
-    private fun setupPieChart() {
-        binding.pieChart.apply {
-            description.isEnabled = false
-            isRotationEnabled = false
-            isDrawHoleEnabled = true
-            holeRadius = 85f
-            transparentCircleRadius = 88f
-            setTransparentCircleColor(
-                MaterialColors.getColor(
-                    context,
-                    com.google.android.material.R.attr.colorSurfaceContainerHigh,
-                    Color.WHITE
-                )
-            )
-            setTransparentCircleAlpha(120)
-            setHoleColor(
-                MaterialColors.getColor(
-                    context,
-                    com.google.android.material.R.attr.colorSurfaceContainerHigh,
-                    Color.WHITE
-                )
-            )
-            legend.isEnabled = false
-            setDrawEntryLabels(false)
-            setDrawCenterText(false) // We use our own overlay TextViews
-        }
-    }
+
 
     private fun observeViewModel(adapter: AppUsageAdapter) {
         viewModel.weeklyData.observe(viewLifecycleOwner) { data ->
@@ -306,7 +278,7 @@ class AllAppsUsageFragment : Fragment() {
 
         viewModel.selectedDayStats.observe(viewLifecycleOwner) { stats ->
             adapter.updateData(stats)
-            updatePieChart(stats)
+            updatePebbles(stats)
         }
 
         viewModel.totalTime.observe(viewLifecycleOwner) { totalMs ->
@@ -375,29 +347,17 @@ class AllAppsUsageFragment : Fragment() {
         }
     }
 
-    private fun updatePieChart(statsList: List<Stat>) {
-        binding.pieLegend.removeAllViews()
+    private fun updatePebbles(statsList: List<Stat>) {
+        binding.pebbleLegend.removeAllViews()
 
         if (statsList.isEmpty()) {
-            binding.pieChart.clear()
-            binding.pieChart.invalidate()
+            binding.pebbleView.setData(emptyList())
             return
         }
 
         val sortedStats = statsList.sortedByDescending { it.totalTime }
         val topApps = sortedStats.take(3)
-
-        val othersTime = sortedStats.drop(3)
-            .sumOf { it.totalTime }
-
-        val entries = mutableListOf<PieEntry>()
-        topApps.forEach { stats ->
-            entries.add(PieEntry(stats.totalTime.toFloat()))
-        }
-
-        if (othersTime > 0) {
-            entries.add(PieEntry(othersTime.toFloat()))
-        }
+        val maxTime = topApps.first().totalTime.toFloat()
 
         val pm = requireContext().packageManager
         val colorPrimary = MaterialColors.getColor(
@@ -412,46 +372,46 @@ class AllAppsUsageFragment : Fragment() {
             requireView(),
             com.google.android.material.R.attr.colorTertiary
         )
+        val colorSurface = MaterialColors.getColor(
+            requireView(),
+            com.google.android.material.R.attr.colorSurfaceContainerHigh
+        )
+        val colorOnSurface = MaterialColors.getColor(
+            requireView(),
+            com.google.android.material.R.attr.colorOnSurface
+        )
         val colorSurfaceVariant = MaterialColors.getColor(
             requireView(),
             com.google.android.material.R.attr.colorSurfaceVariant
         )
+        val fallbackColors = listOf(colorPrimary, colorSecondary, colorTertiary)
 
-        val colorSurface = MaterialColors.getColor(
-            requireView(),
-            com.google.android.material.R.attr.colorSurface
-        )
-        val fallbackColors = listOf(colorPrimary, colorSecondary, colorTertiary, colorSurfaceVariant)
-        val sliceColors = mutableListOf<Int>()
-        
+        val pebbleDataList = mutableListOf<PebbleBubbleView.PebbleData>()
+        val legendColors = mutableListOf<Int>()
+
         topApps.forEachIndexed { index, stat ->
-            try {
+            val weight = if (maxTime > 0) stat.totalTime.toFloat() / maxTime else 0.5f
+
+            val blendedColor = try {
                 val appInfo = pm.getApplicationInfo(stat.packageName, 0)
                 val icon = appInfo.loadIcon(pm)
                 val dominantColor = neth.iecal.curbox.utils.ColorUtils.getDominantColor(icon)
-                val mutedColor = MaterialColors.layer(colorSurface, dominantColor, 0.6f)
-                sliceColors.add(mutedColor)
+                MaterialColors.layer(colorOnSurface, dominantColor, 0.35f)
             } catch (e: Exception) {
-                sliceColors.add(fallbackColors.getOrElse(index) { colorSurfaceVariant })
+                fallbackColors.getOrElse(index) { colorSurfaceVariant }
             }
-        }
-        sliceColors.add(colorSurfaceVariant)
 
-        val pieDataSet = PieDataSet(entries, "").apply {
-            colors = sliceColors
-            sliceSpace = 3f
-            setDrawValues(false)
-            setDrawIcons(false)
-            selectionShift = 5f
+            val label = try {
+                pm.getApplicationInfo(stat.packageName, 0).loadLabel(pm).toString()
+            } catch (e: Exception) {
+                stat.packageName
+            }
+
+            pebbleDataList.add(PebbleBubbleView.PebbleData(blendedColor, weight, label))
+            legendColors.add(blendedColor)
         }
 
-        val pieData = PieData(pieDataSet)
-
-        binding.pieChart.apply {
-            data = pieData
-            animateY(800, Easing.EaseInOutQuart)
-            invalidate()
-        }
+        binding.pebbleView.setData(pebbleDataList)
 
         // Build legend: colored dot + app name
         val density = resources.displayMetrics.density
@@ -469,13 +429,13 @@ class AllAppsUsageFragment : Fragment() {
                 layoutParams = android.widget.LinearLayout.LayoutParams(size, size)
                 val drawable = android.graphics.drawable.GradientDrawable().apply {
                     shape = android.graphics.drawable.GradientDrawable.OVAL
-                    setColor(sliceColors.getOrElse(index) { colorSurfaceVariant })
+                    setColor(legendColors.getOrElse(index) { colorSurfaceVariant })
                 }
                 background = drawable
             }
             itemLayout.addView(dot)
 
-            // App name only (no icon — keeps legend compact)
+            // App name
             try {
                 val appInfo = pm.getApplicationInfo(stat.packageName, 0)
                 val nameView = android.widget.TextView(requireContext()).apply {
@@ -494,7 +454,7 @@ class AllAppsUsageFragment : Fragment() {
                 itemLayout.addView(nameView)
             } catch (_: Exception) { }
 
-            binding.pieLegend.addView(itemLayout)
+            binding.pebbleLegend.addView(itemLayout)
         }
     }
 

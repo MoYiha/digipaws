@@ -35,15 +35,10 @@
                 app:iconTint="?attr/colorOnSurfaceVariant" />
         </LinearLayout>
 
-        <!-- Card: pie chart + total time only -->
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            android:layout_marginTop="4dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -59,7 +54,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.2"
-                    android:text="@string/activity"
+                    android:text="@string/activity_powered_by"
                     android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -72,14 +67,14 @@
                     android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
                     android:textColor="?attr/colorOnSurface" />
 
-                <!-- Pie chart with center text overlay -->
+                <!-- Pebble bubble visualization with center text overlay -->
                 <FrameLayout
-                    android:layout_width="180dp"
-                    android:layout_height="180dp"
-                    android:layout_marginTop="24dp">
+                    android:layout_width="250dp"
+                    android:layout_height="250dp"
+                    android:layout_marginTop="15dp">
 
-                    <com.github.mikephil.charting.charts.PieChart
-                        android:id="@+id/pieChart"
+                    <neth.iecal.curbox.ui.views.PebbleBubbleView
+                        android:id="@+id/pebble_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent" />
 
@@ -89,53 +84,47 @@
                         android:layout_gravity="center"
                         android:gravity="center"
                         android:orientation="vertical">
-
                         <TextView
                             android:id="@+id/total_usage"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
                             android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold"
+                            android:shadowColor="?attr/colorSurface"
+                            android:shadowDx="2"
+                            android:shadowDy="2"
+                            android:shadowRadius="5"
                             tools:text="4h 12m" />
 
                         <TextView
                             android:id="@+id/date_sublabel"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:letterSpacing="0.1"
+                            android:textStyle="bold"
                             android:text="@string/total_today"
                             android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:shadowColor="?attr/colorSurface"
+                            android:shadowDx="2"
+                            android:shadowDy="2"
+                            android:shadowRadius="2" />
                     </LinearLayout>
                 </FrameLayout>
 
-                <!-- Pie chart legend (compact: dot + name) -->
+                <!-- Pebble legend (compact: dot + name) -->
                 <LinearLayout
-                    android:id="@+id/pie_legend"
+                    android:id="@+id/pebble_legend"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:gravity="center"
                     android:orientation="horizontal" />
 
-                <!-- Comparison quote -->
-                <TextView
-                    android:id="@+id/comparison_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:fontFamily="sans-serif-light"
-                    android:gravity="center"
-                    android:lineSpacingExtra="2dp"
-                    android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textStyle="italic"
-                    tools:text="&quot;You've spent 15% less time on your device\ncompared to yesterday.&quot;" />
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
 
         <!-- Weekly activity section (outside card, more breathing room) -->
         <neth.iecal.curbox.ui.views.WeeklyBarGraphView
@@ -222,6 +211,23 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/app_usage_item" />
 
+        <TextView
+            android:id="@+id/comparison_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:visibility="gone"
+            android:lineSpacingExtra="2dp"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textStyle="italic"
+            tools:text="&quot;You've spent 15% less time on your device\ncompared to yesterday.&quot;" />
+
+        <Space
+            android:layout_width="1dp"
+            android:layout_height="300dp"/>
     </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
