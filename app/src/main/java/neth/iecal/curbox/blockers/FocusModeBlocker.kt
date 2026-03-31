@@ -99,7 +99,7 @@ class FocusModeBlocker : BaseBlocker() {
             AppSuspendHelper.unsuspendApps(toUnsuspend.toList())
         }
 
-                currentlySuspendedPackages = newSuspendedPackages
+        currentlySuspendedPackages = newSuspendedPackages
         
         applyDndState(serviceContext, shouldDndBeOn)
     }
@@ -261,7 +261,7 @@ class FocusModeBlocker : BaseBlocker() {
         nm.notify(AUTO_FOCUS_NOTIFICATION_ID, builder.build())
     }
 
-    private fun hideAutoFocusNotification(wasForceStopped: Boolean = false) {
+    private fun hideAutoFocusNotification(wasForceStopped: Boolean = false, targetGroupId: String? = null) {
         autoFocusNotificationShown = false
         val nm = service.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(AUTO_FOCUS_NOTIFICATION_ID)
@@ -269,7 +269,16 @@ class FocusModeBlocker : BaseBlocker() {
         CoroutineScope(Dispatchers.IO).launch {
             val db = neth.iecal.curbox.data.db.AppDatabase.getInstance(service)
             val statsDao = db.focusStatsDao()
-            val runningSessions = statsDao.getRunningSessions().filter { it.wasAutoFocus && it.groupId == currentActiveAutoFocusGroupId }
+            
+            val runningSessions = if (wasForceStopped && targetGroupId != null) {
+                statsDao.getRunningSessions().filter { it.wasAutoFocus && it.groupId == targetGroupId }
+            } else if (wasForceStopped) {
+                val exitableIds = autoFocusGroups.filter { it.exitable }.map { it.groupId }
+                statsDao.getRunningSessions().filter { it.wasAutoFocus && it.groupId in exitableIds }
+            } else {
+                statsDao.getRunningSessions().filter { it.wasAutoFocus && (currentActiveAutoFocusGroupId == null || it.groupId == currentActiveAutoFocusGroupId) }
+            }
+            
             val now = System.currentTimeMillis()
             for (session in runningSessions) {
                 val newStatus = if (wasForceStopped) 2 else 1
@@ -369,10 +378,16 @@ class FocusModeBlocker : BaseBlocker() {
             when (intent.action) {
                 INTENT_ACTION_REFRESH_FOCUS_MODE -> setupFocusMode(service)
                 INTENT_ACTION_EXIT_AUTO_FOCUS -> {
-                    autoFocusGroups.filter { it.exitable }.forEach {
-                        dismissedAutoFocusGroupIds.add(it.groupId)
+                    val specificGroupId = intent.getStringExtra("group_id")
+                    if (specificGroupId != null) {
+                        dismissedAutoFocusGroupIds.add(specificGroupId)
+                        hideAutoFocusNotification(wasForceStopped = true, targetGroupId = specificGroupId)
+                    } else {
+                        autoFocusGroups.filter { it.exitable }.forEach {
+                            dismissedAutoFocusGroupIds.add(it.groupId)
+                        }
+                        hideAutoFocusNotification(wasForceStopped = true)
                     }
-                    hideAutoFocusNotification(wasForceStopped = true)
                     lastPackage = ""
                     updateSuspendedPackages(service)
                 }

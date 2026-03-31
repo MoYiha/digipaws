@@ -59,6 +59,49 @@ class FocusFragment : Fragment() {
                 }
 
                 launch {
+                    viewModel.allSessions.collect { sessions ->
+                        val runningAuto = sessions.find { it.wasAutoFocus && it.status == 0 }
+                        if (runningAuto != null) {
+                            val group = viewModel.autoFocusGroups.value.find { it.groupId == runningAuto.groupId }
+                            if (group != null) {
+                                binding.cvActiveAutoFocus.visibility = View.VISIBLE
+                                binding.textHeader.visibility = View.GONE
+                                val now = java.util.Calendar.getInstance()
+                                val calDay = now.get(java.util.Calendar.DAY_OF_WEEK)
+                                val currentDay = if (calDay == java.util.Calendar.SUNDAY) 6 else calDay - 2
+                                val currentMinutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE)
+                                val intervals = group.dailyIntervals[currentDay] ?: emptyList()
+                                val activeInterval = intervals.find { interval ->
+                                    val start = interval.startHour * 60 + interval.startMinute
+                                    val end = interval.endHour * 60 + interval.endMinute
+                                    if (start <= end) currentMinutes in start until end else currentMinutes >= start || currentMinutes < end
+                                }
+                                if (activeInterval != null) {
+                                    val startStr = String.format("%02d:%02d", activeInterval.startHour, activeInterval.startMinute)
+                                    val endStr = String.format("%02d:%02d", activeInterval.endHour, activeInterval.endMinute)
+                                    binding.tvAutoFocusTimeRange.text = "${group.groupName} (${startStr} - ${endStr})"
+                                } else {
+                                    binding.tvAutoFocusTimeRange.text = group.groupName
+                                }
+                                
+                                binding.btnExitAutoFocus.visibility = if (group.exitable) View.VISIBLE else View.GONE
+                                binding.btnExitAutoFocus.setOnClickListener {
+                                    val intent = android.content.Intent(neth.iecal.curbox.blockers.FocusModeBlocker.INTENT_ACTION_EXIT_AUTO_FOCUS)
+                                    intent.setPackage(requireContext().packageName)
+                                    requireContext().sendBroadcast(intent)
+                                }
+                            } else {
+                                binding.cvActiveAutoFocus.visibility = View.GONE
+                                binding.textHeader.visibility = View.VISIBLE
+                            }
+                        } else {
+                            binding.cvActiveAutoFocus.visibility = View.GONE
+                            binding.textHeader.visibility = View.VISIBLE
+                        }
+                    }
+                }
+
+                launch {
                     viewModel.currentRunningTimer.collect { time ->
                         binding.tvCountdown.text = TimeTools.formatTimeInHHMM(time)
                     }
