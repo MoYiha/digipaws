@@ -53,7 +53,7 @@
     <string name="apk_installation">APK Installation</string>
     <string name="if_you_installed_from_an_apk">If you installed from an APK, follow these steps:\n\n1️⃣ Open Settings → Apps → Curbox\n\n2️⃣ Tap Permissions → Special App Access → Accessibility → Enable Curbox\n\n3️⃣ Return to Curbox App Info → Scroll down → Tap Restricted Settings → Allow\n\n💡 Pro tip: Install via F-Droid app for a smoother setup! 🚀</string>
     <string name="usage_timeline">Usage Timeline</string>
-    <string name="todays_screentime">Today\'s Screentime</string>
+    <string name="screentime">Screentime</string>
     <string name="app_opens">App Opens</string>
     <string name="add_to_blocked_apps">Add to Blocked Apps</string>
     <string name="str_empty">-</string>

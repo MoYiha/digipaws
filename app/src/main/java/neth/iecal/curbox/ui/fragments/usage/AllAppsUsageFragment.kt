@@ -664,7 +664,8 @@ class AllAppsUsageFragment : Fragment() {
     class Stat(
         val packageName: String,
         val totalTime: Long,
-        val startTimes: List<ZonedDateTime>
+        val startTimes: List<ZonedDateTime>,
+        val hourlyUsage: LongArray = LongArray(24)
     )
 
     override fun onDestroyView() {

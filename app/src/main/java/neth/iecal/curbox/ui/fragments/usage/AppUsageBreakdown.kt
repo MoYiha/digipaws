@@ -78,23 +78,15 @@ class AppUsageBreakdown(private val stat: AllAppsUsageFragment.Stat) : Fragment(
     }
 
     private fun plotUsageData() {
-        // Initialize 24-hour time slots with zero usage
-        val hourlyUsage = MutableList(24) { 0L }
+        val hourlyUsage = stat.hourlyUsage
 
-        // Process each start time
-        stat.startTimes.forEach { startTime ->
-            val hour = startTime.hour
-            // Convert milliseconds to minutes and add to the appropriate hour slot
-            hourlyUsage[hour] = hourlyUsage[hour] + (stat.totalTime / (1000 * 60))
-        }
-
-        // Create entries from hourly usage data
-        val entries = hourlyUsage.mapIndexed { hour, minutes ->
-            Entry(hour.toFloat(), minutes.toFloat())
+        // Create entries from hourly usage data (convert ms to minutes)
+        val entries = hourlyUsage.mapIndexed { hour, durationMs ->
+            Entry(hour.toFloat(), durationMs / (1000f * 60f))
         }
 
         // Create and configure the dataset
-        val dataSet = LineDataSet(entries, "Usage (minutes)")
+        val dataSet = LineDataSet(entries, "Usage Time (minutes)")
 
         setupChartUI(binding.lineChart,dataSet)
     }
@@ -133,9 +125,11 @@ class AppUsageBreakdown(private val stat: AllAppsUsageFragment.Stat) : Fragment(
         }
 
         chart.axisLeft.apply {
-            isEnabled = false
+            isEnabled = true
             setDrawGridLines(false)
             textColor = primaryColor
+            valueFormatter = MinutesAxisFormatter()
+            axisMinimum = 0f
         }
 
         chart.apply {
@@ -165,7 +159,15 @@ class AppUsageBreakdown(private val stat: AllAppsUsageFragment.Stat) : Fragment(
 
     private class MinutesAxisFormatter : ValueFormatter() {
         override fun getFormattedValue(value: Float): String {
-            return "${value.toInt()} min"
+            val totalMinutes = value.toInt()
+            if (totalMinutes == 0) return "0m"
+            val hours = totalMinutes / 60
+            val minutes = totalMinutes % 60
+            return if (hours > 0) {
+                if (minutes > 0) "${hours}h ${minutes}m" else "${hours}h"
+            } else {
+                "${minutes}m"
+            }
         }
     }
 

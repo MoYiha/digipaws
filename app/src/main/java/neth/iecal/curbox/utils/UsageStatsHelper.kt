@@ -154,25 +154,49 @@ class UsageStatsHelper(private val context: Context) {
         val applicationTotalForegroundTime = mutableMapOf<String, Long>()
         // Map to store start times for each app
         val applicationStartTimes = mutableMapOf<String, MutableList<ZonedDateTime>>()
+        // Map to store hourly usage for each app (in milliseconds)
+        val applicationHourlyUsage = mutableMapOf<String, LongArray>()
 
         for (foregroundStat in foregroundStats) {
+            val packageName = foregroundStat.packageName
+            val beginTime = foregroundStat.beginTime
+            val endTime = foregroundStat.endTime
+
             // Calculate total foreground time for each app
-            applicationTotalForegroundTime[foregroundStat.packageName] =
-                applicationTotalForegroundTime.getOrDefault(foregroundStat.packageName, 0) +
-                        (foregroundStat.endTime - foregroundStat.beginTime)
+            applicationTotalForegroundTime[packageName] =
+                applicationTotalForegroundTime.getOrDefault(packageName, 0) +
+                        (endTime - beginTime)
 
             // Collect start times for each app
             val startTime = ZonedDateTime.ofInstant(
-                Instant.ofEpochMilli(foregroundStat.beginTime),
+                Instant.ofEpochMilli(beginTime),
                 ZoneId.systemDefault()
             )
-            applicationStartTimes.getOrPut(foregroundStat.packageName) { mutableListOf() }.add(startTime)
+            applicationStartTimes.getOrPut(packageName) { mutableListOf() }.add(startTime)
+
+            // Aggregate hourly usage
+            val hourlyUsage = applicationHourlyUsage.getOrPut(packageName) { LongArray(24) }
+            var currentStart = beginTime
+            while (currentStart < endTime) {
+                val zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(currentStart), ZoneId.systemDefault())
+                val currentHour = zdt.hour
+                
+                // Calculate when the next hour starts
+                val nextHourStart = zdt.plusHours(1).withMinute(0).withSecond(0).withNano(0).toInstant().toEpochMilli()
+                
+                // End of this chunk is either the actual end time, or the start of the next hour
+                val blockEnd = minOf(endTime, nextHourStart)
+                hourlyUsage[currentHour] += (blockEnd - currentStart)
+                
+                currentStart = blockEnd
+            }
         }
 
         // Create Stat objects with total time and start times
         for ((packageName, totalTime) in applicationTotalForegroundTime) {
             val startTimes = applicationStartTimes[packageName] ?: listOf()
-            usageStats.add(AllAppsUsageFragment.Stat(packageName, totalTime, startTimes))
+            val hourlyUsage = applicationHourlyUsage[packageName] ?: LongArray(24)
+            usageStats.add(AllAppsUsageFragment.Stat(packageName, totalTime, startTimes, hourlyUsage))
         }
 
         // Sort by total time in descending order
