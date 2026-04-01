@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.blockers.AppBlocker
 import neth.iecal.curbox.blockers.FocusModeBlocker
@@ -47,30 +48,42 @@ class AppBlockerSettingViewModel(application: Application) : AndroidViewModel(ap
     }
     
     fun addGroup(group: AppGroup) {
-        val updatedGroups = _groups.value.toMutableList().apply { add(group) }
-        updateGroups(updatedGroups)
-    }
-
-    fun updateGroupById(updatedGroup: AppGroup) {
-        val updatedGroups = _groups.value.toMutableList()
-        val index = updatedGroups.indexOfFirst { it.id == updatedGroup.id }
-        if (index != -1) {
-            updatedGroups[index] = updatedGroup
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val updatedGroups = currentSettings.blockedAppGroups.toMutableList().apply { add(group) }
             updateGroups(updatedGroups)
         }
     }
 
+    fun updateGroupById(updatedGroup: AppGroup) {
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val updatedGroups = currentSettings.blockedAppGroups.toMutableList()
+            val index = updatedGroups.indexOfFirst { it.id == updatedGroup.id }
+            if (index != -1) {
+                updatedGroups[index] = updatedGroup
+                updateGroups(updatedGroups)
+            }
+        }
+    }
+
     fun deleteGroup(groupId: String) {
-        val updatedGroups = _groups.value.toMutableList()
-        updatedGroups.removeAll { it.id == groupId }
-        updateGroups(updatedGroups)
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val updatedGroups = currentSettings.blockedAppGroups.toMutableList()
+            updatedGroups.removeAll { it.id == groupId }
+            updateGroups(updatedGroups)
+        }
     }
 
     fun updateGroupActiveState(index: Int, isActive: Boolean) {
-        val updatedGroups = _groups.value.toMutableList()
-        if (index in updatedGroups.indices) {
-            updatedGroups[index] = updatedGroups[index].copy(isActive = isActive)
-            updateGroups(updatedGroups)
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val updatedGroups = currentSettings.blockedAppGroups.toMutableList()
+            if (index in updatedGroups.indices) {
+                updatedGroups[index] = updatedGroups[index].copy(isActive = isActive)
+                updateGroups(updatedGroups)
+            }
         }
     }
 }

@@ -36,6 +36,7 @@ class CreateAppGroupFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var selectedApps: ArrayList<String> = arrayListOf()
+    private var isPrefilled = false
     private val viewModel: AppBlockerSettingViewModel by activityViewModels()
 
     private val selectAppsLauncher = registerForActivityResult(
@@ -71,7 +72,14 @@ class CreateAppGroupFragment : Fragment() {
 
         var isEditing = false
         var existingGroup: AppGroup? = null
-        val groupId = arguments?.getString("group_id")
+        val groupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
+        val prefillPackage = requireActivity().intent.getStringExtra("prefill_package")
+
+        if (groupId == null && !isPrefilled && prefillPackage != null) {
+            isPrefilled = true
+            selectedApps = arrayListOf(prefillPackage)
+            binding.btnSelectApps.text = "Select Apps (${selectedApps.size})"
+        }
 
         if (groupId != null) {
             viewLifecycleOwner.lifecycleScope.launch {
@@ -149,7 +157,7 @@ class CreateAppGroupFragment : Fragment() {
         val isUsageBased = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
         val blockingType = if (isUsageBased) AppBlockingType.Usage else AppBlockingType.Timed
 
-        val savedGroupId = arguments?.getString("group_id")
+        val savedGroupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
         val isEditingRecord = savedGroupId != null
         val targetExistingGroup = viewModel.groups.value.find { it.id == savedGroupId }
 

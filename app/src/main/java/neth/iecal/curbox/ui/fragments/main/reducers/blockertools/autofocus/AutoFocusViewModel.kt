@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.blockers.FocusModeBlocker
 import neth.iecal.curbox.data.models.AutoFocusGroup
@@ -30,23 +31,33 @@ class AutoFocusViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun addGroup(group: AutoFocusGroup) {
-        val currentGroups = _groups.value.toMutableList()
-        currentGroups.add(group)
-        updateGroups(currentGroups)
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val currentGroups = currentSettings.autoFocusGroups.toMutableList()
+            currentGroups.add(group)
+            updateGroups(currentGroups)
+        }
     }
 
     fun removeGroup(group: AutoFocusGroup) {
-        val currentGroups = _groups.value.toMutableList()
-        currentGroups.remove(group)
-        updateGroups(currentGroups)
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val currentGroups = currentSettings.autoFocusGroups.toMutableList()
+            // We use removeIf to ensure it matches by id in case of object reference mismatch
+            currentGroups.removeIf { it.groupId == group.groupId }
+            updateGroups(currentGroups)
+        }
     }
 
     fun updateGroup(group: AutoFocusGroup) {
-        val currentGroups = _groups.value.toMutableList()
-        val index = currentGroups.indexOfFirst { it.groupId == group.groupId }
-        if (index != -1) {
-            currentGroups[index] = group
-            updateGroups(currentGroups)
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val currentGroups = currentSettings.autoFocusGroups.toMutableList()
+            val index = currentGroups.indexOfFirst { it.groupId == group.groupId }
+            if (index != -1) {
+                currentGroups[index] = group
+                updateGroups(currentGroups)
+            }
         }
     }
 

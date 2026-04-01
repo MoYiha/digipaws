@@ -33,6 +33,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var selectedApps: ArrayList<String> = arrayListOf()
+    private var isPrefilled = false
     private val viewModel: AutoFocusViewModel by activityViewModels()
 
     private val selectAppsLauncher = registerForActivityResult(
@@ -64,7 +65,14 @@ class CreateAutoFocusGroupFragment : Fragment() {
 
         var isEditing = false
         var existingGroup: AutoFocusGroup? = null
-        val groupId = arguments?.getString("group_id")
+        val groupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
+        val prefillPackage = requireActivity().intent.getStringExtra("prefill_package")
+
+        if (groupId == null && !isPrefilled && prefillPackage != null) {
+            isPrefilled = true
+            selectedApps = arrayListOf(prefillPackage)
+            binding.btnSelectApps.text = "Select Apps (${selectedApps.size})"
+        }
 
         if (groupId == null) {
             viewModel.currentDailyIntervals = mutableMapOf()
@@ -150,7 +158,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
             val exitable = binding.switchExitable.isChecked
             val autoTurnOnDnd = binding.switchDnd.isChecked
 
-            val savedGroupId = arguments?.getString("group_id")
+            val savedGroupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
             val isEditingRecord = savedGroupId != null
             val targetExistingGroup = viewModel.groups.value.find { it.groupId == savedGroupId }
 

@@ -2,7 +2,9 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:isScrollContainer="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -161,5 +163,36 @@
                     android:textAppearance="@style/TextAppearance.Material3.LabelLarge" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+        
+        <!-- App Configurations Shortcuts -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="12dp"
+            android:letterSpacing="0.1"
+            android:text="@string/active_reducers"
+            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <LinearLayout
+            android:id="@+id/dynamic_shortcuts_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+            
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_create_new_rule"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/add_a_reducer"
+            app:icon="@drawable/baseline_add_24" />
+
+        <Space
+            android:layout_width="1dp"
+            android:layout_height="300dp"/>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

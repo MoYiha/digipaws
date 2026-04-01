@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.anti_stimulants.GrayScaleFilter
 import neth.iecal.curbox.data.models.GrayscaleGroup
@@ -30,23 +31,32 @@ class GrayscaleViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun addGroup(group: GrayscaleGroup) {
-        val currentGroups = _groups.value.toMutableList()
-        currentGroups.add(group)
-        updateGroups(currentGroups)
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val currentGroups = currentSettings.grayscaleGroups.toMutableList()
+            currentGroups.add(group)
+            updateGroups(currentGroups)
+        }
     }
 
     fun removeGroup(group: GrayscaleGroup) {
-        val currentGroups = _groups.value.toMutableList()
-        currentGroups.remove(group)
-        updateGroups(currentGroups)
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val currentGroups = currentSettings.grayscaleGroups.toMutableList()
+            currentGroups.remove(group)
+            updateGroups(currentGroups)
+        }
     }
 
     fun updateGroup(group: GrayscaleGroup) {
-        val currentGroups = _groups.value.toMutableList()
-        val index = currentGroups.indexOfFirst { it.groupId == group.groupId }
-        if (index != -1) {
-            currentGroups[index] = group
-            updateGroups(currentGroups)
+        viewModelScope.launch {
+            val currentSettings = dataStoreManager.settings.first()
+            val currentGroups = currentSettings.grayscaleGroups.toMutableList()
+            val index = currentGroups.indexOfFirst { it.groupId == group.groupId }
+            if (index != -1) {
+                currentGroups[index] = group
+                updateGroups(currentGroups)
+            }
         }
     }
 

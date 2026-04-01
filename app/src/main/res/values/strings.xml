@@ -247,4 +247,6 @@
     <string name="please_select_at_least_one_app">Please select at least one app</string>
     <string name="group_saved_successfully">Group saved successfully</string>
     <string name="warning_link_blocker_may_not_work">WARNING: Link blocker may not work everywhere.</string>
+    <string name="active_reducers">Active Reducers</string>
+    <string name="add_a_reducer">Add a Reducer</string>
 </resources>
