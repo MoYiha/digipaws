@@ -15,5 +15,6 @@ data class Settings(
     val keywordBlockerConfig: KeywordBlocker = KeywordBlocker(),
     val isReelCounterOn: Boolean = true,
     val grayscaleGroups: List<GrayscaleGroup> = listOf(),
-    val usageTrackerIgnoredApps: List<String> = listOf()
+    val usageTrackerIgnoredApps: List<String> = listOf(),
+    val mindfulMessageConfig: MindfulMessageConfig = MindfulMessageConfig()
 )

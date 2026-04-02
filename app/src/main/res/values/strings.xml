@@ -249,4 +249,13 @@
     <string name="warning_link_blocker_may_not_work">WARNING: Link blocker may not work everywhere.</string>
     <string name="active_reducers">Active Reducers</string>
     <string name="add_a_reducer">Add a Reducer</string>
+    <string name="mindful_messages">Mindful Messages</string>
+    <string name="enable_mindful_messages">Enable Mindful Messages</string>
+    <string name="target_apps">TARGET APPS</string>
+    <string name="messages_label">MESSAGES</string>
+    <string name="messages_hint">One per line. Variables: {app_usage_today}, {screentime_today}, {live_session_duration}, {reel_count}</string>
+    <string name="overlay_position">OVERLAY POSITION</string>
+    <string name="position_top">Top</string>
+    <string name="position_center">Center</string>
+    <string name="position_bottom">Bottom</string>
 </resources>

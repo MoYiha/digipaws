@@ -3,7 +3,6 @@ package neth.iecal.curbox.ui.overlay
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PixelFormat
-import android.os.CountDownTimer
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -12,7 +11,7 @@ import android.view.WindowManager
 import android.view.WindowManager.LayoutParams
 import neth.iecal.curbox.databinding.OverlayUsageStatBinding
 
-class UsageStatOverlayManager(private val context: Context) {
+class ReelsOverlayManager(private val context: Context) {
 
     private var overlayView: View? = null
     var binding: OverlayUsageStatBinding? = null

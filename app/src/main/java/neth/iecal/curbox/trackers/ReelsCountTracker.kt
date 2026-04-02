@@ -22,7 +22,7 @@ import neth.iecal.curbox.data.db.ReelStatsEntity
 import neth.iecal.curbox.data.db.ScrollPatternDao
 import neth.iecal.curbox.data.db.ScrollPatternEntity
 import neth.iecal.curbox.services.BaseBlockingService
-import neth.iecal.curbox.ui.overlay.UsageStatOverlayManager
+import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
 import neth.iecal.curbox.utils.TimeTools
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -68,7 +68,7 @@ class ReelsCountTracker {
     }
 
     private lateinit var service: BaseBlockingService
-    private lateinit var overlayManager: UsageStatOverlayManager
+    private lateinit var overlayManager: ReelsOverlayManager
     private lateinit var reelStatsDao: ReelStatsDao
     private lateinit var scrollPatternDao: ScrollPatternDao
 
@@ -76,6 +76,7 @@ class ReelsCountTracker {
 
     private var isOnDisplayCounter = true
     private var todayCount = 0
+    private var lastDateStr = TimeTools.getCurrentDate()
     private var lastVideoViewFoundTime: Long? = null
     private var lastContentChangeTimestamp = 0L
 
@@ -85,7 +86,7 @@ class ReelsCountTracker {
     private val learnedThresholds = mutableMapOf<String, Float>()
     private val totalSwipesSeen = mutableMapOf<String, Int>()
 
-    fun setup(service: BaseBlockingService, overlayManager: UsageStatOverlayManager) {
+    fun setup(service: BaseBlockingService, overlayManager: ReelsOverlayManager) {
         this.service = service
         this.overlayManager = overlayManager
 
@@ -101,7 +102,8 @@ class ReelsCountTracker {
 
         scope.launch {
             try {
-                todayCount = reelStatsDao.getCount(TimeTools.getCurrentDate()) ?: 0
+                lastDateStr = TimeTools.getCurrentDate()
+                todayCount = reelStatsDao.getCount(lastDateStr) ?: 0
             } catch (_: Exception) {
                 todayCount = 0
             }
@@ -258,8 +260,14 @@ class ReelsCountTracker {
         } catch (_: Exception) { false }
     }
 
+    fun getTodayCount(): Int = todayCount
+
     private fun onReelCounted() {
         val date = TimeTools.getCurrentDate()
+        if (date != lastDateStr) {
+            todayCount = 0
+            lastDateStr = date
+        }
         todayCount++
         overlayManager.reelsScrolledThisSession = todayCount
 

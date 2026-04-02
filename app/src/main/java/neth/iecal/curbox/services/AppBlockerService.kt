@@ -48,6 +48,7 @@ class AppBlockerService : BaseBlockingService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
+        super.onAccessibilityEvent(event)
 
         try {
             appBlocker.doAppBlockerCheck(event)

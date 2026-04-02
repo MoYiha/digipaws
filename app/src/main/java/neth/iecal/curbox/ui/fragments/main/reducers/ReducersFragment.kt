@@ -68,6 +68,14 @@ class ReducersFragment : Fragment() {
             startActivity(intent)
         }
         
+        val intentsCard = view.findViewById<MaterialCardView>(R.id.card_intents)
+        intentsCard.setOnClickListener {
+            val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                putExtra("fragment", neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID)
+            }
+            startActivity(intent)
+        }
+        
         return view
     }
 }

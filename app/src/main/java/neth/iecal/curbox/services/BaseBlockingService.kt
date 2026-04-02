@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import neth.iecal.curbox.utils.DataStoreManager
+import neth.iecal.curbox.trackers.MindfulMessageTracker
 import kotlin.lazy
 
 open class BaseBlockingService : AccessibilityService() {
@@ -12,10 +13,19 @@ open class BaseBlockingService : AccessibilityService() {
         DataStoreManager(this)
     }
 
+
     var lastBackPressTimeStamp: Long =
         SystemClock.uptimeMillis() // prevents repetitive global actions
 
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 
     override fun onInterrupt() {

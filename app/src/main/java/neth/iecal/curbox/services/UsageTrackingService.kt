@@ -4,34 +4,28 @@ import neth.iecal.curbox.R
 
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.net.Uri
-import android.os.Build
-import android.os.Handler
-import android.os.Looper
-import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import android.view.View
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import neth.iecal.curbox.trackers.ReelsCountTracker
-import neth.iecal.curbox.ui.overlay.UsageStatOverlayManager
-import java.util.concurrent.TimeUnit
+import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
 import androidx.core.net.toUri
+import neth.iecal.curbox.trackers.MindfulMessageTracker
 
 class UsageTrackingService : BaseBlockingService() {
 
 
-    private val usageStatOverlayManager by lazy { UsageStatOverlayManager(this) }
+    private val reelsOverlayManager by lazy { ReelsOverlayManager(this) }
     private val reelsCountTracker = ReelsCountTracker()
+    private val mindfulMessageTracker = MindfulMessageTracker()
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        super.onAccessibilityEvent(event)
         try {
             reelsCountTracker.onEvent(event)
+            mindfulMessageTracker.onEvent(event)
         } catch (error: Exception) {
             Log.e("Usage Tracking error", error.toString())
         }
@@ -45,7 +39,8 @@ class UsageTrackingService : BaseBlockingService() {
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
             flags = AccessibilityServiceInfo.DEFAULT
         }
-        reelsCountTracker.setup(this, usageStatOverlayManager)
+        reelsCountTracker.setup(this, reelsOverlayManager)
+        mindfulMessageTracker.setup(this)
         reelsCountTracker.setupReceivers()
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(
@@ -71,6 +66,7 @@ class UsageTrackingService : BaseBlockingService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mindfulMessageTracker.onDestroy()
         reelsCountTracker.onDestroy()
     }
 

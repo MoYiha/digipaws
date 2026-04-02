@@ -52,6 +52,7 @@ class FragmentActivity : AppCompatActivity() {
             neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID,
             GrayscaleFragment.FRAGMENT_ID,
             CreateGrayscaleGroupFragment.FRAGMENT_ID,
+            neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID,
             KeywordBlockerFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
                 bottomNav.visibility = android.view.View.GONE
@@ -67,6 +68,7 @@ class FragmentActivity : AppCompatActivity() {
                     neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID -> neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment()
                     GrayscaleFragment.FRAGMENT_ID -> GrayscaleFragment()
                     CreateGrayscaleGroupFragment.FRAGMENT_ID -> CreateGrayscaleGroupFragment()
+                    neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID -> neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment()
                     else -> AccessibilityGuide()
                 }
                 fragment.arguments = intent.extras
