@@ -7,7 +7,6 @@ on:
     branches: [ "kt-rewrite" ]
   workflow_dispatch:
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,6 +16,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4.2.1
         with:
@@ -35,7 +35,7 @@ jobs:
       - name: Clear build cache
         uses: gradle/gradle-build-action@v3.1.0
         with:
-          gradle-version: wrapper # Use nightly via gradlew if configured in wrapper
+          gradle-version: wrapper
           arguments: clean
 
       - name: Build Fdroid Release APK
@@ -57,19 +57,32 @@ jobs:
           APK_PATH=${{ steps.sign_app_fdroid.outputs.signedReleaseFile }}
           APK_NAME=$(basename "$APK_PATH")
           APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
+          
+          # Extract commit variables safely for later steps
+          COMMIT_MESSAGE=$(git log -1 --pretty=format:%s)
+          COMMIT_AUTHOR=$(git log -1 --pretty=format:%an)
+          
           echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
           echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
           echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          echo "commit_author=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+
+      - name: VirusTotal Scan
+        uses: crazy-max/ghaction-virustotal@v4
+        id: vt
+        with:
+          vt_api_key: ${{ secrets.VT_API_KEY }}
+          files: ${{ steps.apk_info.outputs.apk_path }}
 
       - name: Send Signed APK to Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_BETA_WEBHOOK }}
         run: |
           APK_PATH=${{ steps.apk_info.outputs.apk_path }}
-          APK_NAME=${{ steps.apk_info.outputs.apk_name }}
           APK_SIZE=${{ steps.apk_info.outputs.apk_size }}
-          COMMIT_MESSAGE=$(git log -1 --pretty=format:%s)
-          COMMIT_AUTHOR=$(git log -1 --pretty=format:%an)
+          COMMIT_MESSAGE="${{ steps.apk_info.outputs.commit_message }}"
+          COMMIT_AUTHOR="${{ steps.apk_info.outputs.commit_author }}"
           AUTHOR_URL="https://github.com/${{ github.actor }}"
           COMMIT_SHA=${{ github.sha }}
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/$COMMIT_SHA"
@@ -79,7 +92,7 @@ jobs:
           {
             "embeds": [{
               "title": "New Beta Release",
-              "description": "A new signed beta APK has been built and is ready for testing!",
+              "description": "A new signed beta APK has been built, passed VirusTotal scan, and is ready for testing!",
               "color": 5814783,
               "fields": [
                 {"name": "Size", "value": "$APK_SIZE", "inline": true},
@@ -102,16 +115,11 @@ jobs:
             -F "file=@$APK_PATH" \
             "$DISCORD_WEBHOOK"
 
-
-
       - name: Send Signed APK to Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           APK_PATH=${{ steps.apk_info.outputs.apk_path }}
-          APK_NAME=${{ steps.apk_info.outputs.apk_name }}
-          APK_SIZE=${{ steps.apk_info.outputs.apk_size }}
           COMMIT_SHA=${{ github.sha }}
           COMMIT_MESSAGE="${{ steps.apk_info.outputs.commit_message }}"
           COMMIT_AUTHOR="${{ steps.apk_info.outputs.commit_author }}"
@@ -119,20 +127,14 @@ jobs:
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/$COMMIT_SHA"
           
           # Format Telegram message (Markdown)
-          MESSAGE="**New Beta Release** \n" # %0A = newline
-          
-          MESSAGE+="A new signed beta APK is ready! \n\n"
-          
-          
-          MESSAGE+="*Commit:* [$COMMIT_SHA]($COMMIT_URL) \n"
-          
-          MESSAGE+="*Message:* $COMMIT_MESSAGE \n\n"
-          
-          
-          MESSAGE+="*Author:* [$COMMIT_AUTHOR]($AUTHOR_URL) \n"
+          MESSAGE="*New Beta Release* %0A%0A"
+          MESSAGE+="A new signed beta APK is ready and passed the VirusTotal check! %0A%0A"
+          MESSAGE+="*Commit:* [$COMMIT_SHA]($COMMIT_URL) %0A"
+          MESSAGE+="*Message:* $COMMIT_MESSAGE %0A%0A"
+          MESSAGE+="*Author:* [$COMMIT_AUTHOR]($AUTHOR_URL) %0A"
           MESSAGE+="Built with Github Actions on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
           
-          # Send message with file
+          # Send message with file using hardcoded Chat ID and Topic ID
           curl -X POST \
             -F chat_id="-1002199979475" \
             -F message_thread_id="437" \
