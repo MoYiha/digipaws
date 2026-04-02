@@ -78,6 +78,7 @@ jobs:
       - name: Send Signed APK to Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_BETA_WEBHOOK }}
+          VT_ANALYSIS: ${{ steps.vt.outputs.analysis }}
         run: |
           APK_PATH=${{ steps.apk_info.outputs.apk_path }}
           APK_SIZE=${{ steps.apk_info.outputs.apk_size }}
@@ -87,7 +88,10 @@ jobs:
           COMMIT_SHA=${{ github.sha }}
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/$COMMIT_SHA"
           
-          # Format Discord message as JSON
+          # Extract VirusTotal scan URL (output format from the action is "filename=URL")
+          VT_URL=$(echo "$VT_ANALYSIS" | cut -d'=' -f2-)
+          
+          # Format Discord message as JSON (with VirusTotal link added)
           MESSAGE=$(cat <<EOF
           {
             "embeds": [{
@@ -98,9 +102,10 @@ jobs:
                 {"name": "Size", "value": "$APK_SIZE", "inline": true},
                 {"name": "Commit", "value": "[#$COMMIT_SHA]($COMMIT_URL)", "inline": false},
                 {"name": "Message", "value": "$COMMIT_MESSAGE", "inline": false},
-                {"name": "Author", "value": "[$COMMIT_AUTHOR]($AUTHOR_URL)", "inline": false}
+                {"name": "Author", "value": "[$COMMIT_AUTHOR]($AUTHOR_URL)", "inline": false},
+                {"name": "VirusTotal", "value": "[View Full Scan Results]($VT_URL)", "inline": false}
               ],
-              "footer": {"text": "Built with Github Actions"},
+              "footer": {"text": "Built with GitHub Actions"},
               "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
             }],
             "attachments": []
@@ -118,6 +123,7 @@ jobs:
       - name: Send Signed APK to Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          VT_ANALYSIS: ${{ steps.vt.outputs.analysis }}
         run: |
           APK_PATH=${{ steps.apk_info.outputs.apk_path }}
           COMMIT_SHA=${{ github.sha }}
@@ -126,13 +132,17 @@ jobs:
           AUTHOR_URL="https://github.com/${{ github.actor }}"
           COMMIT_URL="https://github.com/${{ github.repository }}/commit/$COMMIT_SHA"
           
-          # Format Telegram message (Markdown)
-          MESSAGE="*New Beta Release* %0A%0A"
-          MESSAGE+="A new signed beta APK is ready and passed the VirusTotal check! %0A%0A"
-          MESSAGE+="*Commit:* [$COMMIT_SHA]($COMMIT_URL) %0A"
-          MESSAGE+="*Message:* $COMMIT_MESSAGE %0A%0A"
-          MESSAGE+="*Author:* [$COMMIT_AUTHOR]($AUTHOR_URL) %0A"
-          MESSAGE+="Built with Github Actions on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          # Extract VirusTotal scan URL (output format from the action is "filename=URL")
+          VT_URL=$(echo "$VT_ANALYSIS" | cut -d'=' -f2-)
+          
+          # Properly formatted Telegram Markdown message (with VirusTotal link)
+          MESSAGE="*New Beta Release*%0A%0A"
+          MESSAGE+="A new signed beta APK is ready and has **passed** the VirusTotal scan!%0A%0A"
+          MESSAGE+="*Commit:* [$COMMIT_SHA]($COMMIT_URL)%0A"
+          MESSAGE+="*Message:* $COMMIT_MESSAGE%0A%0A"
+          MESSAGE+="*Author:* [$COMMIT_AUTHOR]($AUTHOR_URL)%0A"
+          MESSAGE+="*VirusTotal Check:* [View Full Scan Results]($VT_URL)%0A%0A"
+          MESSAGE+="Built with GitHub Actions on $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
           
           # Send message with file using hardcoded Chat ID and Topic ID
           curl -X POST \
