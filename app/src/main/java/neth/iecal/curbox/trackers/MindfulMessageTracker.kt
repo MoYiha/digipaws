@@ -14,6 +14,9 @@ import neth.iecal.curbox.utils.UsageStatsHelper
 
 class MindfulMessageTracker {
 
+    companion object {
+        private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+    }
     private lateinit var service: BaseBlockingService
     private lateinit var overlayManager: MindfulMessageOverlayManager
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -33,7 +36,9 @@ class MindfulMessageTracker {
     }
 
     fun onEvent(event: AccessibilityEvent?) {
-        if (!config.isActive || event == null) {
+        if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0) return
+
+        if (!config.isActive) {
             if (overlayManager.isOverlayVisible) overlayManager.removeOverlay()
             return
         }
