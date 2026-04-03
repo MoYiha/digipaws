@@ -46,10 +46,10 @@ class ViewBlocker : BaseBlocker() {
             ViewBlockerRule("ig_stories_tray", "com.instagram.android", "Hide Stories", desc = "reels tray container"),
             ViewBlockerRule("ig_reels_button", "com.instagram.android", "Hide Reels button", viewId = "com.instagram.android:id/clips_tab"),
             ViewBlockerRule("ig_search_suggestions", "com.instagram.android", "Hide search suggestions", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[3]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.FrameLayout[*]"),
-            ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide feed 1/2", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
-            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide feed 1/2 but let me explore following tab", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]##requireAbsent=viewId:com.app:id/nav", requireAbsent = "com.instagram.android:id/action_bar_title"),
+            ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide main feed ", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
+            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]", requireAbsent = "text:Following"),
+            ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons like, share, comment, in the reels tab", path = "com.instagram.android##viewId=com.instagram.android:id/clips_ufi_component"),
 
-            ViewBlockerRule("ig_main_screen", "com.instagram.android", "Hide main screen", viewId = "android:id/list"),
             ViewBlockerRule("li_feed_item", "com.linkedin.android", "Hide feed item", viewId = "com.linkedin.android:id/feed_item_update_card"),
             ViewBlockerRule("li_notifications", "com.linkedin.android", "Hide notifications", viewId = "com.linkedin.android:id/tab_notifications"),
             ViewBlockerRule("wa_ai_search", "com.whatsapp", "Hide AI suggestions in search", viewId = "com.whatsapp:id/search_meta_ai_input_send_button"),

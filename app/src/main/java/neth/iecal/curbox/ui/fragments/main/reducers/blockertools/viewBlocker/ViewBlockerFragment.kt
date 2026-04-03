@@ -155,6 +155,19 @@ class ViewBlockerFragment : Fragment() {
                 setOnCloseIconClickListener {
                     viewModel.removeCustomRule(rule)
                 }
+                setOnClickListener {
+                    val editText = android.widget.EditText(requireContext())
+                    editText.setText(rule)
+                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Edit Rule")
+                        .setView(editText)
+                        .setPositiveButton("Save") { _, _ ->
+                            viewModel.removeCustomRule(rule)
+                            viewModel.addCustomRule(editText.text.toString())
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
             }
             chipGroup.addView(chip)
         }
