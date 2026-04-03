@@ -58,6 +58,9 @@ object ViewBlockerRuleParser {
                 }
             }
 
+            val parsedPath = targetPath?.let { parsePath(it) }
+            val baseKey = "$packageName::$trimmed"
+
             rules.add(
                 ViewBlockerFilterRule(
                     packageName = packageName,
@@ -66,13 +69,33 @@ object ViewBlockerRuleParser {
                     targetClassName = targetClassName,
                     targetText = targetText,
                     targetPath = targetPath,
+                    parsedPath = parsedPath,
                     color = color,
                     description = currentComment,
                     ruleString = trimmed,
+                    baseKey = baseKey,
                     blockTouches = blockTouches
                 )
             )
         }
         return rules
+    }
+
+    private fun parsePath(path: String): List<PathSegment> {
+        if (path.isEmpty()) return emptyList()
+        return path.split(">").map { segment ->
+            val bracketStart = segment.indexOf('[')
+            if (bracketStart >= 0) {
+                val className = segment.substring(0, bracketStart)
+                val indexStr = segment.substring(bracketStart + 1, segment.indexOf(']'))
+                if (indexStr == "*") {
+                    PathSegment(className, -1, true)
+                } else {
+                    PathSegment(className, indexStr.toIntOrNull() ?: 0, false)
+                }
+            } else {
+                PathSegment(segment, 0, false)
+            }
+        }
     }
 }

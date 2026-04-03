@@ -28,7 +28,6 @@ import neth.iecal.curbox.blockers.BaseBlocker
 import neth.iecal.curbox.data.models.ViewBlockerConfig
 import neth.iecal.curbox.data.models.ViewBlockerRule
 import neth.iecal.curbox.services.BaseBlockingService
-import kotlin.collections.iterator
 
 class ViewBlocker : BaseBlocker() {
 
@@ -71,7 +70,8 @@ class ViewBlocker : BaseBlocker() {
                 sb.append("##blockTouches=false")
             }
             sb.append("##comment=").append(rule.label)
-            return sb.toString()        }
+            return sb.toString()
+        }
     }
 
     private lateinit var service: BaseBlockingService
@@ -79,18 +79,37 @@ class ViewBlocker : BaseBlocker() {
     private val handler = Handler(Looper.getMainLooper())
 
     private var config = ViewBlockerConfig()
-    private var parsedRules = listOf<ViewBlockerFilterRule>()
     private var settingsJob: Job? = null
     private var isDarkMode = false
 
-    private val blockedElements = HashMap<String, BlockedElement>()
-    private val activeRuleKeys = mutableSetOf<String>()
+    @Volatile private var rulesByPackage = HashMap<String, PackageRules>()
+
+    private val blockedElements = HashMap<String, BlockedElement>(32)
+    private val activeRuleKeys = HashSet<String>(32)
     private var lastPackage = ""
+
+    private val boundsRect = Rect()
 
     var elementPicker: ElementPicker? = null
         private set
 
     private data class BlockedElement(val view: View, val bounds: Rect)
+
+    private class PackageRules(
+        val pathRules: List<ViewBlockerFilterRule>,
+        val viewIdRules: List<ViewBlockerFilterRule>,
+        val viewIdDescRules: List<ViewBlockerFilterRule>,
+        val recursiveRules: List<ViewBlockerFilterRule>
+    ) {
+        val isEmpty get() = pathRules.isEmpty() && viewIdRules.isEmpty() &&
+                viewIdDescRules.isEmpty() && recursiveRules.isEmpty()
+    }
+
+    private data class OverlayAction(
+        val key: String,
+        val bounds: Rect,
+        val rule: ViewBlockerFilterRule
+    )
 
     fun setupBlocker(service: BaseBlockingService) {
         this.service = service
@@ -108,22 +127,40 @@ class ViewBlocker : BaseBlocker() {
 
     private fun rebuildParsedRules() {
         if (!config.isActive) {
-            parsedRules = emptyList()
+            rulesByPackage = HashMap()
             handler.post { forceClearAllOverlays() }
             return
         }
 
         val ruleStrings = mutableListOf<String>()
-
         config.rules.filter { it.isEnabled }.forEach { rule ->
             ruleStrings.add(defaultRuleToRuleString(rule))
         }
-
         ruleStrings.addAll(config.customRules)
 
-        parsedRules = ViewBlockerRuleParser.parseRules(ruleStrings).map {
+        val allRules = ViewBlockerRuleParser.parseRules(ruleStrings).map {
             it.copy(enabled = true)
         }
+
+        val newMap = HashMap<String, PackageRules>(allRules.size)
+        val grouped = allRules.groupBy { it.packageName }
+        for ((pkg, rules) in grouped) {
+            val pathRules = ArrayList<ViewBlockerFilterRule>()
+            val viewIdRules = ArrayList<ViewBlockerFilterRule>()
+            val viewIdDescRules = ArrayList<ViewBlockerFilterRule>()
+            val recursiveRules = ArrayList<ViewBlockerFilterRule>()
+
+            for (rule in rules) {
+                when {
+                    rule.parsedPath != null -> pathRules.add(rule)
+                    rule.needsViewIdWithDescLookup -> viewIdDescRules.add(rule)
+                    rule.needsViewIdLookup -> viewIdRules.add(rule)
+                    rule.isRecursiveRule -> recursiveRules.add(rule)
+                }
+            }
+            newMap[pkg] = PackageRules(pathRules, viewIdRules, viewIdDescRules, recursiveRules)
+        }
+        rulesByPackage = newMap
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -179,13 +216,14 @@ class ViewBlocker : BaseBlocker() {
 
     fun doViewBlockerCheck(event: AccessibilityEvent?) {
         if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0 || event.packageName == "com.android.systemui") return
-        if (!config.isActive || parsedRules.isEmpty()) return
+        if (!config.isActive) return
         if (elementPicker?.isActive == true) return
 
         val packageName = event.packageName?.toString() ?: return
-        if (packageName == service.packageName || packageName == "com.android.systemui") return
+        if (packageName == service.packageName) return
 
-        if (!hasMatchingRule(packageName)) {
+        val pkgRules = rulesByPackage[packageName]
+        if (pkgRules == null || pkgRules.isEmpty) {
             if (lastPackage != packageName && blockedElements.isNotEmpty()) {
                 handler.post { forceClearAllOverlays() }
             }
@@ -194,33 +232,23 @@ class ViewBlocker : BaseBlocker() {
         }
 
         lastPackage = packageName
-        handler.post { processEvent() }
-    }
-
-    private fun hasMatchingRule(packageName: String): Boolean {
-        return parsedRules.any { it.enabled && it.matchesPackage(packageName) }
+        processEvent()
     }
 
     private fun processEvent() {
         try {
             val root = service.rootInActiveWindow ?: return
             try {
-                val rootPkg = root.packageName ?: return
-                if (!hasMatchingRule(rootPkg.toString())) {
-                    forceClearAllOverlays()
+                val rootPkg = root.packageName?.toString() ?: return
+                val rootRules = rulesByPackage[rootPkg]
+                if (rootRules == null || rootRules.isEmpty) {
+                    handler.post { forceClearAllOverlays() }
                     return
                 }
 
-                activeRuleKeys.clear()
-                processRootNode(root)
-
-                val toRemove = blockedElements.keys.filter { it !in activeRuleKeys }
-                for (key in toRemove) {
-                    val element = blockedElements.remove(key)
-                    if (element != null) {
-                        try { windowManager.removeView(element.view) } catch (_: Exception) {}
-                    }
-                }
+                val actions = ArrayList<OverlayAction>(16)
+                collectOverlayActions(root, rootRules, actions)
+                applyOverlayActionsBatch(actions)
             } finally {
                 @Suppress("DEPRECATION")
                 root.recycle()
@@ -230,23 +258,19 @@ class ViewBlocker : BaseBlocker() {
         }
     }
 
-    private fun processRootNode(root: AccessibilityNodeInfo) {
-        val packageName = root.packageName ?: return
-        for (rule in parsedRules) {
-            if (rule.enabled && rule.matchesPackage(packageName)) {
-                applyRule(rule, root)
-            }
-        }
-    }
-
-    private fun applyRule(rule: ViewBlockerFilterRule, root: AccessibilityNodeInfo) {
+    private fun collectOverlayActions(
+        root: AccessibilityNodeInfo,
+        pkgRules: PackageRules,
+        actions: MutableList<OverlayAction>
+    ) {
         if (!root.isVisibleToUser) return
 
-        if (!rule.targetPath.isNullOrEmpty()) {
-            val targets = matchPaths(root, rule.targetPath)
+        for (rule in pkgRules.pathRules) {
+            val parsed = rule.parsedPath ?: continue
+            val targets = matchPathsParsed(root, parsed)
             for ((index, target) in targets.withIndex()) {
                 try {
-                    processTargetView(target, rule, index)
+                    collectTargetActions(target, rule, index, actions)
                 } finally {
                     if (target != root) {
                         @Suppress("DEPRECATION")
@@ -254,16 +278,15 @@ class ViewBlocker : BaseBlocker() {
                     }
                 }
             }
-            return
         }
 
-        if (!rule.targetViewId.isNullOrEmpty()) {
-            val matches = root.findAccessibilityNodeInfosByViewId(rule.targetViewId)
+        for (rule in pkgRules.viewIdRules) {
+            val matches = root.findAccessibilityNodeInfosByViewId(rule.targetViewId!!)
             if (matches != null) {
                 for (match in matches) {
                     try {
                         if (match.isVisibleToUser) {
-                            processTargetView(match, rule)
+                            collectTargetActions(match, rule, -1, actions)
                         }
                     } finally {
                         @Suppress("DEPRECATION")
@@ -271,23 +294,46 @@ class ViewBlocker : BaseBlocker() {
                     }
                 }
             }
-            return
         }
 
-        applyRuleRecursive(rule, root)
+        for (rule in pkgRules.viewIdDescRules) {
+            val matches = root.findAccessibilityNodeInfosByViewId(rule.targetViewId!!)
+            if (matches != null) {
+                for (match in matches) {
+                    try {
+                        if (match.isVisibleToUser) {
+                            collectViewIdDescActions(match, rule, actions)
+                        }
+                    } finally {
+                        @Suppress("DEPRECATION")
+                        match.recycle()
+                    }
+                }
+            }
+        }
+
+        if (pkgRules.recursiveRules.isNotEmpty()) {
+            collectRecursiveActions(root, pkgRules.recursiveRules, actions)
+        }
     }
 
-    private fun applyRuleRecursive(rule: ViewBlockerFilterRule, node: AccessibilityNodeInfo) {
+    private fun collectRecursiveActions(
+        node: AccessibilityNodeInfo,
+        rules: List<ViewBlockerFilterRule>,
+        actions: MutableList<OverlayAction>
+    ) {
         if (!node.isVisibleToUser) return
 
-        if (isTargetView(node, rule)) {
-            processTargetView(node, rule)
+        for (rule in rules) {
+            if (isTargetView(node, rule)) {
+                addBoundsAction(node, rule, -1, actions)
+            }
         }
 
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
             try {
-                applyRuleRecursive(rule, child)
+                collectRecursiveActions(child, rules, actions)
             } finally {
                 @Suppress("DEPRECATION")
                 child.recycle()
@@ -296,13 +342,6 @@ class ViewBlocker : BaseBlocker() {
     }
 
     private fun isTargetView(node: AccessibilityNodeInfo, rule: ViewBlockerFilterRule): Boolean {
-        if (!rule.targetViewId.isNullOrEmpty()) {
-            val viewId = node.viewIdResourceName
-            return viewId != null && viewId == rule.targetViewId
-        }
-
-        if (!rule.targetPath.isNullOrEmpty()) return false
-
         if (rule.contentDescriptions.isNotEmpty()) {
             val desc = node.contentDescription
             if (desc != null && rule.contentDescriptions.contains(desc.toString())) {
@@ -328,39 +367,20 @@ class ViewBlocker : BaseBlocker() {
         return false
     }
 
-    private fun matchPaths(root: AccessibilityNodeInfo, path: String): List<AccessibilityNodeInfo> {
-        val empty = emptyList<AccessibilityNodeInfo>()
-        if (path.isEmpty()) return empty
+    private fun matchPathsParsed(root: AccessibilityNodeInfo, segments: List<PathSegment>): List<AccessibilityNodeInfo> {
+        if (segments.isEmpty()) return emptyList()
 
-        val segments = path.split(">")
         var currentNodes = mutableListOf(root)
 
-        for (segment in segments) {
-            val bracketStart = segment.indexOf('[')
-            val className: String
-            var isWildcard = false
-            var index = 0
-
-            if (bracketStart >= 0) {
-                className = segment.substring(0, bracketStart)
-                val indexStr = segment.substring(bracketStart + 1, segment.indexOf(']'))
-                if (indexStr == "*") {
-                    isWildcard = true
-                } else {
-                    index = indexStr.toIntOrNull() ?: return empty
-                }
-            } else {
-                className = segment
-            }
-
+        for (seg in segments) {
             val nextNodes = mutableListOf<AccessibilityNodeInfo>()
 
             for (current in currentNodes) {
-                if (isWildcard) {
+                if (seg.isWildcard) {
                     for (i in 0 until current.childCount) {
                         val child = current.getChild(i) ?: continue
                         val childClass = child.className
-                        if (childClass != null && childClass.toString() == className) {
+                        if (childClass != null && childClass.toString() == seg.className) {
                             nextNodes.add(child)
                         } else {
                             @Suppress("DEPRECATION")
@@ -373,15 +393,18 @@ class ViewBlocker : BaseBlocker() {
                     for (i in 0 until current.childCount) {
                         val child = current.getChild(i) ?: continue
                         val childClass = child.className
-                        if (childClass != null && childClass.toString() == className) {
-                            if (matchCount == index) {
+                        if (childClass != null && childClass.toString() == seg.className) {
+                            if (matchCount == seg.index) {
                                 match = child
                                 break
                             }
                             matchCount++
+                            @Suppress("DEPRECATION")
+                            child.recycle()
+                        } else {
+                            @Suppress("DEPRECATION")
+                            child.recycle()
                         }
-                        @Suppress("DEPRECATION")
-                        child.recycle()
                     }
                     if (match != null) nextNodes.add(match)
                 }
@@ -393,36 +416,49 @@ class ViewBlocker : BaseBlocker() {
             }
 
             currentNodes = nextNodes
-            if (currentNodes.isEmpty()) return empty
+            if (currentNodes.isEmpty()) return emptyList()
         }
 
         return currentNodes
     }
 
-    private fun processTargetView(node: AccessibilityNodeInfo, rule: ViewBlockerFilterRule, matchIndex: Int = -1) {
-        if (!rule.targetViewId.isNullOrEmpty() && rule.contentDescriptions.isNotEmpty()) {
-            for (i in 0 until node.childCount) {
-                val child = node.getChild(i) ?: continue
-                try {
-                    if (subtreeContainsContentDescription(child, rule.contentDescriptions)) {
-                        val bounds = Rect()
-                        child.getBoundsInScreen(bounds)
-                        if (!bounds.isEmpty) {
-                            addOverlay(bounds, rule, matchIndex)
-                        }
-                    }
-                } finally {
-                    @Suppress("DEPRECATION")
-                    child.recycle()
+    private fun collectViewIdDescActions(
+        node: AccessibilityNodeInfo,
+        rule: ViewBlockerFilterRule,
+        actions: MutableList<OverlayAction>
+    ) {
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            try {
+                if (subtreeContainsContentDescription(child, rule.contentDescriptions)) {
+                    addBoundsAction(child, rule, -1, actions)
                 }
+            } finally {
+                @Suppress("DEPRECATION")
+                child.recycle()
             }
-            return
         }
+    }
 
-        val bounds = Rect()
-        node.getBoundsInScreen(bounds)
-        if (!bounds.isEmpty) {
-            addOverlay(bounds, rule, matchIndex)
+    private fun collectTargetActions(
+        node: AccessibilityNodeInfo,
+        rule: ViewBlockerFilterRule,
+        matchIndex: Int,
+        actions: MutableList<OverlayAction>
+    ) {
+        addBoundsAction(node, rule, matchIndex, actions)
+    }
+
+    private fun addBoundsAction(
+        node: AccessibilityNodeInfo,
+        rule: ViewBlockerFilterRule,
+        matchIndex: Int,
+        actions: MutableList<OverlayAction>
+    ) {
+        node.getBoundsInScreen(boundsRect)
+        if (!boundsRect.isEmpty) {
+            val key = if (matchIndex >= 0) "${rule.baseKey}::$matchIndex" else rule.baseKey
+            actions.add(OverlayAction(key, Rect(boundsRect), rule))
         }
     }
 
@@ -442,15 +478,33 @@ class ViewBlocker : BaseBlocker() {
         return false
     }
 
-    private fun getRuleKey(rule: ViewBlockerFilterRule, matchIndex: Int): String {
-        val base = "${rule.packageName}::${rule.ruleString}"
-        return if (matchIndex >= 0) "$base::$matchIndex" else base
+    private fun applyOverlayActionsBatch(actions: List<OverlayAction>) {
+        handler.post {
+            try {
+                activeRuleKeys.clear()
+                for (action in actions) {
+                    activeRuleKeys.add(action.key)
+                }
+
+                for (action in actions) {
+                    applyOverlay(action.key, action.bounds, action.rule)
+                }
+
+                val iter = blockedElements.iterator()
+                while (iter.hasNext()) {
+                    val entry = iter.next()
+                    if (entry.key !in activeRuleKeys) {
+                        try { windowManager.removeView(entry.value.view) } catch (_: Exception) {}
+                        iter.remove()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ViewBlocker", "Error applying overlays", e)
+            }
+        }
     }
 
-    private fun addOverlay(area: Rect, rule: ViewBlockerFilterRule, matchIndex: Int = -1) {
-        val ruleKey = getRuleKey(rule, matchIndex)
-        activeRuleKeys.add(ruleKey)
-
+    private fun applyOverlay(ruleKey: String, area: Rect, rule: ViewBlockerFilterRule) {
         val existing = blockedElements[ruleKey]
         if (existing != null) {
             if (existing.bounds == area) return

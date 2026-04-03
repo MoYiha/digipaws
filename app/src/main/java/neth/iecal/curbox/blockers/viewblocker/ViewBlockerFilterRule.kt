@@ -2,6 +2,12 @@ package neth.iecal.curbox.blockers.viewblocker
 
 import android.graphics.Color
 
+data class PathSegment(
+    val className: String,
+    val index: Int,
+    val isWildcard: Boolean
+)
+
 data class ViewBlockerFilterRule(
     val packageName: String,
     val targetViewId: String? = null,
@@ -9,15 +15,28 @@ data class ViewBlockerFilterRule(
     val targetClassName: String? = null,
     val targetText: String? = null,
     val targetPath: String? = null,
+    val parsedPath: List<PathSegment>? = null,
     val color: Int = Color.WHITE,
     val description: String? = null,
     val ruleString: String,
+    val baseKey: String = "",
     val blockTouches: Boolean = true,
     var enabled: Boolean = true,
     var isCustom: Boolean = false
 ) {
+    val isRecursiveRule: Boolean
+        get() = targetViewId.isNullOrEmpty() && targetPath.isNullOrEmpty()
+
+    val needsViewIdLookup: Boolean
+        get() = !targetViewId.isNullOrEmpty() && contentDescriptions.isEmpty()
+
+    val needsViewIdWithDescLookup: Boolean
+        get() = !targetViewId.isNullOrEmpty() && contentDescriptions.isNotEmpty()
+
     fun matchesPackage(pkgName: CharSequence?): Boolean {
-        return pkgName != null && packageName == pkgName.toString()
+        if (pkgName == null) return false
+        if (pkgName is String) return packageName == pkgName
+        return packageName.length == pkgName.length && packageName.contentEquals(pkgName)
     }
 
     override fun equals(other: Any?): Boolean {
