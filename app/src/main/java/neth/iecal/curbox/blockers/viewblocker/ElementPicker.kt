@@ -1,11 +1,9 @@
 package neth.iecal.curbox.blockers.viewblocker
 
-import android.R.attr.textColor
 import android.accessibilityservice.AccessibilityService
-import android.content.res.Configuration
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Handler
@@ -15,16 +13,9 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityNodeInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
-import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.ElementPickerConfirmDialogBinding
 import neth.iecal.curbox.databinding.ElementPickerControlBarBinding
 import neth.iecal.curbox.databinding.ElementPickerHighlightBinding
@@ -119,7 +110,7 @@ class ElementPicker(
 
     private fun createTouchInterceptor() {
         touchInterceptorBinding = ElementPickerTouchInterceptorBinding.inflate(LayoutInflater.from(service))
-        
+
         touchInterceptorBinding!!.root.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 handleTap(event.rawX, event.rawY)
@@ -157,24 +148,13 @@ class ElementPicker(
     }
 
     private fun createControlBar() {
-
         controlBarBinding = ElementPickerControlBarBinding.inflate(LayoutInflater.from(service))
-
         controlBarBinding!!.deeperBtn.setOnClickListener { cycleDeeper() }
-
-
         controlBarBinding!!.shallowerBtn.setOnClickListener { cycleShallower() }
-
         controlBarBinding!!.blockBtn.setOnClickListener { confirmBlock() }
-
         controlBarBinding!!.blockAllBtn.setOnClickListener { confirmBlockAll() }
-
-
         controlBarBinding!!.moveBtn.setOnClickListener { toggleControlBarPosition() }
-
-        controlBarBinding!!.cancelBtn.
-            setOnClickListener { dismissPicker() }
-
+        controlBarBinding!!.cancelBtn.setOnClickListener { dismissPicker() }
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -318,8 +298,7 @@ class ElementPicker(
         }
         val node = nodesAtPoint[currentNodeIndex]
         val selectorDesc = getSelectorDescription(node, currentRootNode)
-        val generatedRule = generateRule(node, currentRootNode, currentPackageName, null)
-        showConfirmationOverlay(node, selectorDesc, generatedRule, false)
+        showConfirmationOverlay(node, selectorDesc, false)
     }
 
     private fun confirmBlockAll() {
@@ -328,40 +307,101 @@ class ElementPicker(
             return
         }
         val node = nodesAtPoint[currentNodeIndex]
-        val generatedRule = generateRuleForAll(node, currentRootNode, currentPackageName, null)
-        showConfirmationOverlay(node, "All similar elements", generatedRule, true)
+        showConfirmationOverlay(node, "All similar elements", true)
     }
 
-    private fun showConfirmationOverlay(node: AccessibilityNodeInfo, selectorDesc: String, generatedRule: String, isBlockAll: Boolean) {
+    private data class RuleOptions(
+        val pressBack: Boolean = false,
+        val blockTouches: Boolean = true,
+        val matchByText: Boolean = false,
+        val matchByDesc: Boolean = false,
+        val requireAbsent: Boolean = false,
+        val absentViewId: String = "",
+        val blockLayout: Boolean = false,
+        val matchChildren: Boolean = false,
+        val childrenText: String = "",
+        val clickableOnly: Boolean = false
+    )
 
+    private fun showConfirmationOverlay(
+        node: AccessibilityNodeInfo,
+        selectorDesc: String,
+        isBlockAll: Boolean
+    ) {
         val dialogBinding = ElementPickerConfirmDialogBinding.inflate(LayoutInflater.from(service))
-
-
         dialogBinding.titleText.text = if (isBlockAll) "Block All Similar?" else "Block This Element?"
 
+        val previewRule = if (isBlockAll) {
+            generateRuleForAll(node, currentRootNode, currentPackageName, null, RuleOptions())
+        } else {
+            generateRule(node, currentRootNode, currentPackageName, null, RuleOptions())
+        }
+        dialogBinding.descText.text = "Selector: $selectorDesc\nRule: $previewRule"
 
-        dialogBinding.descText.text = "Selector: $selectorDesc\nRule: $generatedRule"
+        dialogBinding.descText.setOnClickListener {
+            val clipboard = service.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("rule", previewRule)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(service, "Rule copied to clipboard", Toast.LENGTH_SHORT).show()
+        }
+        val nodeText = node.text?.toString()
+        val nodeDesc = node.contentDescription?.toString()
 
+        dialogBinding.chkMatchByText.visibility = if (!nodeText.isNullOrEmpty()) View.VISIBLE else View.GONE
+        dialogBinding.chkMatchByText.text = "Match by text: \"${truncate(nodeText ?: "", 30)}\""
+
+        dialogBinding.chkMatchByDesc.visibility = if (!nodeDesc.isNullOrEmpty()) View.VISIBLE else View.GONE
+        dialogBinding.chkMatchByDesc.text = "Match by description: \"${truncate(nodeDesc ?: "", 30)}\""
+
+        var optionsExpanded = false
+        dialogBinding.optionsToggle.setOnClickListener {
+            optionsExpanded = !optionsExpanded
+            dialogBinding.optionsContainer.visibility = if (optionsExpanded) View.VISIBLE else View.GONE
+            dialogBinding.optionsToggle.text = if (optionsExpanded) "▼ Options" else "▶ Options"
+        }
+
+        dialogBinding.chkRequireAbsent.setOnCheckedChangeListener { _, checked ->
+            dialogBinding.inputAbsentViewId.visibility = if (checked) View.VISIBLE else View.GONE
+        }
+        dialogBinding.chkMatchChildren.setOnCheckedChangeListener { _, checked ->
+            dialogBinding.inputMatchChildren.visibility = if (checked) View.VISIBLE else View.GONE
+        }
+        dialogBinding.chkPressBack.setOnCheckedChangeListener { _, checked ->
+            if (checked) dialogBinding.chkBlockTouches.isChecked = true
+        }
 
         dialogBinding.cancelBtn.setOnClickListener { removeSafely(dialogBinding.root) }
 
-
         dialogBinding.confirmBtn.setOnClickListener {
-                var comment = dialogBinding.commentInput.text.toString().trim()
-                if (comment.isEmpty()) comment = selectorDesc
+            var comment = dialogBinding.commentInput.text.toString().trim()
+            if (comment.isEmpty()) comment = selectorDesc
 
-                val finalRule = if (isBlockAll) {
-                    generateRuleForAll(node, currentRootNode, currentPackageName, comment)
-                } else {
-                    generateRule(node, currentRootNode, currentPackageName, comment)
-                }
-                listener.onRuleChosen(finalRule)
-                lastAppliedRule = finalRule
-                removeSafely(dialogBinding.root)
-                hideHighlight()
-                recycleNodes()
-                showUndoBar(comment)
+            val options = RuleOptions(
+                pressBack = dialogBinding.chkPressBack.isChecked,
+                blockTouches = dialogBinding.chkBlockTouches.isChecked,
+                matchByText = dialogBinding.chkMatchByText.isChecked,
+                matchByDesc = dialogBinding.chkMatchByDesc.isChecked,
+                requireAbsent = dialogBinding.chkRequireAbsent.isChecked,
+                absentViewId = dialogBinding.inputAbsentViewId.text.toString().trim(),
+                blockLayout = dialogBinding.chkBlockLayout.isChecked,
+                matchChildren = dialogBinding.chkMatchChildren.isChecked,
+                childrenText = dialogBinding.inputMatchChildren.text.toString().trim(),
+                clickableOnly = dialogBinding.chkClickableOnly.isChecked
+            )
+
+            val finalRule = if (isBlockAll) {
+                generateRuleForAll(node, currentRootNode, currentPackageName, comment, options)
+            } else {
+                generateRule(node, currentRootNode, currentPackageName, comment, options)
             }
+            listener.onRuleChosen(finalRule)
+            lastAppliedRule = finalRule
+            removeSafely(dialogBinding.root)
+            hideHighlight()
+            recycleNodes()
+            showUndoBar(comment)
+        }
+
         dialogBinding.root.setOnClickListener { removeSafely(dialogBinding.root) }
         dialogBinding.card.setOnClickListener { /* intercept */ }
 
@@ -375,11 +415,11 @@ class ElementPicker(
 
         windowManager.addView(dialogBinding.root, overlayParams)
     }
+
     private fun showUndoBar(ruleDescription: String) {
         removeUndoBar()
 
         undoBarBinding = ElementPickerUndoBarBinding.inflate(LayoutInflater.from(service))
-
         undoBarBinding!!.message.text = "Blocked: $ruleDescription"
 
         undoBarBinding!!.undoBtn.apply {
@@ -422,7 +462,54 @@ class ElementPicker(
 
     // ── Rule Generation ───────────────────────────────────────────
 
-    private fun generateRule(node: AccessibilityNodeInfo, rootNode: AccessibilityNodeInfo?, packageName: String, comment: String?): String {
+    private fun appendOptions(rule: StringBuilder, node: AccessibilityNodeInfo, options: RuleOptions) {
+        if (options.pressBack) {
+            rule.append("##action=back")
+        }
+        if (!options.blockTouches) {
+            rule.append("##blockTouches=false")
+        }
+        if (options.matchByText) {
+            val text = node.text?.toString()
+            if (!text.isNullOrEmpty()) {
+                rule.append("##textContains=").append(text)
+            }
+        }
+        if (options.matchByDesc) {
+            val desc = node.contentDescription?.toString()
+            if (!desc.isNullOrEmpty()) {
+                rule.append("##descContains=").append(desc)
+            }
+        }
+        if (options.requireAbsent && options.absentViewId.isNotEmpty()) {
+            val value = if (options.absentViewId.contains(":")) {
+                "viewId:${options.absentViewId}"
+            } else {
+                "text:${options.absentViewId}"
+            }
+            rule.append("##requireAbsent=").append(value)
+        }
+        if (options.blockLayout) {
+            val parentViewId = node.parent?.viewIdResourceName
+            if (!parentViewId.isNullOrEmpty()) {
+                rule.append("##blockLayout=viewId:").append(parentViewId)
+            }
+        }
+        if (options.matchChildren && options.childrenText.isNotEmpty()) {
+            rule.append("##matchChildren=text:").append(options.childrenText)
+        }
+        if (options.clickableOnly) {
+            rule.append("##clickable=true")
+        }
+    }
+
+    private fun generateRule(
+        node: AccessibilityNodeInfo,
+        rootNode: AccessibilityNodeInfo?,
+        packageName: String,
+        comment: String?,
+        options: RuleOptions
+    ): String {
         val rule = StringBuilder(packageName)
         val viewId = node.viewIdResourceName
         val desc = node.contentDescription
@@ -431,18 +518,20 @@ class ElementPicker(
 
         if (!viewId.isNullOrEmpty()) {
             rule.append("##viewId=").append(viewId)
-        } else if (!desc.isNullOrEmpty()) {
+        } else if (!desc.isNullOrEmpty() && !options.matchByDesc) {
             rule.append("##desc=").append(desc)
         } else {
             val path = generatePath(node, rootNode)
             if (path != null) {
                 rule.append("##path=").append(path)
-            } else if (!text.isNullOrEmpty()) {
+            } else if (!text.isNullOrEmpty() && !options.matchByText) {
                 rule.append("##text=").append(text)
             } else if (!className.isNullOrEmpty()) {
                 rule.append("##className=").append(className)
             }
         }
+
+        appendOptions(rule, node, options)
 
         if (!comment.isNullOrEmpty()) {
             rule.append("##comment=").append(comment)
@@ -450,7 +539,13 @@ class ElementPicker(
         return rule.toString()
     }
 
-    private fun generateRuleForAll(node: AccessibilityNodeInfo, rootNode: AccessibilityNodeInfo?, packageName: String, comment: String?): String {
+    private fun generateRuleForAll(
+        node: AccessibilityNodeInfo,
+        rootNode: AccessibilityNodeInfo?,
+        packageName: String,
+        comment: String?,
+        options: RuleOptions
+    ): String {
         val rule = StringBuilder(packageName)
         val wildcardPath = generatePathWithWildcard(node, rootNode)
 
@@ -458,7 +553,7 @@ class ElementPicker(
             rule.append("##path=").append(wildcardPath)
         } else {
             val desc = node.contentDescription
-            if (!desc.isNullOrEmpty()) {
+            if (!desc.isNullOrEmpty() && !options.matchByDesc) {
                 rule.append("##desc=").append(desc)
             } else {
                 val className = node.className
@@ -472,6 +567,8 @@ class ElementPicker(
                 }
             }
         }
+
+        appendOptions(rule, node, options)
 
         if (!comment.isNullOrEmpty()) {
             rule.append("##comment=").append(comment)
@@ -571,7 +668,6 @@ class ElementPicker(
         }
         return path.toString()
     }
-
 
     private fun describeNode(node: AccessibilityNodeInfo): String {
         val sb = StringBuilder()

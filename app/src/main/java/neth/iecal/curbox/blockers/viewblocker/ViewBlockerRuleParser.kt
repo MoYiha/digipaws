@@ -30,6 +30,17 @@ object ViewBlockerRuleParser {
             var targetPath: String? = null
             var color = Color.WHITE
             var blockTouches = true
+            var requireAbsent: NodeMatcher? = null
+            var blockLayoutMatcher: NodeMatcher? = null
+            val excludeFromLayoutMatchers = mutableListOf<NodeMatcher>()
+            val matchChildren = mutableListOf<NodeMatcher>()
+            var action = RuleAction.OVERLAY
+            var textContains: String? = null
+            var descContains: String? = null
+            var textRegex: Regex? = null
+            var descRegex: Regex? = null
+            var clickableFilter: Boolean? = null
+            var maxPerScreen = 0
 
             for (i in 1 until parts.size) {
                 val part = parts[i]
@@ -55,6 +66,26 @@ object ViewBlockerRuleParser {
                     "text" -> targetText = value
                     "path" -> targetPath = value
                     "comment" -> currentComment = value
+                    "requireAbsent" -> requireAbsent = NodeMatcher.parse(value)
+                    "blockLayout" -> blockLayoutMatcher = NodeMatcher.parse(value)
+                    "excludeFromLayout" -> excludeFromLayoutMatchers.addAll(NodeMatcher.parseList(value))
+                    "matchChildren" -> matchChildren.addAll(NodeMatcher.parseList(value))
+                    "action" -> {
+                        action = when (value.lowercase()) {
+                            "back" -> RuleAction.BACK
+                            else -> RuleAction.OVERLAY
+                        }
+                    }
+                    "textContains" -> textContains = value
+                    "descContains" -> descContains = value
+                    "textRegex" -> {
+                        try { textRegex = Regex(value) } catch (_: Exception) {}
+                    }
+                    "descRegex" -> {
+                        try { descRegex = Regex(value) } catch (_: Exception) {}
+                    }
+                    "clickable" -> clickableFilter = value.toBoolean()
+                    "maxPerScreen" -> maxPerScreen = value.toIntOrNull() ?: 0
                 }
             }
 
@@ -74,7 +105,18 @@ object ViewBlockerRuleParser {
                     description = currentComment,
                     ruleString = trimmed,
                     baseKey = baseKey,
-                    blockTouches = blockTouches
+                    blockTouches = blockTouches,
+                    requireAbsent = requireAbsent,
+                    blockLayoutMatcher = blockLayoutMatcher,
+                    excludeFromLayoutMatchers = excludeFromLayoutMatchers,
+                    matchChildren = matchChildren,
+                    action = action,
+                    textContains = textContains,
+                    descContains = descContains,
+                    textRegex = textRegex,
+                    descRegex = descRegex,
+                    clickableFilter = clickableFilter,
+                    maxPerScreen = maxPerScreen
                 )
             )
         }

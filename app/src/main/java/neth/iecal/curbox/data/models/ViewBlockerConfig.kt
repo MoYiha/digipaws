@@ -13,7 +13,18 @@ data class ViewBlockerRule(
     val text: String? = null,
     val color: Int = Color.WHITE,
     val blockTouches: Boolean = true,
-    val isEnabled: Boolean = false
+    val isEnabled: Boolean = false,
+    val requireAbsent: String? = null,
+    val action: String? = null,
+    val textContains: String? = null,
+    val descContains: String? = null,
+    val textRegex: String? = null,
+    val descRegex: String? = null,
+    val matchChildren: String? = null,
+    val blockLayout: String? = null,
+    val excludeFromLayout: String? = null,
+    val clickable: String? = null,
+    val maxPerScreen: Int = 0
 )
 
 data class ViewBlockerConfig(
