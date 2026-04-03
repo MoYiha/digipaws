@@ -258,4 +258,19 @@
     <string name="position_top">Top</string>
     <string name="position_center">Center</string>
     <string name="position_bottom">Bottom</string>
+
+    <string name="view_blocking">View Blocking</string>
+    <string name="hide_distracting_ui_elements_in_apps">Hide distracting UI elements in apps</string>
+    <string name="enable_view_blocker">Enable View Blocker</string>
+    <string name="default_rules">Default Rules</string>
+    <string name="custom_rules">Custom Rules</string>
+    <string name="custom_rule_hint">Custom Rule Hint</string>
+    <string name="pick_element">Pick Element</string>
+
+    <string name="picker_channel_name">Element Picker</string>
+    <string name="picker_channel_description">Notifications for the Element Picker</string>
+    <string name="picker_notification_title">Element Picker Ready</string>
+    <string name="picker_notification_text">Tap to start picking an element</string>
+    <string name="picker_active_title">Element Picker Active</string>
+    <string name="picker_active_text">Tap elements on screen to select them</string>
 </resources>

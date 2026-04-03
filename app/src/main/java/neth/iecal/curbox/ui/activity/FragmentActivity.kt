@@ -19,6 +19,7 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autofocus.AutoF
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autofocus.CreateAutoFocusGroupFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.reelBlocker.ReelBlockerFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.KeywordBlockerFragment
+import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
 
 class FragmentActivity : AppCompatActivity() {
 
@@ -52,6 +53,7 @@ class FragmentActivity : AppCompatActivity() {
             neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID,
             GrayscaleFragment.FRAGMENT_ID,
             CreateGrayscaleGroupFragment.FRAGMENT_ID,
+                ViewBlockerFragment.FRAGMENT_ID,
             neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID,
             KeywordBlockerFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
@@ -63,6 +65,7 @@ class FragmentActivity : AppCompatActivity() {
                     CreateAppGroupFragment.FRAGMENT_ID -> CreateAppGroupFragment()
                     ReelBlockerFragment.FRAGMENT_ID -> ReelBlockerFragment()
                     KeywordBlockerFragment.FRAGMENT_ID -> KeywordBlockerFragment()
+                    ViewBlockerFragment.FRAGMENT_ID -> ViewBlockerFragment()
                     AutoFocusFragment.FRAGMENT_ID -> AutoFocusFragment()
                     CreateAutoFocusGroupFragment.FRAGMENT_ID -> CreateAutoFocusGroupFragment()
                     neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID -> neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment()

@@ -104,4 +104,8 @@ class DataStoreManager(private val context: Context) {
     suspend fun updateMindfulMessageConfig(config: neth.iecal.curbox.data.models.MindfulMessageConfig) {
         settingsDataStore.updateData { it.copy(mindfulMessageConfig = config) }
     }
+
+    suspend fun updateViewBlockerConfig(config: neth.iecal.curbox.data.models.ViewBlockerConfig) {
+        settingsDataStore.updateData { it.copy(viewBlockerConfig = config) }
+    }
 }

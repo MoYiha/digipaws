@@ -91,12 +91,12 @@ class KeywordBlocker : BaseBlocker() {
         if (cachedResult != null) {
             return if (cachedResult == SAFE_STRING_TOKEN) null else cachedResult
         }
+        Log.d("checking ", url)
 
         // If not in cache, process it
         val keywords = parseTextForKeywords(url)
         for (word in keywords) {
             if (blockedKeyword.contains(word)) { // word is already lowercased in parseTextForKeywords
-                Log.d("blocked word found ", word)
                 // Cache the bad word and return
                 detectionCache.put(url, word)
                 return word
@@ -107,7 +107,14 @@ class KeywordBlocker : BaseBlocker() {
         detectionCache.put(url, SAFE_STRING_TOKEN)
         return null
     }
+    private fun safeRecycle(node: AccessibilityNodeInfo?) {
+        try { node?.recycle() } catch (_: Exception) {}
+    }
 
+    private fun safeRecycle(nodes: MutableList<AccessibilityNodeInfo>) {
+        nodes.forEach { safeRecycle(it) }
+        nodes.clear()
+    }
     private fun parseTextForKeywords(input: String): Set<String> {
         fun extractWords(text: String): Set<String> =
             text.split(wordSplitRegex) // Uses the hoisted regex
