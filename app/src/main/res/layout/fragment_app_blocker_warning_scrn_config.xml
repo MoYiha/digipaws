@@ -155,8 +155,49 @@
             android:layout_marginTop="16dp"
             android:text="Vibrate and increase brightness on warning" />
 
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/proceed_limit_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Limit proceeds per time window" />
+
+        <LinearLayout
+            android:id="@+id/proceed_limit_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="Allowed proceeds:" />
+            <neth.iecal.curbox.views.HorizontalNumberPicker
+                android:id="@+id/select_allowed_proceeds"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+
+            <TextView
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="Time window (minutes):" />
+            <neth.iecal.curbox.views.HorizontalNumberPicker
+                android:id="@+id/select_proceeds_time_window"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </LinearLayout>
+
         <Button
             android:id="@+id/saveconfigs"
+
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginVertical="16dp"

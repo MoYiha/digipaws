@@ -23,6 +23,8 @@ import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
 import neth.iecal.curbox.databinding.DialogWarningOverlayBinding
 import neth.iecal.curbox.services.AppBlockerService
 import kotlin.random.Random
+import android.widget.Toast
+import androidx.core.content.edit
 
 class WarningActivity : AppCompatActivity() {
 
@@ -36,10 +38,31 @@ class WarningActivity : AppCompatActivity() {
 
         val mode = intent.getIntExtra("mode", 0)
 
-        val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
+val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
             intent.getStringExtra("warning_config"),
             AppBlockerWarningScreenConfig::class.java
         )
+
+        val targetId = intent.getStringExtra("result_id") ?: ""
+        var isProceedLimitExceeded = false
+        var timeUntilNextProceedMn = 0L
+
+        if (warningScreenConfig.proceedLimitEnabled && targetId.isNotEmpty()) {
+            val limitPrefs = getSharedPreferences("proceed_limits", Context.MODE_PRIVATE)
+            val historyString = limitPrefs.getString("proceeds_$targetId", "") ?: ""
+            val history = historyString.split(",").mapNotNull { it.toLongOrNull() }.toMutableList()
+            
+            val nowTime = System.currentTimeMillis()
+            val windowMillis = warningScreenConfig.proceedsTimeWindowMn * 60_000L
+            val validHistory = history.filter { nowTime - it < windowMillis }
+            
+            if (validHistory.size >= warningScreenConfig.allowedProceeds) {
+                isProceedLimitExceeded = true
+                val oldestProceed = validHistory.minOrNull() ?: nowTime
+                val expirationTime = oldestProceed + windowMillis
+                timeUntilNextProceedMn = (expirationTime - nowTime + 59_999) / 60_000L
+            }
+        }
 
         if (warningScreenConfig.vibrateAndIncBrightness) {
             val layoutParams = window.attributes
@@ -56,9 +79,14 @@ class WarningActivity : AppCompatActivity() {
         val isDialogCancelable =
             mode != Constants.WARNING_SCREEN_MODE_APP_BLOCKER || isHomePressRequested
 
-        if (warningScreenConfig.isProceedDisabled) {
+        if (warningScreenConfig.isProceedDisabled || isProceedLimitExceeded) {
             binding.btnProceed.visibility = View.GONE
-            binding.proceedSeconds.visibility = View.GONE
+            if (isProceedLimitExceeded) {
+                binding.proceedSeconds.visibility = View.VISIBLE
+                binding.proceedSeconds.text = "Proceed limit of ${warningScreenConfig.allowedProceeds} per ${warningScreenConfig.proceedsTimeWindowMn} minutes has been reached. Try again in $timeUntilNextProceedMn minutes."
+            } else {
+                binding.proceedSeconds.visibility = View.GONE
+            }
 
         } else {
             proceedTimer =
@@ -90,6 +118,7 @@ class WarningActivity : AppCompatActivity() {
             .show()
 
         binding.warningMsg.text = warningScreenConfig.message
+
         binding.minsPicker.setValue(warningScreenConfig.timeInterval / 60000)
 
         binding.btnCancel.setOnClickListener {
@@ -104,6 +133,18 @@ class WarningActivity : AppCompatActivity() {
         }
 
         binding.btnProceed.setOnClickListener {
+            if (warningScreenConfig.proceedLimitEnabled && targetId.isNotEmpty()) {
+                val limitPrefs = getSharedPreferences("proceed_limits", Context.MODE_PRIVATE)
+                val historyString = limitPrefs.getString("proceeds_$targetId", "") ?: ""
+                val history = historyString.split(",").mapNotNull { it.toLongOrNull() }.toMutableList()
+                val nowTime = System.currentTimeMillis()
+                val windowMillis = warningScreenConfig.proceedsTimeWindowMn * 60_000L
+                val validHistory = history.filter { nowTime - it < windowMillis }.toMutableList()
+                
+                validHistory.add(nowTime)
+                limitPrefs.edit { putString("proceeds_$targetId", validHistory.joinToString(",")) }
+            }
+
             if (mode == Constants.WARNING_SCREEN_MODE_VIEW_BLOCKER) {
                 intent.getStringExtra("result_id")
                     ?.let { it1 ->
@@ -191,12 +232,7 @@ class WarningActivity : AppCompatActivity() {
 
                 val jaggedPattern = patternList.toLongArray()
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    currentVibrator.vibrate(VibrationEffect.createWaveform(jaggedPattern, -1))
-                } else {
-                    @Suppress("DEPRECATION")
-                    currentVibrator.vibrate(jaggedPattern, -1)
-                }
+                currentVibrator.vibrate(VibrationEffect.createWaveform(jaggedPattern, -1))
             }
         }
     }

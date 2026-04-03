@@ -61,6 +61,13 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
         binding.warningMsgEdit.setText(config.message)
         binding.selectMins.setValue(config.timeInterval / 60000)
         binding.switchVibrateBrightness.isChecked = config.vibrateAndIncBrightness
+        
+        binding.proceedLimitSwitch.isChecked = config.proceedLimitEnabled
+        binding.proceedLimitContainer.visibility = if (config.proceedLimitEnabled) View.VISIBLE else View.GONE
+        binding.selectAllowedProceeds.setValue(config.allowedProceeds)
+        binding.selectAllowedProceeds.minValue = 1
+        binding.selectProceedsTimeWindow.setValue(config.proceedsTimeWindowMn)
+        binding.selectProceedsTimeWindow.minValue = 1
     }
 
     private fun setupListeners() {
@@ -78,6 +85,10 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
             }
         }
 
+        binding.proceedLimitSwitch.setOnCheckedChangeListener { _, isChecked ->
+            binding.proceedLimitContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
+        }
+        
         binding.saveconfigs.setOnClickListener {
             viewModel.warningScrnConfig = AppBlockerWarningScreenConfig(
                 message = binding.warningMsgEdit.text.toString(),
@@ -86,7 +97,10 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
                 isProceedDisabled = binding.disableProceedRb.isChecked,
                 isWarningDialogHidden = binding.directBackRb.isChecked,
                 proceedDelayInSecs = selectedProceedDelay,
-                vibrateAndIncBrightness = binding.switchVibrateBrightness.isChecked
+                vibrateAndIncBrightness = binding.switchVibrateBrightness.isChecked,
+                proceedLimitEnabled = binding.proceedLimitSwitch.isChecked,
+                allowedProceeds = binding.selectAllowedProceeds.getValue(),
+                proceedsTimeWindowMn = binding.selectProceedsTimeWindow.getValue()
             )
             dismiss()
         }
