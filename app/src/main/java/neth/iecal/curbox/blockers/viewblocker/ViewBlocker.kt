@@ -48,7 +48,11 @@ class ViewBlocker : BaseBlocker() {
             ViewBlockerRule("ig_search_suggestions", "com.instagram.android", "Hide search suggestions", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[3]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.FrameLayout[*]"),
             ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide main feed ", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
             ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]", requireAbsent = "text:Following"),
-            ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons like, share, comment, in the reels tab", path = "com.instagram.android##viewId=com.instagram.android:id/clips_ufi_component"),
+            ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons like, share, comment, in the reels tab", viewId = "com.instagram.android##viewId=com.instagram.android:id/clips_ufi_component"),
+
+            ViewBlockerRule("yt_video_thingies", "com.google.android.youtube", "Hide everything(recommendations, comments, description etc) except the video ", viewId = "com.google.android.youtube:id/watch_list"),
+            ViewBlockerRule("yt_video_everything_excpt_results", "com.google.android.youtube", "Hide feed and only let me access search results ", viewId = "com.google.android.youtube:id/results", requireAbsent = "viewId:com.google.android.youtube:id/search_query"),
+
 
             ViewBlockerRule("li_feed_item", "com.linkedin.android", "Hide feed item", viewId = "com.linkedin.android:id/feed_item_update_card"),
             ViewBlockerRule("li_notifications", "com.linkedin.android", "Hide notifications", viewId = "com.linkedin.android:id/tab_notifications"),
