@@ -170,7 +170,7 @@ class KeywordBlocker : BaseBlocker() {
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(
                     service,
-                    service.getString(R.string.blocked_keyword_word_was_found),
+                    service.getString(R.string.blocked_keyword_word_was_found).replace("-word",word),
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -179,7 +179,6 @@ class KeywordBlocker : BaseBlocker() {
         fun pressHome(word: String) {
             showMessage(word)
             service.pressHome()
-            lastEventTimeStamp = System.currentTimeMillis()
         }
 
         if(!isTurnedOn) return

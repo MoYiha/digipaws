@@ -38,10 +38,9 @@ open class BaseBlockingService : AccessibilityService() {
     }
 
     fun pressHome() {
-        if (isDelayOver(lastBackPressTimeStamp, 1000)) {
-            performGlobalAction(GLOBAL_ACTION_HOME)
-            lastBackPressTimeStamp = SystemClock.uptimeMillis()
-        }
+        performGlobalAction(GLOBAL_ACTION_HOME)
+        lastBackPressTimeStamp = SystemClock.uptimeMillis()
+
     }
 
     fun pressBack() {
