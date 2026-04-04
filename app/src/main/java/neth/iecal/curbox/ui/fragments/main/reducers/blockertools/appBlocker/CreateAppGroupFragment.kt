@@ -140,17 +140,22 @@ class CreateAppGroupFragment : Fragment() {
             AppBlockerWarningConfigFragment().show(parentFragmentManager,
                 AppBlockerWarningConfigFragment.FRAGMENT_ID)
         }
-    }
 
-    override fun onPause() {
-        super.onPause()
-        saveGroup()
+        binding.fabSaveGroup.setOnClickListener {
+            saveGroup()
+        }
     }
 
     private fun saveGroup() {
         if (_binding == null || isDeleting) return
         val name = binding.etGroupName.text.toString().trim()
-        if (name.isEmpty() || selectedApps.isEmpty()) {
+        if (name.isEmpty()) {
+            binding.etGroupName.error = "Please enter a group name"
+            return
+        }
+
+        if (selectedApps.isEmpty()) {
+            Toast.makeText(requireContext(), getString(R.string.please_select_at_least_one_app), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -186,5 +191,8 @@ class CreateAppGroupFragment : Fragment() {
             }
             arguments?.putString("group_id", newGroupId)
         }
+
+        Toast.makeText(requireContext(), getString(R.string.group_saved_successfully), Toast.LENGTH_SHORT).show()
+        requireActivity().finish()
     }
 }
