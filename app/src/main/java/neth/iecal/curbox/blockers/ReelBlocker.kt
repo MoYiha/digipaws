@@ -83,15 +83,21 @@ class ReelBlocker : BaseBlocker() {
         event: AccessibilityEvent?
     ){
         fun showWarningScreen(viewId: String){
-            service.pressBack()
+            if(service.isDelayOver(service.lastBackPressTimeStamp,1000)) {
+                service.pressBack()
 
-            if(reelBlockerConfig.warningScreenConfig.isWarningDialogHidden) return
-            val dialogIntent = Intent(service, WarningActivity::class.java)
-            dialogIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            dialogIntent.putExtra("mode", Constants.WARNING_SCREEN_MODE_VIEW_BLOCKER)
-            dialogIntent.putExtra("result_id", viewId)
-            dialogIntent.putExtra("warning_config", Gson().toJson(reelBlockerConfig.warningScreenConfig))
-            service.startActivity(dialogIntent)
+                if (reelBlockerConfig.warningScreenConfig.isWarningDialogHidden) return
+                val dialogIntent = Intent(service, WarningActivity::class.java)
+                dialogIntent.flags =
+                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                dialogIntent.putExtra("mode", Constants.WARNING_SCREEN_MODE_VIEW_BLOCKER)
+                dialogIntent.putExtra("result_id", viewId)
+                dialogIntent.putExtra(
+                    "warning_config",
+                    Gson().toJson(reelBlockerConfig.warningScreenConfig)
+                )
+                service.startActivity(dialogIntent)
+            }
         }
         if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0) return
 
