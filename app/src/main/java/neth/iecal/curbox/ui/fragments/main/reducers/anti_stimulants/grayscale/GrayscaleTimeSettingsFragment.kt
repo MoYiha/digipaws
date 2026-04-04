@@ -87,14 +87,14 @@ class GrayscaleTimeSettingsFragment : BottomSheetDialogFragment() {
             firstDayIntervals.forEach { interval ->
                 addTimeIntervalView(binding.everydayIntervalsContainer, interval, isEveryday = true)
             }
-        }
-        
-        config.forEach { (dayIndex, intervals) ->
-            val dayBinding = dayBindings[dayIndex]
-            if (dayBinding != null) {
-                dayBinding.switchDayActive.isChecked = intervals.isNotEmpty()
-                intervals.forEach { interval ->
-                    addTimeIntervalView(dayBinding.intervalsContainer, interval, isEveryday = false)
+        } else {
+            config.forEach { (dayIndex, intervals) ->
+                val dayBinding = dayBindings[dayIndex]
+                if (dayBinding != null) {
+                    dayBinding.switchDayActive.isChecked = intervals.isNotEmpty()
+                    intervals.forEach { interval ->
+                        addTimeIntervalView(dayBinding.intervalsContainer, interval, isEveryday = false)
+                    }
                 }
             }
         }
