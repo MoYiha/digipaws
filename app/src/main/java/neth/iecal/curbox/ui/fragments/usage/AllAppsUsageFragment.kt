@@ -8,7 +8,6 @@ import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -30,6 +29,7 @@ import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
@@ -81,6 +81,7 @@ class AllAppsUsageFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var viewModel: AllAppsUsageViewModel
+    private lateinit var usageStatsHelper: UsageStatsHelper
 
     val selectIgnoredAppsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -138,6 +139,7 @@ class AllAppsUsageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this)[AllAppsUsageViewModel::class.java]
+        usageStatsHelper = UsageStatsHelper(requireContext().applicationContext)
 
         if (!neth.iecal.curbox.utils.PermissionUtils.hasAllRequiredPermissions(requireContext())) {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
@@ -360,7 +362,6 @@ class AllAppsUsageFragment : Fragment() {
         val topApps = sortedStats.take(3)
         val maxTime = topApps.first().totalTime.toFloat()
 
-        val pm = requireContext().packageManager
         val colorPrimary = MaterialColors.getColor(
             requireView(),
             com.google.android.material.R.attr.colorPrimary
@@ -390,20 +391,13 @@ class AllAppsUsageFragment : Fragment() {
         topApps.forEachIndexed { index, stat ->
             val weight = if (maxTime > 0) stat.totalTime.toFloat() / maxTime else 0.5f
 
-            val blendedColor = try {
-                val appInfo = pm.getApplicationInfo(stat.packageName, 0)
-                val icon = appInfo.loadIcon(pm)
+            val metadata = viewModel.getAppMetadata(stat.packageName)
+            val blendedColor = metadata.icon?.let { icon ->
                 val dominantColor = neth.iecal.curbox.utils.ColorUtils.getDominantColor(icon)
                 MaterialColors.layer(colorOnSurface, dominantColor, 0.45f)
-            } catch (e: Exception) {
-                fallbackColors.getOrElse(index) { colorSurfaceVariant }
-            }
+            } ?: fallbackColors.getOrElse(index) { colorSurfaceVariant }
 
-            val label = try {
-                pm.getApplicationInfo(stat.packageName, 0).loadLabel(pm).toString()
-            } catch (e: Exception) {
-                stat.packageName
-            }
+            val label = metadata.label.toString()
 
             pebbleDataList.add(PebbleBubbleView.PebbleData(blendedColor, weight, label))
             legendColors.add(blendedColor)
@@ -434,23 +428,21 @@ class AllAppsUsageFragment : Fragment() {
             itemLayout.addView(dot)
 
             // App name
-            try {
-                val appInfo = pm.getApplicationInfo(stat.packageName, 0)
-                val nameView = android.widget.TextView(requireContext()).apply {
-                    text = appInfo.loadLabel(pm)
-                    setTextColor(MaterialColors.getColor(requireView(), com.google.android.material.R.attr.colorOnSurfaceVariant))
-                    textSize = 11f
-                    maxLines = 1
-                    ellipsize = android.text.TextUtils.TruncateAt.END
-                    layoutParams = android.widget.LinearLayout.LayoutParams(
-                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        marginStart = (5 * density).toInt()
-                    }
+            val metadata = viewModel.getAppMetadata(stat.packageName)
+            val nameView = android.widget.TextView(requireContext()).apply {
+                text = metadata.label
+                setTextColor(MaterialColors.getColor(requireView(), com.google.android.material.R.attr.colorOnSurfaceVariant))
+                textSize = 11f
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    marginStart = (5 * density).toInt()
                 }
-                itemLayout.addView(nameView)
-            } catch (_: Exception) { }
+            }
+            itemLayout.addView(nameView)
 
             binding.pebbleLegend.addView(itemLayout)
         }
@@ -461,8 +453,6 @@ class AllAppsUsageFragment : Fragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             val sb = StringBuilder()
-            val usageStatsHelper = UsageStatsHelper(requireContext())
-            val pm = requireContext().packageManager
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
             val header =
@@ -474,35 +464,19 @@ class AllAppsUsageFragment : Fragment() {
 
                 statsMap.forEach { it ->
                     if (it.totalTime > 0) {
-                        var appName = it.packageName
-                        var category = "Undefined"
-                        var isSystem = "No"
-                        var installDate = "N/A"
-                        var lastUpdate = "N/A"
-
-                        try {
-                            val appInfo = pm.getApplicationInfo(it.packageName, 0)
-                            val pkgInfo = pm.getPackageInfo(it.packageName, 0)
-
-                            appName =
-                                appInfo.loadLabel(pm).toString().replace(",", " ")
-                            isSystem =
-                                if ((appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0) "Yes" else "No"
-                            installDate =
-                                dateFormat.format(Date(pkgInfo.firstInstallTime))
-                            lastUpdate =
-                                dateFormat.format(Date(pkgInfo.lastUpdateTime))
-
-                            category = when (appInfo.category) {
-                                ApplicationInfo.CATEGORY_GAME -> "Game"
-                                ApplicationInfo.CATEGORY_SOCIAL -> "Social"
-                                ApplicationInfo.CATEGORY_PRODUCTIVITY -> "Productivity"
-                                ApplicationInfo.CATEGORY_VIDEO -> "Video"
-                                ApplicationInfo.CATEGORY_AUDIO -> "Audio"
-                                else -> "Other"
-                            }
-                        } catch (e: Exception) { /* App likely uninstalled */
+                        val metadata = viewModel.getAppMetadata(it.packageName)
+                        val appName = metadata.label.toString().replace(",", " ")
+                        val category = when (metadata.category) {
+                            "GAME" -> "Game"
+                            "SOCIAL NETWORKING" -> "Social"
+                            "PRODUCTIVITY" -> "Productivity"
+                            "VIDEO" -> "Video"
+                            "AUDIO" -> "Audio"
+                            else -> "Other"
                         }
+                        val isSystem = if (metadata.isSystemApp) "Yes" else "No"
+                        val installDate = metadata.installDate
+                        val lastUpdate = metadata.lastUpdate
 
                         val minutes = it.totalTime / 1000 / 60
 
@@ -587,16 +561,9 @@ class AllAppsUsageFragment : Fragment() {
     inner class AppUsageViewHolder(private val binding: AppUsageItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(stats: Stat, packageManager: PackageManager) {
-            val appInfo = try {
-                packageManager.getApplicationInfo(stats.packageName, 0)
-            } catch (e: Exception) {
-                binding.appIcon.setImageResource(R.drawable.baseline_warning_24)
-                binding.appName.text = stats.packageName
-                binding.appUsage.text = TimeTools.formatTimeForWidget(stats.totalTime)
-                binding.appCategory.text = "APP"
-                return
-            }
+        fun bind(stats: Stat) {
+            val metadata = viewModel.getAppMetadata(stats.packageName)
+            binding.appIcon.setImageDrawable(metadata.icon ?: ContextCompat.getDrawable(requireContext(), R.drawable.baseline_warning_24))
             binding.root.setOnClickListener {
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
@@ -629,10 +596,9 @@ class AllAppsUsageFragment : Fragment() {
                 true
             }
 
-            binding.appIcon.setImageDrawable(appInfo.loadIcon(packageManager))
-            binding.appName.text = appInfo.loadLabel(packageManager)
+            binding.appName.text = metadata.label
             binding.appUsage.text = TimeTools.formatTimeForWidget(stats.totalTime)
-            binding.appCategory.text = viewModel.getAppCategory(stats.packageName)
+            binding.appCategory.text = metadata.category
         }
     }
 
@@ -647,7 +613,7 @@ class AllAppsUsageFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: AppUsageViewHolder, position: Int) {
-            holder.bind(appUsageStats[position], holder.itemView.context.packageManager)
+            holder.bind(appUsageStats[position])
         }
 
         @SuppressLint("NotifyDataSetChanged")

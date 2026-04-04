@@ -12,6 +12,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.concurrent.ConcurrentHashMap
 
 class UsageStatsHelper(private val context: Context) {
 
@@ -19,7 +20,25 @@ class UsageStatsHelper(private val context: Context) {
         context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
     private val guardian = UnmatchedCloseEventGuardian()
+
+    private data class CachedRange(
+        val stats: List<AllAppsUsageFragment.Stat>,
+        val cachedAt: Long
+    )
+
+    private data class RangeKey(val start: Long, val end: Long)
+
+    private val rangeCache = ConcurrentHashMap<RangeKey, CachedRange>()
+
     fun getForegroundStatsByTimestamps(start: Long, end: Long): List<AllAppsUsageFragment.Stat> {
+        val rangeKey = RangeKey(start, end)
+        val now = System.currentTimeMillis()
+        rangeCache[rangeKey]?.let { cached ->
+            if (isCacheValid(rangeKey, cached.cachedAt, now)) {
+                return cached.stats
+            }
+        }
+
         // List to store currently running foreground processes
         val foregroundProcesses = mutableListOf<String>()
         if (end >= System.currentTimeMillis() - 1500) {
@@ -131,7 +150,10 @@ class UsageStatsHelper(private val context: Context) {
         }
 
         // Aggregate the foreground stats into usage stats
-        return aggregateForegroundStats(componentForegroundStats)
+        return aggregateForegroundStats(componentForegroundStats).also { stats ->
+            rangeCache[rangeKey] = CachedRange(stats, now)
+            pruneCache()
+        }
     }
     fun getForegroundStatsByRelativeDay(offset: Int): List<AllAppsUsageFragment.Stat> {
         val queryDay = LocalDate.now().minusDays(offset.toLong())
@@ -144,6 +166,35 @@ class UsageStatsHelper(private val context: Context) {
         val start = queryDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val end = queryDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         return getForegroundStatsByTimestamps(start, end)
+    }
+
+    private fun isCacheValid(rangeKey: RangeKey, cachedAt: Long, now: Long): Boolean {
+        val ageMs = now - cachedAt
+        val isRecentRange = rangeKey.end >= now - 60_000
+        return if (isRecentRange) {
+            ageMs < 5_000
+        } else {
+            true
+        }
+    }
+
+    private fun pruneCache() {
+        if (rangeCache.size <= 32) return
+
+        val now = System.currentTimeMillis()
+        val staleKeys = rangeCache.entries
+            .filter { (key, value) -> !isCacheValid(key, value.cachedAt, now) }
+            .map { it.key }
+
+        staleKeys.forEach { rangeCache.remove(it) }
+
+        if (rangeCache.size <= 32) return
+
+        val entriesByAge = rangeCache.entries
+            .sortedBy { it.value.cachedAt }
+
+        val overflow = rangeCache.size - 32
+        entriesByAge.take(overflow).forEach { rangeCache.remove(it.key) }
     }
 
     private fun aggregateForegroundStats(foregroundStats: List<ComponentForegroundStat>): List<AllAppsUsageFragment.Stat> {

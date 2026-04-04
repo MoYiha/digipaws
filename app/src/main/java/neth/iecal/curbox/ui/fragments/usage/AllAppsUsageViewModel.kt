@@ -3,6 +3,7 @@ package neth.iecal.curbox.ui.fragments.usage
 import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,6 +15,7 @@ import kotlinx.coroutines.withContext
 import neth.iecal.curbox.ui.views.WeeklyBarGraphView
 import neth.iecal.curbox.utils.UsageStatsHelper
 import neth.iecal.curbox.utils.getDefaultLauncherPackageName
+import java.util.concurrent.ConcurrentHashMap
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
@@ -23,8 +25,21 @@ import java.time.temporal.TemporalAdjusters
 class AllAppsUsageViewModel(application: Application) : AndroidViewModel(application) {
 
     private val usageStatsHelper = UsageStatsHelper(application)
+    private val packageManager = application.packageManager
 
     val ignoredPackages: MutableSet<String> = mutableSetOf()
+
+    private val dayStatsCache = ConcurrentHashMap<LocalDate, List<AllAppsUsageFragment.Stat>>()
+    private val appMetadataCache = ConcurrentHashMap<String, AppMetadata>()
+
+    data class AppMetadata(
+        val label: CharSequence,
+        val category: String,
+        val isSystemApp: Boolean,
+        val installDate: String,
+        val lastUpdate: String,
+        val icon: Drawable?
+    )
 
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
@@ -143,10 +158,7 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             val totalTimeMs = if (isFuture) {
                 0L
             } else {
-                val stats = usageStatsHelper.getForegroundStatsByDay(date).filter {
-                    it.totalTime >= 180_000 && it.packageName !in ignoredPackages
-                }
-                stats.sumOf { it.totalTime }
+                getFilteredStatsForDay(date).sumOf { it.totalTime }
             }
 
             val hours = totalTimeMs / (1000f * 60f * 60f)
@@ -174,9 +186,8 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
     }
 
     private suspend fun loadDayStats(date: LocalDate) {
-        val stats = usageStatsHelper.getForegroundStatsByDay(date).filter {
-            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
-        }
+        val stats = getFilteredStatsForDay(date)
+        preloadAppMetadata(stats.map { it.packageName })
         val total = stats.sumOf { it.totalTime }
         val today = LocalDate.now()
         val isToday = date == today
@@ -199,14 +210,10 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
         val isToday = selectedDate == today
 
         val previousDay = selectedDate.minusDays(1)
-        val previousDayStats = usageStatsHelper.getForegroundStatsByDay(previousDay).filter {
-            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
-        }
+        val previousDayStats = getFilteredStatsForDay(previousDay)
         val previousDayTotal = previousDayStats.sumOf { it.totalTime }
 
-        val selectedStats = usageStatsHelper.getForegroundStatsByDay(selectedDate).filter {
-            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
-        }
+        val selectedStats = getFilteredStatsForDay(selectedDate)
         val selectedTotal = selectedStats.sumOf { it.totalTime }
 
         val comparisonLabel = if (isToday) "yesterday" else "the previous day"
@@ -240,23 +247,67 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             .plusWeeks(offset.toLong())
     }
 
-    fun getAppCategory(packageName: String): String {
-        return try {
-            val pm = getApplication<Application>().packageManager
-            val appInfo = pm.getApplicationInfo(packageName, 0)
-            when (appInfo.category) {
-                ApplicationInfo.CATEGORY_GAME -> "GAME"
-                ApplicationInfo.CATEGORY_SOCIAL -> "SOCIAL NETWORKING"
-                ApplicationInfo.CATEGORY_PRODUCTIVITY -> "PRODUCTIVITY"
-                ApplicationInfo.CATEGORY_VIDEO -> "VIDEO"
-                ApplicationInfo.CATEGORY_AUDIO -> "AUDIO"
-                ApplicationInfo.CATEGORY_NEWS -> "NEWS"
-                ApplicationInfo.CATEGORY_IMAGE -> "IMAGE"
-                ApplicationInfo.CATEGORY_MAPS -> "MAPS"
-                else -> "APP"
-            }
-        } catch (e: Exception) {
-            "APP"
+    private fun getStatsForDay(date: LocalDate): List<AllAppsUsageFragment.Stat> {
+        return dayStatsCache.computeIfAbsent(date) {
+            usageStatsHelper.getForegroundStatsByDay(it)
         }
+    }
+
+    private fun getFilteredStatsForDay(date: LocalDate): List<AllAppsUsageFragment.Stat> {
+        return getStatsForDay(date).filter {
+            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
+        }
+    }
+
+    private suspend fun preloadAppMetadata(packageNames: Collection<String>) {
+        withContext(Dispatchers.IO) {
+            packageNames.distinct().forEach { packageName ->
+                getAppMetadata(packageName)
+            }
+        }
+    }
+
+    fun getAppMetadata(packageName: String): AppMetadata {
+        return appMetadataCache.computeIfAbsent(packageName) {
+            try {
+                val appInfo = packageManager.getApplicationInfo(it, 0)
+                val packageInfo = packageManager.getPackageInfo(it, 0)
+                val category = when (appInfo.category) {
+                    ApplicationInfo.CATEGORY_GAME -> "GAME"
+                    ApplicationInfo.CATEGORY_SOCIAL -> "SOCIAL NETWORKING"
+                    ApplicationInfo.CATEGORY_PRODUCTIVITY -> "PRODUCTIVITY"
+                    ApplicationInfo.CATEGORY_VIDEO -> "VIDEO"
+                    ApplicationInfo.CATEGORY_AUDIO -> "AUDIO"
+                    ApplicationInfo.CATEGORY_NEWS -> "NEWS"
+                    ApplicationInfo.CATEGORY_IMAGE -> "IMAGE"
+                    ApplicationInfo.CATEGORY_MAPS -> "MAPS"
+                    else -> "APP"
+                }
+
+                AppMetadata(
+                    label = appInfo.loadLabel(packageManager),
+                    category = category,
+                    isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
+                    installDate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        .format(java.util.Date(packageInfo.firstInstallTime)),
+                    lastUpdate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        .format(java.util.Date(packageInfo.lastUpdateTime)),
+                    icon = appInfo.loadIcon(packageManager)
+                )
+            } catch (e: Exception) {
+                AppMetadata(
+                    label = packageName,
+                    category = "APP",
+                    isSystemApp = false,
+                    installDate = "N/A",
+                    lastUpdate = "N/A",
+                    icon = null
+                )
+            }
+        }
+    }
+
+    fun getAppCategory(packageName: String): String {
+        return getAppMetadata(packageName).category
     }
 }
