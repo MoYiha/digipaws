@@ -135,9 +135,9 @@ Developing codes for accessibility services and blockers can be exceptionally co
 
 ## Thanks
 - [Usage Direct](https://codeberg.org/fynngodau/usageDirect): I had an extremely tough time figuring out and fixing the app usage stats. Extremely thanks to this app for saving me.
+- [Redd Focus](https://github.com/kasnder/redd-focus-android/): The entirety of view-blocker is based off this project.
 - [ShizuTools](https://github.com/legendsayantan/ShizuTools): [ShizukuRunner.kt](https://github.com/nethical6/curbox/blob/kt-rewrite/app/src/main/java/neth/iecal/curbox/utils/ShizukuRunner.kt) has been derived from this project
 - [MPAndroidChart](https://github.com/PhilJay/MPAndroidChart): All charts and graphs were made using this library
-
 ## License
 
 Curbox is licensed under the [GPL 3 or later licence](LICENSE). You are free to use, modify, and distribute this software in accordance with the license.
