@@ -255,6 +255,7 @@ class AppBlocker() : BaseBlocker() {
         )
         val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
 
+        Log.d("day of week", dayOfWeek.toString())
         val intervals = if (config.isEveryday) config.everydayIntervals else config.dailyIntervals[dayOfWeek] ?: emptyList()
 
         intervals.forEach { interval ->

@@ -31,7 +31,7 @@ class TimeBasedSettingsFragment : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     private val daysOfWeek = listOf(
-        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+        "Sunday" ,"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
     )
 
     private val dayBindings = mutableMapOf<Int, ItemDayTimeRangesBinding>()
