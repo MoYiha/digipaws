@@ -11,11 +11,33 @@
         android:background="@android:color/transparent"
         app:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/view_blocking" />
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View Blocking Is Exprimental"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="This feature is still in beta and is bound to occasionally break. The element picker as well is only recommended for people with experience in Android XML layouts and development. Alternatively, you can join our Discord server to discover more blocking rules." />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -38,6 +60,7 @@
                 android:layout_marginBottom="24dp" />
 
             <!-- Default Rules -->
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -108,6 +131,10 @@
                 app:icon="@drawable/ic_view_blocker_aesthetic"
                 app:iconGravity="textStart"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="300dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
