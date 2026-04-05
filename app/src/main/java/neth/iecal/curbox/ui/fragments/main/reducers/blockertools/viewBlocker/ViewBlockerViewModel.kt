@@ -22,12 +22,22 @@ class ViewBlockerViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             dataStoreManager.settings.collectLatest { settings ->
                 val config = settings.viewBlockerConfig
-                if (config.rules.isEmpty()) {
-                    val seeded = config.copy(rules = ViewBlocker.DEFAULT_RULES)
-                    _viewBlockerConfig.value = seeded
+                val currentRulesMap = config.rules.associateBy { it.id }
+                
+                val mergedRules = ViewBlocker.DEFAULT_RULES.map { defaultRule ->
+                    val savedRule = currentRulesMap[defaultRule.id]
+                    if (savedRule != null) {
+                        defaultRule.copy(isEnabled = savedRule.isEnabled)
+                    } else {
+                        defaultRule
+                    }
+                }
+
+                val seeded = config.copy(rules = mergedRules)
+                _viewBlockerConfig.value = seeded
+                
+                if (mergedRules != config.rules) {
                     dataStoreManager.updateViewBlockerConfig(seeded)
-                } else {
-                    _viewBlockerConfig.value = config
                 }
             }
         }
