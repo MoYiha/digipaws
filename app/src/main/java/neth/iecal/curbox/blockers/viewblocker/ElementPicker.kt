@@ -15,6 +15,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityNodeInfo
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import neth.iecal.curbox.databinding.ElementPickerConfirmDialogBinding
 import neth.iecal.curbox.databinding.ElementPickerControlBarBinding
@@ -310,6 +312,25 @@ class ElementPicker(
         showConfirmationOverlay(node, "All similar elements", true)
     }
 
+    private enum class MatchStrategy(val label: String) {
+        AUTO("Auto (Best Choice)"),
+        VIEW_ID("View ID"),
+        DESC("Content Description"),
+        TEXT("Text"),
+        CLASS_NAME("Class Name"),
+        PATH("Path")
+    }
+
+    private data class NodeSnapshot(
+        val viewId: String?,
+        val desc: String?,
+        val text: String?,
+        val className: String?,
+        val parentViewId: String?,
+        val path: String?,
+        val wildcardPath: String?
+    )
+
     private data class RuleOptions(
         val pressBack: Boolean = false,
         val blockTouches: Boolean = true,
@@ -320,7 +341,8 @@ class ElementPicker(
         val blockLayout: Boolean = false,
         val matchChildren: Boolean = false,
         val childrenText: String = "",
-        val clickableOnly: Boolean = false
+        val clickableOnly: Boolean = false,
+        val matchStrategy: MatchStrategy = MatchStrategy.AUTO
     )
 
     private fun showConfirmationOverlay(
@@ -328,24 +350,20 @@ class ElementPicker(
         selectorDesc: String,
         isBlockAll: Boolean
     ) {
+        val snapshot = NodeSnapshot(
+            viewId = node.viewIdResourceName?.toString(),
+            desc = node.contentDescription?.toString(),
+            text = node.text?.toString(),
+            className = node.className?.toString(),
+            parentViewId = node.parent?.viewIdResourceName?.toString(),
+            path = generatePath(node, currentRootNode),
+            wildcardPath = generatePathWithWildcard(node, currentRootNode)
+        )
         val dialogBinding = ElementPickerConfirmDialogBinding.inflate(LayoutInflater.from(service))
         dialogBinding.titleText.text = if (isBlockAll) "Block All Similar?" else "Block This Element?"
 
-        val previewRule = if (isBlockAll) {
-            generateRuleForAll(node, currentRootNode, currentPackageName, null, RuleOptions())
-        } else {
-            generateRule(node, currentRootNode, currentPackageName, null, RuleOptions())
-        }
-        dialogBinding.descText.text = "Selector: $selectorDesc\nRule: $previewRule"
-
-        dialogBinding.descText.setOnClickListener {
-            val clipboard = service.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("rule", previewRule)
-            clipboard.setPrimaryClip(clip)
-            Toast.makeText(service, "Rule copied to clipboard", Toast.LENGTH_SHORT).show()
-        }
-        val nodeText = node.text?.toString()
-        val nodeDesc = node.contentDescription?.toString()
+        val nodeText = snapshot.text
+        val nodeDesc = snapshot.desc
 
         dialogBinding.chkMatchByText.visibility = if (!nodeText.isNullOrEmpty()) View.VISIBLE else View.GONE
         dialogBinding.chkMatchByText.text = "Match by text: \"${truncate(nodeText ?: "", 30)}\""
@@ -370,13 +388,25 @@ class ElementPicker(
             if (checked) dialogBinding.chkBlockTouches.isChecked = true
         }
 
-        dialogBinding.cancelBtn.setOnClickListener { removeSafely(dialogBinding.root) }
+        val availableStrategies = mutableListOf(MatchStrategy.AUTO)
+        if (!snapshot.viewId.isNullOrEmpty()) availableStrategies.add(MatchStrategy.VIEW_ID)
+        if (!snapshot.desc.isNullOrEmpty()) availableStrategies.add(MatchStrategy.DESC)
+        if (!snapshot.text.isNullOrEmpty()) availableStrategies.add(MatchStrategy.TEXT)
+        if (!snapshot.className.isNullOrEmpty()) availableStrategies.add(MatchStrategy.CLASS_NAME)
+        // Path is always an option
+        availableStrategies.add(MatchStrategy.PATH)
 
-        dialogBinding.confirmBtn.setOnClickListener {
-            var comment = dialogBinding.commentInput.text.toString().trim()
-            if (comment.isEmpty()) comment = selectorDesc
+        val adapter = object : ArrayAdapter<String>(service, android.R.layout.simple_spinner_dropdown_item, availableStrategies.map { it.label }) {
+            override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
+                val view = super.getView(position, convertView, parent)
+                (view as? android.widget.TextView)?.setTextColor(android.graphics.Color.WHITE)
+                return view
+            }
+        }
+        dialogBinding.spinMatchType.adapter = adapter
 
-            val options = RuleOptions(
+        fun getOptions(): RuleOptions {
+            return RuleOptions(
                 pressBack = dialogBinding.chkPressBack.isChecked,
                 blockTouches = dialogBinding.chkBlockTouches.isChecked,
                 matchByText = dialogBinding.chkMatchByText.isChecked,
@@ -386,13 +416,62 @@ class ElementPicker(
                 blockLayout = dialogBinding.chkBlockLayout.isChecked,
                 matchChildren = dialogBinding.chkMatchChildren.isChecked,
                 childrenText = dialogBinding.inputMatchChildren.text.toString().trim(),
-                clickableOnly = dialogBinding.chkClickableOnly.isChecked
+                clickableOnly = dialogBinding.chkClickableOnly.isChecked,
+                matchStrategy = availableStrategies[dialogBinding.spinMatchType.selectedItemPosition.coerceAtLeast(0)]
             )
+        }
+
+        var currentPreviewRule = ""
+
+        fun updatePreview() {
+            val options = getOptions()
+            currentPreviewRule = if (isBlockAll) {
+                generateRuleForAll(snapshot, currentPackageName, null, options)
+            } else {
+                generateRule(snapshot, currentPackageName, null, options)
+            }
+            dialogBinding.descText.text = "Selector: $selectorDesc\nRule: $currentPreviewRule"
+        }
+
+        val checkBoxes = listOf(
+            dialogBinding.chkPressBack, dialogBinding.chkBlockTouches,
+            dialogBinding.chkMatchByText, dialogBinding.chkMatchByDesc,
+            dialogBinding.chkRequireAbsent, dialogBinding.chkBlockLayout,
+            dialogBinding.chkMatchChildren, dialogBinding.chkClickableOnly
+        )
+
+        checkBoxes.forEach { cb ->
+            cb.setOnClickListener { updatePreview() }
+        }
+
+        dialogBinding.spinMatchType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                updatePreview()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        updatePreview()
+
+        dialogBinding.descText.setOnClickListener {
+            val clipboard = service.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("rule", currentPreviewRule)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(service, "Rule copied to clipboard", Toast.LENGTH_SHORT).show()
+        }
+
+        dialogBinding.cancelBtn.setOnClickListener { removeSafely(dialogBinding.root) }
+
+        dialogBinding.confirmBtn.setOnClickListener {
+            var comment = dialogBinding.commentInput.text.toString().trim()
+            if (comment.isEmpty()) comment = selectorDesc
+
+            val options = getOptions()
 
             val finalRule = if (isBlockAll) {
-                generateRuleForAll(node, currentRootNode, currentPackageName, comment, options)
+                generateRuleForAll(snapshot, currentPackageName, comment, options)
             } else {
-                generateRule(node, currentRootNode, currentPackageName, comment, options)
+                generateRule(snapshot, currentPackageName, comment, options)
             }
             listener.onRuleChosen(finalRule)
             lastAppliedRule = finalRule
@@ -462,7 +541,7 @@ class ElementPicker(
 
     // ── Rule Generation ───────────────────────────────────────────
 
-    private fun appendOptions(rule: StringBuilder, node: AccessibilityNodeInfo, options: RuleOptions) {
+    private fun appendOptions(rule: StringBuilder, snapshot: NodeSnapshot, options: RuleOptions) {
         if (options.pressBack) {
             rule.append("##action=back")
         }
@@ -470,13 +549,13 @@ class ElementPicker(
             rule.append("##blockTouches=false")
         }
         if (options.matchByText) {
-            val text = node.text?.toString()
+            val text = snapshot.text
             if (!text.isNullOrEmpty()) {
                 rule.append("##textContains=").append(text)
             }
         }
         if (options.matchByDesc) {
-            val desc = node.contentDescription?.toString()
+            val desc = snapshot.desc
             if (!desc.isNullOrEmpty()) {
                 rule.append("##descContains=").append(desc)
             }
@@ -490,7 +569,7 @@ class ElementPicker(
             rule.append("##requireAbsent=").append(value)
         }
         if (options.blockLayout) {
-            val parentViewId = node.parent?.viewIdResourceName
+            val parentViewId = snapshot.parentViewId
             if (!parentViewId.isNullOrEmpty()) {
                 rule.append("##blockLayout=viewId:").append(parentViewId)
             }
@@ -503,35 +582,68 @@ class ElementPicker(
         }
     }
 
+    private fun applyMainStrategy(
+        rule: StringBuilder,
+        snapshot: NodeSnapshot,
+        options: RuleOptions,
+        isBlockAll: Boolean
+    ) {
+        val viewId = snapshot.viewId
+        val desc = snapshot.desc
+        val text = snapshot.text
+        val className = snapshot.className
+
+        val path = if (isBlockAll) snapshot.wildcardPath else snapshot.path
+
+        val appendViewId = { if (!viewId.isNullOrEmpty()) rule.append("##viewId=").append(viewId) }
+        val appendDesc = { if (!desc.isNullOrEmpty() && !options.matchByDesc) rule.append("##desc=").append(desc) }
+        val appendText = { if (!text.isNullOrEmpty() && !options.matchByText) rule.append("##text=").append(text) }
+        val appendClass = { if (!className.isNullOrEmpty()) rule.append("##className=").append(className) }
+        val appendPath = { if (path != null) rule.append("##path=").append(path) }
+
+        when (options.matchStrategy) {
+            MatchStrategy.VIEW_ID -> appendViewId()
+            MatchStrategy.DESC -> appendDesc()
+            MatchStrategy.TEXT -> appendText()
+            MatchStrategy.CLASS_NAME -> appendClass()
+            MatchStrategy.PATH -> appendPath()
+            MatchStrategy.AUTO -> {
+                if (isBlockAll) {
+                    if (path != null) {
+                        appendPath()
+                    } else if (!desc.isNullOrEmpty() && !options.matchByDesc) {
+                        appendDesc()
+                    } else if (!className.isNullOrEmpty()) {
+                        appendClass()
+                    } else if (!viewId.isNullOrEmpty()) {
+                        appendViewId()
+                    }
+                } else {
+                    if (!viewId.isNullOrEmpty()) {
+                        appendViewId()
+                    } else if (!desc.isNullOrEmpty() && !options.matchByDesc) {
+                        appendDesc()
+                    } else if (path != null) {
+                        appendPath()
+                    } else if (!text.isNullOrEmpty() && !options.matchByText) {
+                        appendText()
+                    } else if (!className.isNullOrEmpty()) {
+                        appendClass()
+                    }
+                }
+            }
+        }
+    }
+
     private fun generateRule(
-        node: AccessibilityNodeInfo,
-        rootNode: AccessibilityNodeInfo?,
+        snapshot: NodeSnapshot,
         packageName: String,
         comment: String?,
         options: RuleOptions
     ): String {
         val rule = StringBuilder(packageName)
-        val viewId = node.viewIdResourceName
-        val desc = node.contentDescription
-        val text = node.text
-        val className = node.className
-
-        if (!viewId.isNullOrEmpty()) {
-            rule.append("##viewId=").append(viewId)
-        } else if (!desc.isNullOrEmpty() && !options.matchByDesc) {
-            rule.append("##desc=").append(desc)
-        } else {
-            val path = generatePath(node, rootNode)
-            if (path != null) {
-                rule.append("##path=").append(path)
-            } else if (!text.isNullOrEmpty() && !options.matchByText) {
-                rule.append("##text=").append(text)
-            } else if (!className.isNullOrEmpty()) {
-                rule.append("##className=").append(className)
-            }
-        }
-
-        appendOptions(rule, node, options)
+        applyMainStrategy(rule, snapshot, options, false)
+        appendOptions(rule, snapshot, options)
 
         if (!comment.isNullOrEmpty()) {
             rule.append("##comment=").append(comment)
@@ -540,35 +652,14 @@ class ElementPicker(
     }
 
     private fun generateRuleForAll(
-        node: AccessibilityNodeInfo,
-        rootNode: AccessibilityNodeInfo?,
+        snapshot: NodeSnapshot,
         packageName: String,
         comment: String?,
         options: RuleOptions
     ): String {
         val rule = StringBuilder(packageName)
-        val wildcardPath = generatePathWithWildcard(node, rootNode)
-
-        if (wildcardPath != null) {
-            rule.append("##path=").append(wildcardPath)
-        } else {
-            val desc = node.contentDescription
-            if (!desc.isNullOrEmpty() && !options.matchByDesc) {
-                rule.append("##desc=").append(desc)
-            } else {
-                val className = node.className
-                if (!className.isNullOrEmpty()) {
-                    rule.append("##className=").append(className)
-                } else {
-                    val viewId = node.viewIdResourceName
-                    if (!viewId.isNullOrEmpty()) {
-                        rule.append("##viewId=").append(viewId)
-                    }
-                }
-            }
-        }
-
-        appendOptions(rule, node, options)
+        applyMainStrategy(rule, snapshot, options, true)
+        appendOptions(rule, snapshot, options)
 
         if (!comment.isNullOrEmpty()) {
             rule.append("##comment=").append(comment)

@@ -29,6 +29,23 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Match By:"
+                android:textColor="#ffffff"
+                android:textSize="12sp"
+                android:paddingBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinMatchType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#FFFFFF"
+
+                android:layout_marginBottom="12dp"
+                android:spinnerMode="dropdown" />
+
+            <TextView
                 android:id="@+id/descText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
