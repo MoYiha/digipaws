@@ -47,11 +47,11 @@ class ViewBlocker : BaseBlocker() {
             ViewBlockerRule("ig_reels_button", "com.instagram.android", "Hide Reels button", viewId = "com.instagram.android:id/clips_tab"),
             ViewBlockerRule("ig_search_suggestions", "com.instagram.android", "Hide search suggestions", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[3]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.FrameLayout[*]"),
             ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide main feed ", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
-            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]", requireAbsent = "text:Following"),
+            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]", requireAbsent = listOf("text:Following")),
             ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons like, share, comment, in the reels tab", viewId = "com.instagram.android##viewId=com.instagram.android:id/clips_ufi_component"),
 
             ViewBlockerRule("yt_video_thingies", "com.google.android.youtube", "Hide everything(recommendations, comments, description etc) except the video ", viewId = "com.google.android.youtube:id/watch_list"),
-            ViewBlockerRule("yt_video_everything_excpt_results", "com.google.android.youtube", "Hide feed and only let me access search results ", viewId = "com.google.android.youtube:id/results", requireAbsent = "viewId:com.google.android.youtube:id/search_query"),
+            ViewBlockerRule("yt_video_everything_excpt_results", "com.google.android.youtube", "Hide feed and only let me access search results ", viewId = "com.google.android.youtube:id/results", requirePresent = listOf("desc:filters")),
 
 
             ViewBlockerRule("li_feed_item", "com.linkedin.android", "Hide feed item", viewId = "com.linkedin.android:id/feed_item_update_card"),
@@ -76,7 +76,12 @@ class ViewBlocker : BaseBlocker() {
             if (!rule.blockTouches) {
                 sb.append("##blockTouches=false")
             }
-            rule.requireAbsent?.let { sb.append("##requireAbsent=").append(it) }
+            if (rule.requireAbsent.isNotEmpty()) {
+                sb.append("##requireAbsent=").append(rule.requireAbsent.joinToString("|"))
+            }
+            if (rule.requirePresent.isNotEmpty()) {
+                sb.append("##requirePresent=").append(rule.requirePresent.joinToString("|"))
+            }
             rule.action?.let { sb.append("##action=").append(it) }
             rule.textContains?.let { sb.append("##textContains=").append(it) }
             rule.descContains?.let { sb.append("##descContains=").append(it) }
@@ -301,11 +306,13 @@ class ViewBlocker : BaseBlocker() {
 
         for (rule in pkgRules.layoutRules) {
             if (!passesRequireAbsent(root, rule)) continue
+            if (!passesRequirePresent(root, rule)) continue
             processLayoutRule(root, rule, actions)
         }
 
         for (rule in pkgRules.pathRules) {
             if (!passesRequireAbsent(root, rule)) continue
+            if (!passesRequirePresent(root, rule)) continue
             val parsed = rule.parsedPath ?: continue
             val targets = matchPathsParsed(root, parsed)
             val ruleHitCount = countHitsForRule(rule, actions)
@@ -327,6 +334,7 @@ class ViewBlocker : BaseBlocker() {
 
         for (rule in pkgRules.viewIdRules) {
             if (!passesRequireAbsent(root, rule)) continue
+            if (!passesRequirePresent(root, rule)) continue
             val matches = root.findAccessibilityNodeInfosByViewId(rule.targetViewId!!)
             if (matches != null) {
                 var hitCount = 0
@@ -349,6 +357,7 @@ class ViewBlocker : BaseBlocker() {
 
         for (rule in pkgRules.viewIdDescRules) {
             if (!passesRequireAbsent(root, rule)) continue
+            if (!passesRequirePresent(root, rule)) continue
             val matches = root.findAccessibilityNodeInfosByViewId(rule.targetViewId!!)
             if (matches != null) {
                 for (match in matches) {
@@ -377,31 +386,52 @@ class ViewBlocker : BaseBlocker() {
     // ── Require-absent condition ──
 
     private fun passesRequireAbsent(root: AccessibilityNodeInfo, rule: ViewBlockerFilterRule): Boolean {
-        val absent = rule.requireAbsent ?: return true
-        return !findNodeByMatcher(root, absent)
+        if (rule.requireAbsent.isEmpty()) return true
+        for (matcher in rule.requireAbsent) {
+            if (findNodeByMatcher(root, matcher)) {
+                return false
+            }
+        }
+        return true
     }
 
-    private fun findNodeByMatcher(root: AccessibilityNodeInfo, matcher: NodeMatcher): Boolean {
-        return when (matcher.type) {
-            MatchType.VIEW_ID -> {
-                val found = root.findAccessibilityNodeInfosByViewId(matcher.value)
-                val exists = !found.isNullOrEmpty()
-                found?.forEach { @Suppress("DEPRECATION") it.recycle() }
-                exists
+    private fun passesRequirePresent(root: AccessibilityNodeInfo, rule: ViewBlockerFilterRule): Boolean {
+        if (rule.requirePresent.isEmpty()) return true
+        for (matcher in rule.requirePresent) {
+            if (!findNodeByMatcher(root, matcher)) {
+                return false
             }
-            MatchType.TEXT -> findNodeRecursive(root) { it.text?.toString() == matcher.value }
-            MatchType.DESC -> findNodeRecursive(root) { it.contentDescription?.toString() == matcher.value }
-            MatchType.CLASS_NAME -> findNodeRecursive(root) { it.className?.toString() == matcher.value }
-            MatchType.TEXT_CONTAINS -> findNodeRecursive(root) {
-                it.text?.toString()?.contains(matcher.value, ignoreCase = true) == true
+        }
+        return true
+    }
+
+    private fun doesNodeMatch(node: AccessibilityNodeInfo, matcher: NodeMatcher): Boolean {
+        return matcher.criteria.all { (type, value) ->
+            when (type) {
+                MatchType.VIEW_ID -> node.viewIdResourceName == value
+                MatchType.TEXT -> node.text?.toString() == value
+                MatchType.DESC -> node.contentDescription?.toString() == value
+                MatchType.CLASS_NAME -> node.className?.toString() == value
+                MatchType.TEXT_CONTAINS -> node.text?.toString()?.contains(value, ignoreCase = true) == true
+                MatchType.DESC_CONTAINS -> node.contentDescription?.toString()?.contains(value, ignoreCase = true) == true
+                MatchType.PATH -> false
             }
-            MatchType.DESC_CONTAINS -> findNodeRecursive(root) {
-                it.contentDescription?.toString()?.contains(matcher.value, ignoreCase = true) == true
-            }
-            MatchType.PATH -> false
         }
     }
 
+    private fun findNodeByMatcher(root: AccessibilityNodeInfo, matcher: NodeMatcher): Boolean {
+        val viewIdCriterion = matcher.criteria.firstOrNull { it.first == MatchType.VIEW_ID }
+        if (viewIdCriterion != null) {
+            val found = root.findAccessibilityNodeInfosByViewId(viewIdCriterion.second)
+            if (!found.isNullOrEmpty()) {
+                val exists = found.any { doesNodeMatch(it, matcher) }
+                found.forEach { @Suppress("DEPRECATION") it.recycle() }
+                if (exists) return true
+            }
+            return false
+        }
+        return findNodeRecursive(root) { doesNodeMatch(it, matcher) }
+    }
     private fun findNodeRecursive(node: AccessibilityNodeInfo, predicate: (AccessibilityNodeInfo) -> Boolean): Boolean {
         if (predicate(node)) return true
         for (i in 0 until node.childCount) {
@@ -506,30 +536,13 @@ class ViewBlocker : BaseBlocker() {
     }
 
     private fun resolveMatcherToNode(root: AccessibilityNodeInfo, matcher: NodeMatcher): AccessibilityNodeInfo? {
-        return when (matcher.type) {
-            MatchType.VIEW_ID -> {
-                val found = root.findAccessibilityNodeInfosByViewId(matcher.value)
-                found?.firstOrNull()
-            }
-            MatchType.DESC -> findFirstNodeRecursive(root) {
-                it.contentDescription?.toString() == matcher.value
-            }
-            MatchType.TEXT -> findFirstNodeRecursive(root) {
-                it.text?.toString() == matcher.value
-            }
-            MatchType.CLASS_NAME -> findFirstNodeRecursive(root) {
-                it.className?.toString() == matcher.value
-            }
-            MatchType.TEXT_CONTAINS -> findFirstNodeRecursive(root) {
-                it.text?.toString()?.contains(matcher.value, ignoreCase = true) == true
-            }
-            MatchType.DESC_CONTAINS -> findFirstNodeRecursive(root) {
-                it.contentDescription?.toString()?.contains(matcher.value, ignoreCase = true) == true
-            }
-            MatchType.PATH -> null
+        val viewIdCriterion = matcher.criteria.firstOrNull { it.first == MatchType.VIEW_ID }
+        if (viewIdCriterion != null) {
+            val found = root.findAccessibilityNodeInfosByViewId(viewIdCriterion.second)
+            return found?.firstOrNull { doesNodeMatch(it, matcher) }
         }
+        return findFirstNodeRecursive(root) { doesNodeMatch(it, matcher) }
     }
-
     @Suppress("DEPRECATION")
     private fun findFirstNodeRecursive(
         node: AccessibilityNodeInfo,

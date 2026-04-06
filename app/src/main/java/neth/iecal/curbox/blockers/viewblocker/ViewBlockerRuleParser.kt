@@ -30,7 +30,8 @@ object ViewBlockerRuleParser {
             var targetPath: String? = null
             var color = Color.WHITE
             var blockTouches = true
-            var requireAbsent: NodeMatcher? = null
+            val requireAbsent = mutableListOf<NodeMatcher>()
+            val requirePresent = mutableListOf<NodeMatcher>()
             var blockLayoutMatcher: NodeMatcher? = null
             val excludeFromLayoutMatchers = mutableListOf<NodeMatcher>()
             val matchChildren = mutableListOf<NodeMatcher>()
@@ -66,7 +67,8 @@ object ViewBlockerRuleParser {
                     "text" -> targetText = value
                     "path" -> targetPath = value
                     "comment" -> currentComment = value
-                    "requireAbsent" -> requireAbsent = NodeMatcher.parse(value)
+                    "requireAbsent" -> requireAbsent.addAll(NodeMatcher.parseList(value))
+                    "requirePresent" -> requirePresent.addAll(NodeMatcher.parseList(value))
                     "blockLayout" -> blockLayoutMatcher = NodeMatcher.parse(value)
                     "excludeFromLayout" -> excludeFromLayoutMatchers.addAll(NodeMatcher.parseList(value))
                     "matchChildren" -> matchChildren.addAll(NodeMatcher.parseList(value))
@@ -107,6 +109,7 @@ object ViewBlockerRuleParser {
                     baseKey = baseKey,
                     blockTouches = blockTouches,
                     requireAbsent = requireAbsent,
+                    requirePresent = requirePresent,
                     blockLayoutMatcher = blockLayoutMatcher,
                     excludeFromLayoutMatchers = excludeFromLayoutMatchers,
                     matchChildren = matchChildren,

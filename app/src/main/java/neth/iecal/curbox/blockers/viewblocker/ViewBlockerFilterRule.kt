@@ -13,27 +13,31 @@ enum class RuleAction { OVERLAY, BACK }
 enum class MatchType { VIEW_ID, DESC, TEXT, CLASS_NAME, PATH, TEXT_CONTAINS, DESC_CONTAINS }
 
 data class NodeMatcher(
-    val type: MatchType,
-    val value: String
+    val criteria: List<Pair<MatchType, String>>
 ) {
     companion object {
         fun parse(raw: String): NodeMatcher? {
-            val sep = raw.indexOf(':')
-            if (sep < 0) return null
-            val typeStr = raw.substring(0, sep).trim().lowercase()
-            val value = raw.substring(sep + 1).trim()
-            if (value.isEmpty()) return null
-            val type = when (typeStr) {
-                "viewid" -> MatchType.VIEW_ID
-                "desc" -> MatchType.DESC
-                "text" -> MatchType.TEXT
-                "classname" -> MatchType.CLASS_NAME
-                "path" -> MatchType.PATH
-                "textcontains" -> MatchType.TEXT_CONTAINS
-                "desccontains" -> MatchType.DESC_CONTAINS
-                else -> return null
+            val parts = raw.split(";")
+            val parsedCriteria = parts.mapNotNull { part ->
+                val sep = part.indexOf(':')
+                if (sep < 0) return@mapNotNull null
+                val typeStr = part.substring(0, sep).trim().lowercase()
+                val value = part.substring(sep + 1).trim()
+                if (value.isEmpty()) return@mapNotNull null
+                val type = when (typeStr) {
+                    "viewid" -> MatchType.VIEW_ID
+                    "desc" -> MatchType.DESC
+                    "text" -> MatchType.TEXT
+                    "classname" -> MatchType.CLASS_NAME
+                    "path" -> MatchType.PATH
+                    "textcontains" -> MatchType.TEXT_CONTAINS
+                    "desccontains" -> MatchType.DESC_CONTAINS
+                    else -> return@mapNotNull null
+                }
+                Pair(type, value)
             }
-            return NodeMatcher(type, value)
+            if (parsedCriteria.isEmpty()) return null
+            return NodeMatcher(parsedCriteria)
         }
 
         fun parseList(raw: String): List<NodeMatcher> =
@@ -56,7 +60,8 @@ data class ViewBlockerFilterRule(
     val blockTouches: Boolean = true,
     var enabled: Boolean = true,
     var isCustom: Boolean = false,
-    val requireAbsent: NodeMatcher? = null,
+    val requireAbsent: List<NodeMatcher> = emptyList(),
+    val requirePresent: List<NodeMatcher> = emptyList(),
     val blockLayoutMatcher: NodeMatcher? = null,
     val excludeFromLayoutMatchers: List<NodeMatcher> = emptyList(),
     val matchChildren: List<NodeMatcher> = emptyList(),
