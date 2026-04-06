@@ -51,7 +51,7 @@ class ViewBlocker : BaseBlocker() {
             ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons like, share, comment, in the reels tab", viewId = "com.instagram.android##viewId=com.instagram.android:id/clips_ufi_component"),
 
             ViewBlockerRule("yt_video_thingies", "com.google.android.youtube", "Hide everything(recommendations, comments, description etc) except the video ", viewId = "com.google.android.youtube:id/watch_list"),
-            ViewBlockerRule("yt_video_everything_excpt_results", "com.google.android.youtube", "Hide feed and only let me access search results ", viewId = "com.google.android.youtube:id/results", requirePresent = listOf("desc:filters")),
+            ViewBlockerRule("yt_video_everything_excpt_results", "com.google.android.youtube", "Hide feed and only let me access search results ", viewId = "com.google.android.youtube:id/results", requirePresent = listOf("descres:accessibility_feed_filter_bar_content_description")),
 
 
             ViewBlockerRule("li_feed_item", "com.linkedin.android", "Hide feed item", viewId = "com.linkedin.android:id/feed_item_update_card"),
@@ -196,6 +196,7 @@ class ViewBlocker : BaseBlocker() {
     fun setupReceivers() {
         val filter = IntentFilter().apply {
             addAction(INTENT_ACTION_REFRESH_VIEW_BLOCKER)
+            addAction(Intent.ACTION_LOCALE_CHANGED)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             service.registerReceiver(refreshReceiver, filter, RECEIVER_EXPORTED)
@@ -388,7 +389,7 @@ class ViewBlocker : BaseBlocker() {
     private fun passesRequireAbsent(root: AccessibilityNodeInfo, rule: ViewBlockerFilterRule): Boolean {
         if (rule.requireAbsent.isEmpty()) return true
         for (matcher in rule.requireAbsent) {
-            if (findNodeByMatcher(root, matcher)) {
+            if (findNodeByMatcher(root, matcher, rule.packageName)) {
                 return false
             }
         }
@@ -398,14 +399,14 @@ class ViewBlocker : BaseBlocker() {
     private fun passesRequirePresent(root: AccessibilityNodeInfo, rule: ViewBlockerFilterRule): Boolean {
         if (rule.requirePresent.isEmpty()) return true
         for (matcher in rule.requirePresent) {
-            if (!findNodeByMatcher(root, matcher)) {
+            if (!findNodeByMatcher(root, matcher, rule.packageName)) {
                 return false
             }
         }
         return true
     }
 
-    private fun doesNodeMatch(node: AccessibilityNodeInfo, matcher: NodeMatcher): Boolean {
+    private fun doesNodeMatch(node: AccessibilityNodeInfo, matcher: NodeMatcher, packageName: String): Boolean {
         return matcher.criteria.all { (type, value) ->
             when (type) {
                 MatchType.VIEW_ID -> node.viewIdResourceName == value
@@ -414,23 +415,27 @@ class ViewBlocker : BaseBlocker() {
                 MatchType.CLASS_NAME -> node.className?.toString() == value
                 MatchType.TEXT_CONTAINS -> node.text?.toString()?.contains(value, ignoreCase = true) == true
                 MatchType.DESC_CONTAINS -> node.contentDescription?.toString()?.contains(value, ignoreCase = true) == true
+                MatchType.DESC_RES -> {
+                    val actualDesc = node.contentDescription?.toString() ?: return@all false
+                    getAppString(packageName, value) == actualDesc
+                }
                 MatchType.PATH -> false
             }
         }
     }
 
-    private fun findNodeByMatcher(root: AccessibilityNodeInfo, matcher: NodeMatcher): Boolean {
+    private fun findNodeByMatcher(root: AccessibilityNodeInfo, matcher: NodeMatcher, packageName: String): Boolean {
         val viewIdCriterion = matcher.criteria.firstOrNull { it.first == MatchType.VIEW_ID }
         if (viewIdCriterion != null) {
             val found = root.findAccessibilityNodeInfosByViewId(viewIdCriterion.second)
             if (!found.isNullOrEmpty()) {
-                val exists = found.any { doesNodeMatch(it, matcher) }
+                val exists = found.any { doesNodeMatch(it, matcher, packageName) }
                 found.forEach { @Suppress("DEPRECATION") it.recycle() }
                 if (exists) return true
             }
             return false
         }
-        return findNodeRecursive(root) { doesNodeMatch(it, matcher) }
+        return findNodeRecursive(root) { doesNodeMatch(it, matcher, packageName) }
     }
     private fun findNodeRecursive(node: AccessibilityNodeInfo, predicate: (AccessibilityNodeInfo) -> Boolean): Boolean {
         if (predicate(node)) return true
@@ -446,7 +451,60 @@ class ViewBlocker : BaseBlocker() {
         return false
     }
 
+
+    private val appStringCache = HashMap<String, String>()
+
+    private fun getAppString(packageName: String, resName: String): String? {
+        val key = "$packageName:$resName"
+        appStringCache[key]?.let { return it }
+        try {
+            val resources = service.packageManager.getResourcesForApplication(packageName)
+            val resId = resources.getIdentifier(resName, "string", packageName)
+            if (resId != 0) {
+                val str = resources.getString(resId)
+                Log.d("str",str)
+                appStringCache[key] = str
+                return str
+            }
+        } catch (_: Exception) {}
+        return null
+    }
+    // requires perm android.permission.READ_APP_SPECIFIC_LOCALES
+//    private fun getAppString(packageName: String, resName: String): String? {
+//        val key = "$packageName:$resName"
+//        appStringCache[key]?.let { return it }
+//        try {
+//            val foreignContext = service.createPackageContext(packageName, 0)
+//            var resources = foreignContext.resources
+//
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                val localeManager = service.getSystemService(Context.LOCALE_SERVICE) as? android.app.LocaleManager
+//                val locales = localeManager?.getApplicationLocales(packageName)
+//                if (locales != null && !locales.isEmpty) {
+//                    val actualLocale = locales.get(0)
+//                    val config = Configuration(resources.configuration)
+//                    config.setLocale(actualLocale)
+//                    val localizedContext = foreignContext.createConfigurationContext(config)
+//                    resources = localizedContext.resources
+//                }
+//            }
+//
+//            val resId = resources.getIdentifier(resName, "string", packageName)
+//            if (resId != 0) {
+//                val str = resources.getString(resId)
+//                appStringCache[key] = str
+//                Log.d("str",str)
+//                return str
+//            }
+//        } catch (e: Exception) {
+//            Log.e("AppStringFetcher", "Failed to get string from $packageName", e)
+//        }
+//        return null
+//    }
+
+
     // ── Node-level filters ──
+
 
     private fun passesNodeFilters(node: AccessibilityNodeInfo, rule: ViewBlockerFilterRule): Boolean {
         rule.clickableFilter?.let { required ->
@@ -475,7 +533,7 @@ class ViewBlocker : BaseBlocker() {
 
     private fun passesChildMatch(node: AccessibilityNodeInfo, rule: ViewBlockerFilterRule): Boolean {
         if (rule.matchChildren.isEmpty()) return true
-        return rule.matchChildren.all { matcher -> findNodeByMatcher(node, matcher) }
+        return rule.matchChildren.all { matcher -> findNodeByMatcher(node, matcher, rule.packageName) }
     }
 
     // ── Layout blocking with exclusions ──
@@ -486,7 +544,7 @@ class ViewBlocker : BaseBlocker() {
         actions: MutableList<OverlayAction>
     ) {
         val layoutMatcher = rule.blockLayoutMatcher ?: return
-        val layoutNode = resolveMatcherToNode(root, layoutMatcher) ?: return
+        val layoutNode = resolveMatcherToNode(root, layoutMatcher, rule.packageName) ?: return
 
         try {
             if (!layoutNode.isVisibleToUser) return
@@ -503,7 +561,7 @@ class ViewBlocker : BaseBlocker() {
 
             val exclusionRects = mutableListOf<Rect>()
             for (exMatcher in rule.excludeFromLayoutMatchers) {
-                val exNode = resolveMatcherToNode(root, exMatcher) ?: continue
+                val exNode = resolveMatcherToNode(root, exMatcher, rule.packageName) ?: continue
                 try {
                     if (exNode.isVisibleToUser) {
                         val exBounds = Rect()
@@ -535,13 +593,13 @@ class ViewBlocker : BaseBlocker() {
         }
     }
 
-    private fun resolveMatcherToNode(root: AccessibilityNodeInfo, matcher: NodeMatcher): AccessibilityNodeInfo? {
+    private fun resolveMatcherToNode(root: AccessibilityNodeInfo, matcher: NodeMatcher, packageName: String): AccessibilityNodeInfo? {
         val viewIdCriterion = matcher.criteria.firstOrNull { it.first == MatchType.VIEW_ID }
         if (viewIdCriterion != null) {
             val found = root.findAccessibilityNodeInfosByViewId(viewIdCriterion.second)
-            return found?.firstOrNull { doesNodeMatch(it, matcher) }
+            return found?.firstOrNull { doesNodeMatch(it, matcher, packageName) }
         }
-        return findFirstNodeRecursive(root) { doesNodeMatch(it, matcher) }
+        return findFirstNodeRecursive(root) { doesNodeMatch(it, matcher, packageName) }
     }
     @Suppress("DEPRECATION")
     private fun findFirstNodeRecursive(
