@@ -120,6 +120,7 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
         // code dealing with new group creation
         binding.btnSelectApps.setOnClickListener {
             val intent = Intent(requireContext(), SelectAppsActivity::class.java)
+            intent.putStringArrayListExtra("PRE_SELECTED_APPS", ArrayList(viewModel.newGroupSelectedApps))
             selectAppsLauncher.launch(intent)
         }
                 binding.autoTurnOnDnd.setOnCheckedChangeListener { buttonView, isChecked ->
