@@ -173,7 +173,7 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
         binding.btnProceed.setOnClickListener {
             if (warningScreenConfig.isQrUnlockRequirementEnabled && !isQrScanned) {
                 val options = ScanOptions()
-                options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
                 options.setPrompt("Scan a QR Code to unlock")
                 options.setCameraId(0) // Use a specific camera of the device
                 options.setBeepEnabled(false)

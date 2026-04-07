@@ -2,7 +2,6 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main_content_container"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clickable="true"
@@ -16,257 +15,267 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:padding="8dp"
-            android:text="@string/configure_warning_screen"
-            android:textSize="24sp"
+            android:layout_marginBottom="8dp"
+            android:text="Warning Screen Configuration"
+            style="@style/TextAppearance.Material3.HeadlineSmall"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/textView28"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/its_a_temporary_block_that_appears" />
+            android:layout_marginBottom="24dp"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            android:text="Customize how you are warned before unlocking a restricted entity." />
 
-        <RadioGroup
-            android:id="@+id/warning_radio_group"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <RadioButton
-                android:id="@+id/direct_back_rb"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/skip_this_screen_and_go_back" />
-
-            <RadioButton
-                android:id="@+id/dynamic_timing_rb"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/let_me_decide_how_many_extra" />
-
-            <RadioButton
-                android:id="@+id/predefined_time_rb"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/use_a_predefined_limit_like_5" />
-
-            <RadioButton
-                android:id="@+id/disable_proceed_rb"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/show_me_the_warning_screen_but" />
-
-            <RadioButton
-                android:id="@+id/qr_unlock_rb"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Unlock requires QR scanning" />
-        </RadioGroup>
-
-        <LinearLayout
-            android:id="@+id/qr_setup_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="16dp"
-            android:visibility="gone">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="2">
-
-                <Button
-                    android:id="@+id/btn_generate_qr"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:layout_height="wrap_content"
-                    android:text="Generate" />
-
-                <Button
-                    android:id="@+id/btn_scan_existing_qr"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:layout_height="wrap_content"
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:text="Scan" />
-            </LinearLayout>
-
-            <TextView
-                style="@style/TextAppearance.Material3.TitleSmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:layout_marginTop="16dp"
-                android:text="Configured QR Codes:" />
-
-            <LinearLayout
-                android:id="@+id/qr_list_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/qr_status_txt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" 
-                android:textAlignment="center"
-                android:layout_marginTop="4dp"
-                android:text="No QR configurations currently set" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/dynamic_timing"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/info"
-                style="@style/TextAppearance.Material3.BodySmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="@string/how_long_to_unlock_for_after" />
-
-            <neth.iecal.curbox.views.HorizontalNumberPicker
-                android:id="@+id/select_mins"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/proceed_delay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/info2"
-                style="@style/TextAppearance.Material3.BodySmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:padding="8dp"
-                android:text="@string/how_long_to_wait_before_being" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/proceed_delay_chips"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_horizontal"
-                app:checkedChip="@id/fifteen_sec_chip"
-                app:singleLine="true"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/three_sec_chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checkable="true"
-                    android:text="@string/val_3_sec" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/nine_sec_chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checkable="true"
-                    android:text="@string/val_9_sec" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/fifteen_sec_chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checkable="true"
-                    android:text="@string/val_15_sec" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/thirty_sec_chip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checkable="true"
-                    android:text="@string/val_30_sec" />
-
-            </com.google.android.material.chip.ChipGroup>
-        </LinearLayout>
-
+        <!-- Warning Message -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayout2"
+            android:id="@+id/warning_msg_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="@string/warning_message">
-
+            android:layout_marginBottom="16dp"
+            android:hint="Custom Warning Message">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/warning_msg_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Unlock Behavior -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Unlock Behavior">
+            <AutoCompleteTextView
+                android:id="@+id/unlock_behavior_dropdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Dynamic Timing / Fixed Timing Container -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/timing_container"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                
+                <TextView
+                    android:id="@+id/timing_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fixed Unlock Duration: 5 mins"
+                    style="@style/TextAppearance.Material3.TitleSmall" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/fixed_time_slider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="1.0"
+                    android:valueTo="120.0"
+                    android:stepSize="1.0"
+                    android:value="5.0" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Wait / Proceed Delay -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/proceed_delay_container"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                
+                <TextView
+                    android:id="@+id/proceed_delay_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wait before unlocking: 15s"
+                    style="@style/TextAppearance.Material3.TitleSmall" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Forces you to think before bypassing the block."
+                    style="@style/TextAppearance.Material3.BodySmall"
+                    android:layout_marginTop="4dp" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/proceed_delay_slider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:valueFrom="0.0"
+                    android:valueTo="60.0"
+                    android:stepSize="1.0"
+                    android:value="15.0" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- QR SETUP -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/qr_setup_container"
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="QR/Barcode Authentication"
+                    style="@style/TextAppearance.Material3.TitleMedium" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp"
+                    android:weightSum="2">
+
+                    <Button
+                        android:id="@+id/btn_generate_qr"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:layout_height="wrap_content"
+                        android:text="Generate New" />
+
+                    <Button
+                        android:id="@+id/btn_scan_existing_qr"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:layout_height="wrap_content"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:text="Scan Existing" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/TextAppearance.Material3.TitleSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Configured QR/Barcodes:" />
+
+                <LinearLayout
+                    android:id="@+id/qr_list_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Proceed Limits -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Material3.CardView.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/proceed_limit_switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Material3.TitleSmall"
+                    android:text="Limit unlock frequency" />
+
+                <LinearLayout
+                    android:id="@+id/proceed_limit_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/allowed_proceeds_title"
+                        style="@style/TextAppearance.Material3.BodyMedium"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Allowed proceeds: 3" />
+                    
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/allowed_proceeds_slider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="1.0"
+                        android:valueTo="20.0"
+                        android:stepSize="1.0"
+                        android:value="3.0" />
+
+                    <TextView
+                        android:id="@+id/proceed_window_title"
+                        style="@style/TextAppearance.Material3.BodyMedium"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Time window: 60 mins" />
+                    
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/proceed_window_slider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="1.0"
+                        android:valueTo="240.0"
+                        android:stepSize="1.0"
+                        android:value="60.0" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switch_vibrate_brightness"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Vibrate and increase brightness on warning" />
-
-
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/proceed_limit_switch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Limit proceeds per time window" />
-
-        <LinearLayout
-            android:id="@+id/proceed_limit_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                style="@style/TextAppearance.Material3.BodySmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="Allowed proceeds:" />
-            <neth.iecal.curbox.views.HorizontalNumberPicker
-                android:id="@+id/select_allowed_proceeds"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-
-            <TextView
-                style="@style/TextAppearance.Material3.BodySmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="Time window (minutes):" />
-            <neth.iecal.curbox.views.HorizontalNumberPicker
-                android:id="@+id/select_proceeds_time_window"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-        </LinearLayout>
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"
+            style="@style/TextAppearance.Material3.TitleSmall"
+            android:text="Vibrate &amp; max brightness on warning" />
 
         <Button
             android:id="@+id/saveconfigs"
-
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_marginVertical="16dp"
             android:text="@string/save" />
 
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"/>
     </LinearLayout>
 </ScrollView>
