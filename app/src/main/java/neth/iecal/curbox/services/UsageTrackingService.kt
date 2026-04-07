@@ -12,7 +12,7 @@ import android.widget.Toast
 import neth.iecal.curbox.trackers.ReelsCountTracker
 import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
 import androidx.core.net.toUri
-import neth.iecal.curbox.trackers.MindfulMessageTracker
+import neth.iecal.curbox.anti_stimulants.MindfulMessageTracker
 
 class UsageTrackingService : BaseBlockingService() {
 

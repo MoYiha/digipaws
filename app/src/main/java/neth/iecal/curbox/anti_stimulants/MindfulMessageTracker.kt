@@ -1,5 +1,6 @@
-package neth.iecal.curbox.trackers
+package neth.iecal.curbox.anti_stimulants
 
+import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -9,8 +10,6 @@ import kotlinx.coroutines.launch
 import neth.iecal.curbox.data.models.MindfulMessageConfig
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.overlay.MindfulMessageOverlayManager
-import neth.iecal.curbox.utils.TimeTools
-import neth.iecal.curbox.utils.UsageStatsHelper
 
 class MindfulMessageTracker {
 
@@ -50,7 +49,7 @@ class MindfulMessageTracker {
                 overlayManager.removeOverlay()
                 currentPkg = pkg
             }
-            if (android.provider.Settings.canDrawOverlays(service)) {
+            if (Settings.canDrawOverlays(service)) {
 
                 overlayManager.startDisplaying(pkg,config)
             }
