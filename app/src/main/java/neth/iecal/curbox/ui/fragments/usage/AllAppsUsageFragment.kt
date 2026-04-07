@@ -280,8 +280,12 @@ class AllAppsUsageFragment : Fragment() {
         }
 
         viewModel.selectedDayStats.observe(viewLifecycleOwner) { stats ->
-            adapter.updateData(stats)
+            adapter.updateData(stats, viewModel.selectedDayWebsiteStats.value ?: emptyList())
             updatePebbles(stats)
+        }
+
+        viewModel.selectedDayWebsiteStats.observe(viewLifecycleOwner) { websiteStats ->
+            adapter.updateData(viewModel.selectedDayStats.value ?: emptyList(), websiteStats)
         }
 
         viewModel.totalTime.observe(viewLifecycleOwner) { totalMs ->
@@ -561,7 +565,7 @@ class AllAppsUsageFragment : Fragment() {
     inner class AppUsageViewHolder(private val binding: AppUsageItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(stats: Stat) {
+        fun bind(stats: Stat, websiteStats: List<neth.iecal.curbox.data.db.WebsiteStatsEntity>) {
             val metadata = viewModel.getAppMetadata(stats.packageName)
             binding.appIcon.setImageDrawable(metadata.icon ?: ContextCompat.getDrawable(requireContext(), R.drawable.baseline_warning_24))
             binding.root.setOnClickListener {
@@ -599,11 +603,36 @@ class AllAppsUsageFragment : Fragment() {
             binding.appName.text = metadata.label
             binding.appUsage.text = TimeTools.formatTimeForWidget(stats.totalTime)
             binding.appCategory.text = metadata.category
+
+            binding.threadContainer.removeAllViews()
+            val browserWebsites = websiteStats.filter { it.packageName == stats.packageName }
+                .sortedByDescending { it.totalTime }
+                
+            if (browserWebsites.isNotEmpty()) {
+                Log.d("website", browserWebsites.toString())
+                binding.threadContainer.visibility = View.VISIBLE
+                for (i in browserWebsites.indices) {
+                    val website = browserWebsites[i]
+                    val prefix = if (i == browserWebsites.size - 1) "└" else "├"
+                    val tv = android.widget.TextView(binding.root.context).apply {
+                        text = "$prefix  ${website.domain} • ${neth.iecal.curbox.utils.TimeTools.formatTimeForWidget(website.totalTime)}"
+                        textSize = 12f
+                        setTextColor(com.google.android.material.color.MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorOnSurfaceVariant))
+                        setPadding(0, 4, 0, 4)
+                        maxLines = 1
+                        ellipsize = android.text.TextUtils.TruncateAt.END
+                    }
+                    binding.threadContainer.addView(tv)
+                }
+            } else {
+                binding.threadContainer.visibility = View.GONE
+            }
         }
     }
 
     inner class AppUsageAdapter(
-        private var appUsageStats: List<Stat>
+        private var appUsageStats: List<Stat>,
+        private var websiteStats: List<neth.iecal.curbox.data.db.WebsiteStatsEntity> = emptyList()
     ) : RecyclerView.Adapter<AppUsageViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppUsageViewHolder {
@@ -613,12 +642,13 @@ class AllAppsUsageFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: AppUsageViewHolder, position: Int) {
-            holder.bind(appUsageStats[position])
+            holder.bind(appUsageStats[position], websiteStats)
         }
 
         @SuppressLint("NotifyDataSetChanged")
-        fun updateData(newAppUsageStats: List<Stat>) {
+        fun updateData(newAppUsageStats: List<Stat>, newWebsiteStats: List<neth.iecal.curbox.data.db.WebsiteStatsEntity> = emptyList()) {
             appUsageStats = newAppUsageStats
+            websiteStats = newWebsiteStats
             notifyDataSetChanged()
         }
 

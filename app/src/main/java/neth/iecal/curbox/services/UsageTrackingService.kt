@@ -20,12 +20,14 @@ class UsageTrackingService : BaseBlockingService() {
     private val reelsOverlayManager by lazy { ReelsOverlayManager(this) }
     private val reelsCountTracker = ReelsCountTracker()
     private val mindfulMessageTracker = MindfulMessageTracker()
+    private val websiteUsageTracker = neth.iecal.curbox.trackers.WebsiteUsageTracker()
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         super.onAccessibilityEvent(event)
         try {
             reelsCountTracker.onEvent(event)
             mindfulMessageTracker.onEvent(event)
+            websiteUsageTracker.onEvent(event)
         } catch (error: Exception) {
             Log.e("Usage Tracking error", error.toString())
         }
@@ -41,6 +43,7 @@ class UsageTrackingService : BaseBlockingService() {
         }
         reelsCountTracker.setup(this, reelsOverlayManager)
         mindfulMessageTracker.setup(this)
+        websiteUsageTracker.setup(this)
         reelsCountTracker.setupReceivers()
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(
@@ -68,6 +71,7 @@ class UsageTrackingService : BaseBlockingService() {
         super.onDestroy()
         mindfulMessageTracker.onDestroy()
         reelsCountTracker.onDestroy()
+        websiteUsageTracker.onDestroy()
     }
 
 }

@@ -21,11 +21,14 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
+import neth.iecal.curbox.data.db.WebsiteStatsEntity
+import neth.iecal.curbox.data.db.AppDatabase
 
 class AllAppsUsageViewModel(application: Application) : AndroidViewModel(application) {
 
     private val usageStatsHelper = UsageStatsHelper(application)
     private val packageManager = application.packageManager
+    private val websiteStatsDao = AppDatabase.getInstance(application).websiteStatsDao()
 
     val ignoredPackages: MutableSet<String> = mutableSetOf()
 
@@ -63,6 +66,9 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
     // Stats for the selected day
     private val _selectedDayStats = MutableLiveData<List<AllAppsUsageFragment.Stat>>()
     val selectedDayStats: LiveData<List<AllAppsUsageFragment.Stat>> = _selectedDayStats
+
+    private val _selectedDayWebsiteStats = MutableLiveData<List<WebsiteStatsEntity>>()
+    val selectedDayWebsiteStats: LiveData<List<WebsiteStatsEntity>> = _selectedDayWebsiteStats
 
     // Total usage time in millis for selected day
     private val _totalTime = MutableLiveData<Long>(0L)
@@ -198,8 +204,12 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             "TOTAL · ${date.format(dayLabelFormatter)}"
         }
 
+        val dateString = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", java.util.Locale.getDefault()))
+        val websiteStats = websiteStatsDao.getStatsForDate(dateString)
+
         withContext(Dispatchers.Main) {
             _selectedDayStats.value = stats
+            _selectedDayWebsiteStats.value = websiteStats
             _totalTime.value = total
             _dateSublabel.value = sublabel
         }
