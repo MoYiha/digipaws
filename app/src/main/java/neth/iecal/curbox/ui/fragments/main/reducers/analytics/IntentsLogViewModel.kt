@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -33,6 +34,15 @@ class IntentsLogViewModel(private val dao: IntentLogDao) : ViewModel() {
             matchesQuery && matchesDate
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    val dateRangeText: StateFlow<String> = _dateRange.map { range ->
+        if (range == null) "All Time"
+        else {
+            val start = java.text.SimpleDateFormat("MMM dd", java.util.Locale.getDefault()).format(java.util.Date(range.first))
+            val end = java.text.SimpleDateFormat("MMM dd", java.util.Locale.getDefault()).format(java.util.Date(range.second))
+            if (start == end) start else "$start - $end"
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, "All Time")
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query

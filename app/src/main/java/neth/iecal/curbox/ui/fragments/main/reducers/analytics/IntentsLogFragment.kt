@@ -50,7 +50,7 @@ class IntentsLogFragment : Fragment() {
                 .build()
 
             datePicker.addOnPositiveButtonClickListener { selection ->
-                viewModel.setDateRange(selection.first, selection.second)
+                viewModel.setDateRange(selection.first, selection.second + 86399999L)
             }
             datePicker.show(childFragmentManager, "DateRangePicker")
         }
@@ -72,6 +72,12 @@ class IntentsLogFragment : Fragment() {
             viewModel.filteredLogs.collectLatest { logs ->
                 adapter.submitList(logs)
                 binding.emptyView.visibility = if (logs.isEmpty()) View.VISIBLE else View.GONE
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.dateRangeText.collectLatest { text ->
+                binding.btnFilterDate.text = text
             }
         }
     }

@@ -569,11 +569,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="REDUCER ANALYTICS"
-            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginBottom="16dp"
             android:letterSpacing="0.1"
-            android:layout_marginBottom="4dp"/>
+            android:text="Reducer Analytics"
+            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
             
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_logged_intents"
