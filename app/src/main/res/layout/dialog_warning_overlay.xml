@@ -38,6 +38,8 @@
         android:gravity="center"
         android:text="@string/proceed_in" />
 
+
+
     <Button
         android:id="@+id/btn_proceed"
         style="@style/Widget.Material3.Button.OutlinedButton"

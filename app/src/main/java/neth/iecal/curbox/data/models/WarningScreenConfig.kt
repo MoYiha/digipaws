@@ -12,4 +12,6 @@ data class AppBlockerWarningScreenConfig(
     val proceedLimitEnabled: Boolean = false,
     val allowedProceeds: Int = 3,
     val proceedsTimeWindowMn: Int = 60,
+    val isQrUnlockRequirementEnabled: Boolean = false,
+    val qrKeys: Map<String,Long> = mapOf(), // qr code content -> Duration of unlock (-1 if dynamic timing)
 )

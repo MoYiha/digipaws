@@ -60,7 +60,69 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/show_me_the_warning_screen_but" />
+
+            <RadioButton
+                android:id="@+id/qr_unlock_rb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Unlock requires QR scanning" />
         </RadioGroup>
+
+        <LinearLayout
+            android:id="@+id/qr_setup_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <Button
+                    android:id="@+id/btn_generate_qr"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:layout_height="wrap_content"
+                    android:text="Generate" />
+
+                <Button
+                    android:id="@+id/btn_scan_existing_qr"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:layout_height="wrap_content"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:text="Scan" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/TextAppearance.Material3.TitleSmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:layout_marginTop="16dp"
+                android:text="Configured QR Codes:" />
+
+            <LinearLayout
+                android:id="@+id/qr_list_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/qr_status_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" 
+                android:textAlignment="center"
+                android:layout_marginTop="4dp"
+                android:text="No QR configurations currently set" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/dynamic_timing"
