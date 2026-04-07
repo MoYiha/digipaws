@@ -137,8 +137,19 @@ class CreateAppGroupFragment : Fragment() {
             }
         }
         binding.configureWarningScreen.setOnClickListener {
-            AppBlockerWarningConfigFragment().show(parentFragmentManager,
-                AppBlockerWarningConfigFragment.FRAGMENT_ID)
+            val configFragment = neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared.WarningConfigFragment.newInstance(viewModel.warningScrnConfig, "result_warning_config")
+            parentFragmentManager.beginTransaction()
+                .hide(this)
+                .add(R.id.fragment_holder, configFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+
+        parentFragmentManager.setFragmentResultListener("result_warning_config", viewLifecycleOwner) { _, bundle ->
+            val configStr = bundle.getString("result_config")
+            if (configStr != null) {
+                viewModel.warningScrnConfig = com.google.gson.Gson().fromJson(configStr, neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig::class.java)
+            }
         }
 
         binding.fabSaveGroup.setOnClickListener {

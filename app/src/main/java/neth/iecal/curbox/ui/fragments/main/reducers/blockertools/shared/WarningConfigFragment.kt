@@ -1,45 +1,49 @@
-package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.appBlocker
+package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared
 
-import android.app.Dialog
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
-import android.transition.TransitionSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import androidx.fragment.app.activityViewModels
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import androidx.fragment.app.Fragment
+import com.google.gson.Gson
 import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
-import neth.iecal.curbox.databinding.FragmentAppBlockerWarningScrnConfigBinding
+import neth.iecal.curbox.databinding.FragmentWarningConfigBinding
 
-class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
+class WarningConfigFragment : Fragment() {
 
-    private var _binding: FragmentAppBlockerWarningScrnConfigBinding? = null
+    private var _binding: FragmentWarningConfigBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: AppBlockerSettingViewModel by activityViewModels()
 
     private var selectedProceedDelay = 15
+    private var initialConfig: AppBlockerWarningScreenConfig? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val configStr = arguments?.getString(ARG_CONFIG)
+        initialConfig = if (configStr != null) {
+            Gson().fromJson(configStr, AppBlockerWarningScreenConfig::class.java)
+        } else null
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentAppBlockerWarningScrnConfigBinding.inflate(inflater, container, false)
+        _binding = FragmentWarningConfigBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupInitialState()
         setupListeners()
     }
 
     private fun setupInitialState() {
-        val config = viewModel.warningScrnConfig
+        val config = initialConfig ?: AppBlockerWarningScreenConfig()
 
         val initialRadioId = when {
             config.isWarningDialogHidden -> R.id.direct_back_rb
@@ -90,7 +94,7 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
         }
         
         binding.saveconfigs.setOnClickListener {
-            viewModel.warningScrnConfig = AppBlockerWarningScreenConfig(
+            val config = AppBlockerWarningScreenConfig(
                 message = binding.warningMsgEdit.text.toString(),
                 timeInterval = binding.selectMins.getValue() * 60_000,
                 isDynamicIntervalSettingAllowed = binding.dynamicTimingRb.isChecked,
@@ -102,7 +106,11 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
                 allowedProceeds = binding.selectAllowedProceeds.getValue(),
                 proceedsTimeWindowMn = binding.selectProceedsTimeWindow.getValue()
             )
-            dismiss()
+            val requestKey = arguments?.getString(ARG_REQUEST_KEY) ?: RESULT_KEY
+            parentFragmentManager.setFragmentResult(requestKey, Bundle().apply {
+                putString(RESULT_CONFIG, Gson().toJson(config))
+            })
+            parentFragmentManager.popBackStack()
         }
     }
 
@@ -121,18 +129,25 @@ class AppBlockerWarningConfigFragment : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState).apply {
-            window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
     companion object {
-        const val FRAGMENT_ID = "app_blocker_warning_screen_config"
+        const val FRAGMENT_ID = "warning_config_fragment"
+        const val ARG_CONFIG = "arg_config"
+        const val ARG_REQUEST_KEY = "arg_request_key"
+        const val RESULT_KEY = "request_key_warning_config"
+        const val RESULT_CONFIG = "result_config"
+
+        fun newInstance(config: AppBlockerWarningScreenConfig, requestKey: String = RESULT_KEY): WarningConfigFragment {
+            return WarningConfigFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_CONFIG, Gson().toJson(config))
+                    putString(ARG_REQUEST_KEY, requestKey)
+                }
+            }
+        }
     }
 }

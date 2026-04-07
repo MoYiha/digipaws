@@ -56,7 +56,19 @@ class ReelBlockerFragment : Fragment() {
         }
 
         binding.btnWarningConfig.setOnClickListener {
-            ReelBlockerWarningConfigFragment().show(childFragmentManager, ReelBlockerWarningConfigFragment.FRAGMENT_ID)
+            val configFragment = neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared.WarningConfigFragment.newInstance(viewModel.reelBlockerConfig.value.warningScreenConfig, "result_warning_config_reel")
+            parentFragmentManager.beginTransaction()
+                .hide(this)
+                .add(R.id.fragment_holder, configFragment)
+                .addToBackStack(null)
+                .commit()
+        }
+
+        parentFragmentManager.setFragmentResultListener("result_warning_config_reel", viewLifecycleOwner) { _, bundle ->
+            val configStr = bundle.getString("result_config")
+            if (configStr != null) {
+                viewModel.updateWarningConfig(com.google.gson.Gson().fromJson(configStr, neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig::class.java))
+            }
         }
 
         binding.btnConfigureLimits.setOnClickListener {
