@@ -40,7 +40,7 @@ class ViewBlocker : BaseBlocker() {
         private const val TARGET_EVENTS_MASK =
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
-            AccessibilityEvent.TYPE_VIEW_SCROLLED
+            AccessibilityEvent.TYPE_VIEW_SCROLLED or AccessibilityEvent.TYPE_VIEW_SELECTED
 
         val DEFAULT_RULES = listOf(
             ViewBlockerRule("ig_stories_tray", "com.instagram.android", "Hide Stories", desc = "reels tray container"),
@@ -53,6 +53,8 @@ class ViewBlocker : BaseBlocker() {
             ViewBlockerRule("yt_video_thingies", "com.google.android.youtube", "Hide everything(recommendations, comments, description etc) except the video ", viewId = "com.google.android.youtube:id/watch_list"),
             ViewBlockerRule("yt_video_everything_excpt_results", "com.google.android.youtube", "Hide feed and only let me access search results ", viewId = "com.google.android.youtube:id/results", requirePresent = listOf("descres:accessibility_feed_filter_bar_content_description")),
 
+
+            ViewBlockerRule("x_feed_but_allow_following", "com.twitter.android", "Hide for you and only let me access the following tab ", viewId = "android:id/list", requirePresent = listOf("descres:guide_tab_title_for_you;isSelected:true")),
 
             ViewBlockerRule("li_feed_item", "com.linkedin.android", "Hide feed item", viewId = "com.linkedin.android:id/feed_item_update_card"),
             ViewBlockerRule("li_notifications", "com.linkedin.android", "Hide notifications", viewId = "com.linkedin.android:id/tab_notifications"),
@@ -419,6 +421,11 @@ class ViewBlocker : BaseBlocker() {
                     val actualDesc = node.contentDescription?.toString() ?: return@all false
                     getAppString(packageName, value) == actualDesc
                 }
+                MatchType.IS_SELECTED -> node.isSelected == value.toBoolean()
+                MatchType.IS_CHECKED -> node.isChecked == value.toBoolean()
+                MatchType.IS_FOCUSED -> node.isFocused == value.toBoolean()
+                MatchType.IS_ENABLED -> node.isEnabled == value.toBoolean()
+                MatchType.IS_CLICKABLE -> node.isClickable == value.toBoolean()
                 MatchType.PATH -> false
             }
         }
@@ -435,6 +442,21 @@ class ViewBlocker : BaseBlocker() {
             }
             return false
         }
+        
+        val textCriterion = matcher.criteria.firstOrNull { 
+            it.first == MatchType.TEXT || it.first == MatchType.DESC || 
+            it.first == MatchType.TEXT_CONTAINS || it.first == MatchType.DESC_CONTAINS 
+        }
+        if (textCriterion != null) {
+            val found = root.findAccessibilityNodeInfosByText(textCriterion.second)
+            if (!found.isNullOrEmpty()) {
+                val exists = found.any { doesNodeMatch(it, matcher, packageName) }
+                found.forEach { @Suppress("DEPRECATION") it.recycle() }
+                if (exists) return true
+            }
+            return false
+        }
+        
         return findNodeRecursive(root) { doesNodeMatch(it, matcher, packageName) }
     }
     private fun findNodeRecursive(node: AccessibilityNodeInfo, predicate: (AccessibilityNodeInfo) -> Boolean): Boolean {

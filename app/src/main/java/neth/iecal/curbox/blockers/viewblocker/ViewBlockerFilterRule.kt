@@ -10,7 +10,7 @@ data class PathSegment(
 
 enum class RuleAction { OVERLAY, BACK }
 
-enum class MatchType { VIEW_ID, DESC, TEXT, CLASS_NAME, PATH, TEXT_CONTAINS, DESC_CONTAINS, DESC_RES }
+enum class MatchType { VIEW_ID, DESC, TEXT, CLASS_NAME, PATH, TEXT_CONTAINS, DESC_CONTAINS, DESC_RES, IS_SELECTED, IS_CHECKED, IS_FOCUSED, IS_ENABLED, IS_CLICKABLE }
 
 data class NodeMatcher(
     val criteria: List<Pair<MatchType, String>>
@@ -33,6 +33,11 @@ data class NodeMatcher(
                     "textcontains" -> MatchType.TEXT_CONTAINS
                     "desccontains" -> MatchType.DESC_CONTAINS
                     "descres" -> MatchType.DESC_RES
+                    "isselected" -> MatchType.IS_SELECTED
+                    "ischecked" -> MatchType.IS_CHECKED
+                    "isfocused" -> MatchType.IS_FOCUSED
+                    "isenabled" -> MatchType.IS_ENABLED
+                    "isclickable" -> MatchType.IS_CLICKABLE
                     else -> return@mapNotNull null
                 }
                 Pair(type, value)
