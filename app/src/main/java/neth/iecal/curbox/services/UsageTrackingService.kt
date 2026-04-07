@@ -44,7 +44,10 @@ class UsageTrackingService : BaseBlockingService() {
         reelsCountTracker.setup(this, reelsOverlayManager)
         mindfulMessageTracker.setup(this)
         websiteUsageTracker.setup(this)
+
         reelsCountTracker.setupReceivers()
+
+
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(
                 this,

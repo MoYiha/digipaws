@@ -6,10 +6,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import neth.iecal.curbox.R
+import neth.iecal.curbox.databinding.FragmentIntentsLogBinding
 import neth.iecal.curbox.ui.fragments.installation.AccessibilityGuide
 import neth.iecal.curbox.ui.fragments.installation.onboarding.OnboardingFragment
 import neth.iecal.curbox.ui.fragments.main.focus.FocusFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.ReducersFragment
+import neth.iecal.curbox.ui.fragments.main.reducers.analytics.IntentsLogFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.grayscale.CreateGrayscaleGroupFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.grayscale.GrayscaleFragment
 import neth.iecal.curbox.ui.fragments.usage.AllAppsUsageFragment
@@ -54,6 +56,7 @@ class FragmentActivity : AppCompatActivity() {
             GrayscaleFragment.FRAGMENT_ID,
             CreateGrayscaleGroupFragment.FRAGMENT_ID,
                 ViewBlockerFragment.FRAGMENT_ID,
+                IntentsLogFragment.FRAGMENT_ID,
             neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID,
             KeywordBlockerFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
@@ -72,6 +75,7 @@ class FragmentActivity : AppCompatActivity() {
                     GrayscaleFragment.FRAGMENT_ID -> GrayscaleFragment()
                     CreateGrayscaleGroupFragment.FRAGMENT_ID -> CreateGrayscaleGroupFragment()
                     neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID -> neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment()
+                    IntentsLogFragment.FRAGMENT_ID -> IntentsLogFragment()
                     else -> AccessibilityGuide()
                 }
                 fragment.arguments = intent.extras

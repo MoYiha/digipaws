@@ -25,8 +25,12 @@ import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
 import neth.iecal.curbox.databinding.DialogWarningOverlayBinding
 import neth.iecal.curbox.services.AppBlockerService
 import kotlin.random.Random
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import android.widget.Toast
 import androidx.core.content.edit
+import neth.iecal.curbox.anti_stimulants.MindfulMessageTracker
 
 class WarningActivity : AppCompatActivity() {
 
@@ -136,7 +140,19 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
                                 binding.minsPicker.visibility = View.VISIBLE
                             }
 
-                            if (warningScreenConfig.isTypingRequirementEnabled) {
+                            if (warningScreenConfig.isIntentRequirementEnabled) {
+                                binding.intentInputLayout.visibility = View.VISIBLE
+                                button.isEnabled = false
+                                button.setText(R.string.proceed)
+
+                                binding.intentInputEdit.addTextChangedListener(object: android.text.TextWatcher {
+                                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                                    override fun afterTextChanged(s: android.text.Editable?) {
+                                        button.isEnabled = s?.toString()?.trim()?.isNotEmpty() == true
+                                    }
+                                })
+                            } else if (warningScreenConfig.isTypingRequirementEnabled) {
                                 binding.typingTargetSentence.visibility = View.VISIBLE
                                 binding.typingTargetSentence.text = "\"${warningScreenConfig.typingSentence}\""
                                 binding.typingInputLayout.visibility = View.VISIBLE
@@ -209,6 +225,28 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
                 
                 validHistory.add(nowTime)
                 limitPrefs.edit { putString("proceeds_$targetId", validHistory.joinToString(",")) }
+            }
+
+            if (warningScreenConfig.isIntentRequirementEnabled) {
+                val intentText = binding.intentInputEdit.text.toString().trim()
+                val pkg = targetId
+                val time = binding.minsPicker.getValue() * 60_000L
+                
+                CoroutineScope(Dispatchers.IO).launch {
+                    val log = neth.iecal.curbox.data.db.IntentLogEntity(
+                        timestamp = System.currentTimeMillis(),
+                        packageName = pkg,
+                        intentText = intentText,
+                        unlockedDurationMs = time
+                    )
+                    neth.iecal.curbox.data.db.AppDatabase.getInstance(this@WarningActivity).intentLogDao().insert(log)
+                }
+
+                val broadcastIntent = Intent(MindfulMessageTracker.ADD_NEW_INTENT)
+                broadcastIntent.putExtra("package_name", pkg)
+                broadcastIntent.putExtra("intent_text", intentText)
+                broadcastIntent.putExtra("duration_ms", time)
+                sendBroadcast(broadcastIntent)
             }
 
             if (mode == Constants.WARNING_SCREEN_MODE_VIEW_BLOCKER) {
