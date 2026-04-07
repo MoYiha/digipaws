@@ -132,14 +132,30 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
 
                     override fun onFinish() {
                         binding.btnProceed.let { button ->
-                            button.isEnabled = true
                             if (!warningScreenConfig.isQrUnlockRequirementEnabled && warningScreenConfig.isDynamicIntervalSettingAllowed) {
                                 binding.minsPicker.visibility = View.VISIBLE
                             }
-                            if (warningScreenConfig.isQrUnlockRequirementEnabled && !isQrScanned) {
+
+                            if (warningScreenConfig.isTypingRequirementEnabled) {
+                                binding.typingTargetSentence.visibility = View.VISIBLE
+                                binding.typingTargetSentence.text = "\"${warningScreenConfig.typingSentence}\""
+                                binding.typingInputLayout.visibility = View.VISIBLE
+                                button.isEnabled = false
+                                button.setText(R.string.proceed)
+                                
+                                binding.typingInputEdit.addTextChangedListener(object: android.text.TextWatcher {
+                                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                                    override fun afterTextChanged(s: android.text.Editable?) {
+                                        button.isEnabled = s?.toString() == warningScreenConfig.typingSentence
+                                    }
+                                })
+                            } else if (warningScreenConfig.isQrUnlockRequirementEnabled && !isQrScanned) {
                                 button.text = "Scan QR Code"
+                                button.isEnabled = true
                             } else {
                                 button.setText(R.string.proceed)
+                                button.isEnabled = true
                             }
                         }
                         binding.proceedSeconds.visibility = View.GONE

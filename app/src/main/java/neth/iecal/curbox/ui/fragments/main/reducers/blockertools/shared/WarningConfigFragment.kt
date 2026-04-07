@@ -37,7 +37,8 @@ class WarningConfigFragment : Fragment() {
         "User selects unlock time",
         "Fixed unlock time",
         "Disable unlocking entirely",
-        "Unlock requires QR/Barcode scanning"
+        "Unlock requires QR/Barcode scanning",
+        "Unlock requires typing a sentence"
     )
 
     private val barcodeLauncher = registerForActivityResult(ScanContract()) { result ->
@@ -83,6 +84,7 @@ class WarningConfigFragment : Fragment() {
         binding.unlockBehaviorDropdown.setAdapter(adapter)
 
         val initialIndex = when {
+            config.isTypingRequirementEnabled -> 5
             config.isQrUnlockRequirementEnabled -> 4
             config.isWarningDialogHidden -> 0
             config.isProceedDisabled -> 3
@@ -91,6 +93,8 @@ class WarningConfigFragment : Fragment() {
         }
         binding.unlockBehaviorDropdown.setText(behaviorOptions[initialIndex], false)
         updateUiVisibility(initialIndex)
+        
+        binding.typingSentenceEdit.setText(config.typingSentence)
 
         // Setup Sliders
         binding.fixedTimeSlider.value = (config.timeInterval / 60000).toFloat().coerceIn(1f, 120f)
@@ -187,6 +191,7 @@ class WarningConfigFragment : Fragment() {
             val isDynamicIntervalSettingAllowed = bIdx == 1
             val isProceedDisabled = bIdx == 3
             val isQrUnlockRequirementEnabled = bIdx == 4
+            val isTypingRequirementEnabled = bIdx == 5
 
             val config = AppBlockerWarningScreenConfig(
                 message = binding.warningMsgEdit.text.toString(),
@@ -196,6 +201,8 @@ class WarningConfigFragment : Fragment() {
                 isWarningDialogHidden = isWarningDialogHidden,
                 isQrUnlockRequirementEnabled = isQrUnlockRequirementEnabled,
                 qrKeys = if (isQrUnlockRequirementEnabled) currentQrMap else mapOf(),
+                isTypingRequirementEnabled = isTypingRequirementEnabled,
+                typingSentence = binding.typingSentenceEdit.text.toString(),
                 proceedDelayInSecs = binding.proceedDelaySlider.value.toInt(),
                 vibrateAndIncBrightness = binding.switchVibrateBrightness.isChecked,
                 proceedLimitEnabled = binding.proceedLimitSwitch.isChecked,
@@ -251,10 +258,11 @@ class WarningConfigFragment : Fragment() {
         }
 
         binding.apply {
-            timingContainer.visibility = if (behaviorIndex == 2) View.VISIBLE else View.GONE
-            proceedDelayContainer.visibility = if (behaviorIndex in listOf(1, 2, 4)) View.VISIBLE else View.GONE
+            timingContainer.visibility = if (behaviorIndex == 2 || behaviorIndex == 5) View.VISIBLE else View.GONE
+            proceedDelayContainer.visibility = if (behaviorIndex in listOf(1, 2, 4, 5)) View.VISIBLE else View.GONE
             warningMsgLayout.visibility = if (behaviorIndex != 0) View.VISIBLE else View.GONE
             qrSetupContainer.visibility = if (behaviorIndex == 4) View.VISIBLE else View.GONE
+            typingSetupContainer.visibility = if (behaviorIndex == 5) View.VISIBLE else View.GONE
         }
     }
     
