@@ -426,38 +426,53 @@ class ViewBlocker : BaseBlocker() {
                 MatchType.IS_FOCUSED -> node.isFocused == value.toBoolean()
                 MatchType.IS_ENABLED -> node.isEnabled == value.toBoolean()
                 MatchType.IS_CLICKABLE -> node.isClickable == value.toBoolean()
-                MatchType.PATH -> false
+                MatchType.PATH -> true
             }
         }
     }
 
     private fun findNodeByMatcher(root: AccessibilityNodeInfo, matcher: NodeMatcher, packageName: String): Boolean {
-        val viewIdCriterion = matcher.criteria.firstOrNull { it.first == MatchType.VIEW_ID }
-        if (viewIdCriterion != null) {
-            val found = root.findAccessibilityNodeInfosByViewId(viewIdCriterion.second)
-            if (!found.isNullOrEmpty()) {
-                val exists = found.any { doesNodeMatch(it, matcher, packageName) }
-                found.forEach { @Suppress("DEPRECATION") it.recycle() }
-                if (exists) return true
+        if (matcher.criteria.isEmpty()) return false
+        val firstCriterion = matcher.criteria.first()
+
+        val foundNodes = mutableListOf<AccessibilityNodeInfo>()
+
+        when (firstCriterion.first) {
+            MatchType.VIEW_ID -> {
+                root.findAccessibilityNodeInfosByViewId(firstCriterion.second)?.let { foundNodes.addAll(it) }
             }
-            return false
-        }
-        
-        val textCriterion = matcher.criteria.firstOrNull { 
-            it.first == MatchType.TEXT || it.first == MatchType.DESC || 
-            it.first == MatchType.TEXT_CONTAINS || it.first == MatchType.DESC_CONTAINS 
-        }
-        if (textCriterion != null) {
-            val found = root.findAccessibilityNodeInfosByText(textCriterion.second)
-            if (!found.isNullOrEmpty()) {
-                val exists = found.any { doesNodeMatch(it, matcher, packageName) }
-                found.forEach { @Suppress("DEPRECATION") it.recycle() }
-                if (exists) return true
+            MatchType.TEXT, MatchType.DESC, MatchType.TEXT_CONTAINS, MatchType.DESC_CONTAINS -> {
+                root.findAccessibilityNodeInfosByText(firstCriterion.second)?.let { foundNodes.addAll(it) }
             }
-            return false
+            MatchType.DESC_RES -> {
+                val resolved = getAppString(packageName, firstCriterion.second)
+                if (resolved != null) {
+                    root.findAccessibilityNodeInfosByText(resolved)?.let { foundNodes.addAll(it) }
+                }
+            }
+            MatchType.PATH -> {
+                val segments = ViewBlockerRuleParser.parsePath(firstCriterion.second)
+                foundNodes.addAll(matchPathsParsed(root, segments))
+            }
+            MatchType.CLASS_NAME, MatchType.IS_SELECTED, MatchType.IS_CHECKED, MatchType.IS_FOCUSED, MatchType.IS_ENABLED, MatchType.IS_CLICKABLE -> {
+                return findNodeRecursive(root) { doesNodeMatch(it, matcher, packageName) }
+            }
         }
-        
-        return findNodeRecursive(root) { doesNodeMatch(it, matcher, packageName) }
+
+        if (foundNodes.isEmpty()) return false
+
+        var exists = false
+        for (node in foundNodes) {
+            try {
+                if (!exists && doesNodeMatch(node, matcher, packageName)) {
+                    exists = true
+                }
+            } finally {
+                @Suppress("DEPRECATION")
+                node.recycle()
+            }
+        }
+        return exists
     }
     private fun findNodeRecursive(node: AccessibilityNodeInfo, predicate: (AccessibilityNodeInfo) -> Boolean): Boolean {
         if (predicate(node)) return true

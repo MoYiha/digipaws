@@ -126,7 +126,7 @@ object ViewBlockerRuleParser {
         return rules
     }
 
-    private fun parsePath(path: String): List<PathSegment> {
+    fun parsePath(path: String): List<PathSegment> {
         if (path.isEmpty()) return emptyList()
         return path.split(">").map { segment ->
             val bracketStart = segment.indexOf('[')
