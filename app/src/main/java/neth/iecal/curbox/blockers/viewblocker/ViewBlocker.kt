@@ -100,7 +100,7 @@ class ViewBlocker : BaseBlocker() {
         }
     }
 
-    private lateinit var service: BaseBlockingService
+    lateinit var service: BaseBlockingService
     private lateinit var windowManager: WindowManager
     private val handler = Handler(Looper.getMainLooper())
 
@@ -430,7 +430,7 @@ class ViewBlocker : BaseBlocker() {
         }
     }
 
-    private fun findNodeByMatcher(root: AccessibilityNodeInfo, matcher: NodeMatcher, packageName: String): Boolean {
+    fun findNodeByMatcher(root: AccessibilityNodeInfo, matcher: NodeMatcher, packageName: String): Boolean {
         if (matcher.criteria.isEmpty()) return false
         val firstCriterion = matcher.criteria.first()
 
@@ -629,12 +629,13 @@ class ViewBlocker : BaseBlocker() {
         }
     }
 
-    private fun resolveMatcherToNode(root: AccessibilityNodeInfo, matcher: NodeMatcher, packageName: String): AccessibilityNodeInfo? {
+    fun resolveMatcherToNode(root: AccessibilityNodeInfo, matcher: NodeMatcher, packageName: String): AccessibilityNodeInfo? {
         val viewIdCriterion = matcher.criteria.firstOrNull { it.first == MatchType.VIEW_ID }
         if (viewIdCriterion != null) {
             val found = root.findAccessibilityNodeInfosByViewId(viewIdCriterion.second)
             return found?.firstOrNull { doesNodeMatch(it, matcher, packageName) }
         }
+        Log.d("reel_checking", matcher.toString())
         return findFirstNodeRecursive(root) { doesNodeMatch(it, matcher, packageName) }
     }
     @Suppress("DEPRECATION")
