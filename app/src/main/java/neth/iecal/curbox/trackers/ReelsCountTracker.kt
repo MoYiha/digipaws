@@ -25,6 +25,7 @@ import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
 import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.data.db.ReelStatsDao
 import neth.iecal.curbox.data.db.ReelStatsEntity
+import neth.iecal.curbox.hardcoded.ReelsCounterConsts.Companion.reelData
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
 import neth.iecal.curbox.utils.TimeTools
@@ -34,39 +35,15 @@ data class ReelCounterData(
     val requiresPresent: List<String>,
     val requiresAbsent: List<String> = emptyList(),
     val dynamicComparator: List<String>,
-    val comparsionResultCleanser: (String)->String = {s->s},
-    val eventType:Int = AccessibilityEvent.TYPE_VIEW_SCROLLED
+    val comparsionResultCleanser: (String) -> String = { s->s},
+    val eventType: Int = AccessibilityEvent.TYPE_VIEW_SCROLLED,
+    val eventAction: AccessibilityNodeInfo.AccessibilityAction? = null
 )
 
 class ReelsCountTracker {
 
     companion object {
         const val INTENT_ACTION_REFRESH_REEL_COUNTER = "neth.iecal.curbox.refresh.reel_counter"
-
-        val reelData: Map<String, ReelCounterData> = mapOf(
-            "com.instagram.android" to ReelCounterData(
-                viewId = "com.instagram.android:id/clips_viewer_view_pager",
-                requiresPresent = listOf("com.instagram.android:id/clips_ufi_component"),
-                dynamicComparator = listOf("com.instagram.android:id/clips_captions_component", "com.instagram.android:id/clips_author_username")
-            ),
-            "com.google.android.youtube" to ReelCounterData(
-                viewId = "com.google.android.youtube:id/reel_recycler",
-                requiresPresent = listOf(),
-                dynamicComparator = listOf("com.google.android.youtube:id/reel_player_page_content"),
-                comparsionResultCleanser = {
-                    if(it.contains("PostPostPostlike")) return@ReelCounterData ""
-                    if(it.length <= 15) return@ReelCounterData ""
-                    it.replace("Video Progress","")
-                        .replace("Tap to watch live","")
-                        .replace("Go to channel","")
-                        .replace("soundVideo ProgressSearchMoreHomeHomeShortsShortsCreateSubscriptions","")
-                        .replace("soundSearchMoreHomeHomeShortsShortsCreateSubscriptions","")
-                },
-                eventType = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
-//                dynamicComparator = listOf("path:androidx.drawerlayout.widget.DrawerLayout[0]>android.widget.FrameLayout[0]>android.widget.FrameLayout[0]>android.view.ViewGroup[0]>android.widget.ScrollView[0]>android.support.v7.widget.RecyclerView[0]>android.widget.FrameLayout[0]>android.view.ViewGroup[0]")
-            )
-        )
-
     }
 
     private lateinit var service: BaseBlockingService
@@ -117,6 +94,9 @@ class ReelsCountTracker {
 
             if (reelData.containsKey(pkg)) {
                 if((event.eventType and reelData[pkg]!!.eventType) == 0) return
+                if(reelData[pkg]!!.eventAction != null){
+                    if(reelData[pkg]!!.eventAction?.id != event.action) return
+                }
                 if (Settings.canDrawOverlays(service)) {
                     overlayManager.startDisplaying()
                 }
@@ -124,6 +104,7 @@ class ReelsCountTracker {
                 overlayManager.removeOverlay()
                 return
             }
+            Log.d("event", event?.eventType.toString()  )
 
             val data = reelData[pkg] ?: return
 
@@ -135,6 +116,8 @@ class ReelsCountTracker {
 
     private fun checkForReelProgression(pkg: String, data: ReelCounterData) {
         val root = service.rootInActiveWindow ?: return
+
+        Log.d("reel","searchin view")
 
         val viewIdMatcher = NodeMatcher.parse(data.viewId)
         if (viewIdMatcher != null) {
@@ -200,9 +183,9 @@ class ReelsCountTracker {
             }
         }
 
-        Log.d("reel_text",currentText)
 
         if (currentText.trim().isBlank()) return
+        Log.d("reel_text",currentText)
 
         val previousText = lastDynamicText[pkg] ?: ""
         if (currentText != previousText) {
@@ -213,6 +196,7 @@ class ReelsCountTracker {
                 if (appCache.get(currentText) == null) {
                     onReelCounted()
                     appCache.put(currentText, true)
+                    Log.d("reel","counted")
                 }
             }
             
