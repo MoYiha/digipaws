@@ -35,9 +35,8 @@ data class ReelCounterData(
     val requiresPresent: List<String>,
     val requiresAbsent: List<String> = emptyList(),
     val dynamicComparator: List<String>,
-    val comparsionResultCleanser: (String) -> String = { s->s},
-    val eventType: Int = AccessibilityEvent.TYPE_VIEW_SCROLLED,
-    val eventAction: AccessibilityNodeInfo.AccessibilityAction? = null
+    val comparsionResultCleanser: (String)->String = {s->s},
+    val eventType:Int = AccessibilityEvent.TYPE_VIEW_SCROLLED
 )
 
 class ReelsCountTracker {
@@ -91,20 +90,17 @@ class ReelsCountTracker {
 
         try {
             val pkg = event.packageName?.toString() ?: return
+            Log.d("event", event?.source.toString() + event?.eventType.toString()  )
 
             if (reelData.containsKey(pkg)) {
                 if((event.eventType and reelData[pkg]!!.eventType) == 0) return
-                if(reelData[pkg]!!.eventAction != null){
-                    if(reelData[pkg]!!.eventAction?.id != event.action) return
-                }
                 if (Settings.canDrawOverlays(service)) {
                     overlayManager.startDisplaying()
                 }
-            } else if (overlayManager.isOverlayVisible) {
+            } else if (overlayManager   .isOverlayVisible) {
                 overlayManager.removeOverlay()
                 return
             }
-            Log.d("event", event?.eventType.toString()  )
 
             val data = reelData[pkg] ?: return
 
@@ -183,20 +179,19 @@ class ReelsCountTracker {
             }
         }
 
+        Log.d("reel_text",currentText)
 
         if (currentText.trim().isBlank()) return
-        Log.d("reel_text",currentText)
 
         val previousText = lastDynamicText[pkg] ?: ""
         if (currentText != previousText) {
-            val isSubstantialChange = !currentText.contains(previousText) && !previousText.contains(currentText)
+            val isSubstantialChange = isSubstantialTextChange(currentText, previousText)
 
             if (previousText.isNotEmpty() && isSubstantialChange) {
                 val appCache = seenReelsCache.getOrPut(pkg) { LruCache(50) }
                 if (appCache.get(currentText) == null) {
                     onReelCounted()
                     appCache.put(currentText, true)
-                    Log.d("reel","counted")
                 }
             }
             
@@ -277,5 +272,54 @@ class ReelsCountTracker {
 
     private fun hideReelCounter() {
         overlayManager.binding?.reelCounter?.visibility = View.GONE
+    }
+
+    private fun isSubstantialTextChange(currentText: String, previousText: String): Boolean {
+        if (currentText.isEmpty() || previousText.isEmpty()) return true
+
+        fun countWords(text: String, wordCounts: HashMap<String, Int>) {
+            val len = text.length
+            var start = -1
+            for (i in 0 until len) {
+                if (text[i].isWhitespace()) {
+                    if (start != -1) {
+                        val word = text.substring(start, i)
+                        wordCounts[word] = wordCounts.getOrDefault(word, 0) + 1
+                        start = -1
+                    }
+                } else {
+                    if (start == -1) start = i
+                }
+            }
+            if (start != -1) {
+                val word = text.substring(start, len)
+                wordCounts[word] = wordCounts.getOrDefault(word, 0) + 1
+            }
+        }
+
+        val currentWords = HashMap<String, Int>()
+        val previousWords = HashMap<String, Int>()
+        
+        countWords(currentText, currentWords)
+        countWords(previousText, previousWords)
+
+        if (currentWords.isEmpty() || previousWords.isEmpty()) return true
+
+        var intersectionSize = 0
+        var totalSmaller = 0
+        
+        val smallerMap = if (currentWords.size < previousWords.size) currentWords else previousWords
+        val largerMap = if (currentWords.size < previousWords.size) previousWords else currentWords
+
+        for ((word, count) in smallerMap) {
+            totalSmaller += count
+            val largerCount = largerMap[word] ?: 0
+            intersectionSize += minOf(count, largerCount)
+        }
+
+        if (totalSmaller == 0) return true
+
+        val overlapRatio = intersectionSize.toFloat() / totalSmaller
+        return overlapRatio < 0.90f
     }
 }
