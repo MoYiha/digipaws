@@ -12,6 +12,7 @@ import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -150,7 +151,7 @@ class FocusModeBlocker : BaseBlocker() {
         fun performBlock() {
             service.pressHome()
             lastPackage = ""
-            Toast.makeText(service, service.getString(R.string.this_app_is_currently_under_focus), Toast.LENGTH_LONG).show()
+//            Toast.makeText(service, service.getString(R.string.this_app_is_currently_under_focus), Toast.LENGTH_LONG).show()
         }
 
         if (focusModeData != null) {
@@ -329,6 +330,7 @@ class FocusModeBlocker : BaseBlocker() {
         getCurrentKeyboardPackageName(service)?.let { essential.add(it) }
         essentialPackages = essential
 
+        Log.d("essential package", essentialPackages.toString())
         CoroutineScope(Dispatchers.IO).launch {
             val db = neth.iecal.curbox.data.db.AppDatabase.getInstance(service)
             val statsDao = db.focusStatsDao()
