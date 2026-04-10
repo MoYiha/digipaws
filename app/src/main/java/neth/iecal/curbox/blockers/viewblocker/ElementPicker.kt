@@ -360,129 +360,148 @@ class ElementPicker(
             wildcardPath = generatePathWithWildcard(node, currentRootNode)
         )
         val dialogBinding = ElementPickerConfirmDialogBinding.inflate(LayoutInflater.from(service))
-        dialogBinding.titleText.text = if (isBlockAll) "Block All Similar?" else "Block This Element?"
+        dialogBinding.titleText.text = if (isBlockAll) "Block All Similar?" else "Block This Element"
 
-        val nodeText = snapshot.text
-        val nodeDesc = snapshot.desc
+        val infoText = StringBuilder()
+        if (!snapshot.viewId.isNullOrEmpty()) infoText.append("ID: ").append(snapshot.viewId).append("\n")
+        if (!snapshot.className.isNullOrEmpty()) infoText.append("Class: ").append(snapshot.className).append("\n")
+        if (!snapshot.text.isNullOrEmpty()) infoText.append("Text: ").append(truncate(snapshot.text, 30)).append("\n")
+        if (!snapshot.desc.isNullOrEmpty()) infoText.append("Desc: ").append(truncate(snapshot.desc, 30)).append("\n")
+        
+        dialogBinding.selectorInfoText.text = infoText.toString()
+        dialogBinding.selectorInfoText.visibility = if (infoText.isEmpty()) View.GONE else View.VISIBLE
 
-        dialogBinding.chkMatchByText.visibility = if (!nodeText.isNullOrEmpty()) View.VISIBLE else View.GONE
-        dialogBinding.chkMatchByText.text = "Match by text: \"${truncate(nodeText ?: "", 30)}\""
-
-        dialogBinding.chkMatchByDesc.visibility = if (!nodeDesc.isNullOrEmpty()) View.VISIBLE else View.GONE
-        dialogBinding.chkMatchByDesc.text = "Match by description: \"${truncate(nodeDesc ?: "", 30)}\""
-
-        var optionsExpanded = false
-        dialogBinding.optionsToggle.setOnClickListener {
-            optionsExpanded = !optionsExpanded
-            dialogBinding.optionsContainer.visibility = if (optionsExpanded) View.VISIBLE else View.GONE
-            dialogBinding.optionsToggle.text = if (optionsExpanded) "▼ Options" else "▶ Options"
-        }
-
-        dialogBinding.chkRequireAbsent.setOnCheckedChangeListener { _, checked ->
-            dialogBinding.inputAbsentViewId.visibility = if (checked) View.VISIBLE else View.GONE
-        }
-        dialogBinding.chkMatchChildren.setOnCheckedChangeListener { _, checked ->
-            dialogBinding.inputMatchChildren.visibility = if (checked) View.VISIBLE else View.GONE
-        }
-        dialogBinding.chkPressBack.setOnCheckedChangeListener { _, checked ->
-            if (checked) dialogBinding.chkBlockTouches.isChecked = true
-        }
-
-        val availableStrategies = mutableListOf(MatchStrategy.AUTO)
-        if (!snapshot.viewId.isNullOrEmpty()) availableStrategies.add(MatchStrategy.VIEW_ID)
-        if (!snapshot.desc.isNullOrEmpty()) availableStrategies.add(MatchStrategy.DESC)
-        if (!snapshot.text.isNullOrEmpty()) availableStrategies.add(MatchStrategy.TEXT)
-        if (!snapshot.className.isNullOrEmpty()) availableStrategies.add(MatchStrategy.CLASS_NAME)
-        // Path is always an option
-        availableStrategies.add(MatchStrategy.PATH)
-
-        val adapter = object : ArrayAdapter<String>(service, android.R.layout.simple_spinner_dropdown_item, availableStrategies.map { it.label }) {
-            override fun getView(position: Int, convertView: android.view.View?, parent: android.view.ViewGroup): android.view.View {
-                val view = super.getView(position, convertView, parent)
-                (view as? android.widget.TextView)?.setTextColor(android.graphics.Color.WHITE)
-                return view
+        var isTogglingChip = false
+        fun addChip(container: android.widget.LinearLayout, label: String, appendText: String, color: Int = android.graphics.Color.parseColor("#444444")) {
+            val dp = { px: Int -> (px * service.resources.displayMetrics.density).toInt() }
+            val normalBg = android.graphics.drawable.GradientDrawable().apply {
+                setColor(android.graphics.Color.parseColor("#2A2A2A"))
+                cornerRadius = dp(16).toFloat()
             }
-        }
-        dialogBinding.spinMatchType.adapter = adapter
-
-        fun getOptions(): RuleOptions {
-            return RuleOptions(
-                pressBack = dialogBinding.chkPressBack.isChecked,
-                blockTouches = dialogBinding.chkBlockTouches.isChecked,
-                matchByText = dialogBinding.chkMatchByText.isChecked,
-                matchByDesc = dialogBinding.chkMatchByDesc.isChecked,
-                requireAbsent = dialogBinding.chkRequireAbsent.isChecked,
-                absentViewId = dialogBinding.inputAbsentViewId.text.toString().trim(),
-                blockLayout = dialogBinding.chkBlockLayout.isChecked,
-                matchChildren = dialogBinding.chkMatchChildren.isChecked,
-                childrenText = dialogBinding.inputMatchChildren.text.toString().trim(),
-                clickableOnly = dialogBinding.chkClickableOnly.isChecked,
-                matchStrategy = availableStrategies[dialogBinding.spinMatchType.selectedItemPosition.coerceAtLeast(0)]
-            )
-        }
-
-        var currentPreviewRule = ""
-
-        fun updatePreview() {
-            val options = getOptions()
-            currentPreviewRule = if (isBlockAll) {
-                generateRuleForAll(snapshot, currentPackageName, null, options)
-            } else {
-                generateRule(snapshot, currentPackageName, null, options)
+            val activeBg = android.graphics.drawable.GradientDrawable().apply {
+                setColor(color)
+                cornerRadius = dp(16).toFloat()
             }
-            dialogBinding.descText.text = "Selector: $selectorDesc\nRule: $currentPreviewRule"
-        }
-
-        val checkBoxes = listOf(
-            dialogBinding.chkPressBack, dialogBinding.chkBlockTouches,
-            dialogBinding.chkMatchByText, dialogBinding.chkMatchByDesc,
-            dialogBinding.chkRequireAbsent, dialogBinding.chkBlockLayout,
-            dialogBinding.chkMatchChildren, dialogBinding.chkClickableOnly
-        )
-
-        checkBoxes.forEach { cb ->
-            cb.setOnClickListener { updatePreview() }
-        }
-
-        dialogBinding.spinMatchType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                updatePreview()
+            val btn = android.widget.Button(service).apply {
+                text = label
+                isAllCaps = false
+                textSize = 11f
+                minHeight = dp(32)
+                minimumHeight = dp(32)
+                setPadding(dp(12), dp(4), dp(12), dp(4))
+                background = normalBg
+                setTextColor(android.graphics.Color.parseColor("#CCCCCC"))
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { setMargins(0, 0, dp(6), 0) }
+                tag = false // track toggle state
+                setOnClickListener {
+                    val active = !(tag as Boolean)
+                    tag = active
+                    val currentText = dialogBinding.ruleQueryInput.text.toString()
+                    if (active) {
+                        background = activeBg
+                        setTextColor(android.graphics.Color.WHITE)
+                        if (!currentText.contains(appendText)) {
+                            dialogBinding.ruleQueryInput.append(" $appendText")
+                        }
+                    } else {
+                        background = android.graphics.drawable.GradientDrawable().apply {
+                            setColor(android.graphics.Color.parseColor("#2A2A2A"))
+                            cornerRadius = dp(16).toFloat()
+                        }
+                        setTextColor(android.graphics.Color.parseColor("#CCCCCC"))
+                        val newText = currentText.replace(" $appendText", "").replace(appendText, "")
+                        dialogBinding.ruleQueryInput.setText(newText.trim())
+                    }
+                }
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            container.addView(btn)
         }
 
-        updatePreview()
+        // -- Properties from the tapped element --
+        val viewIdStr = snapshot.viewId
+        val textStr = snapshot.text
+        val descStr = snapshot.desc
+        val classStr = snapshot.className
+        val pathStr = snapshot.path
 
-        dialogBinding.descText.setOnClickListener {
-            val clipboard = service.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("rule", currentPreviewRule)
-            clipboard.setPrimaryClip(clip)
-            Toast.makeText(service, "Rule copied to clipboard", Toast.LENGTH_SHORT).show()
+        if (!viewIdStr.isNullOrEmpty()) {
+            val safe = if (viewIdStr.contains(" ")) "\"$viewIdStr\"" else viewIdStr
+            addChip(dialogBinding.propertyChipsContainer, "ID: ${viewIdStr.substringAfterLast("/")}", "id:$safe", android.graphics.Color.parseColor("#1565C0"))
+        }
+        if (!textStr.isNullOrEmpty()) {
+            val safe = if (textStr.contains(" ")) "\"$textStr\"" else textStr
+            addChip(dialogBinding.propertyChipsContainer, "Text: ${truncate(textStr, 20)}", "text:$safe", android.graphics.Color.parseColor("#2E7D32"))
+        }
+        if (!descStr.isNullOrEmpty()) {
+            val safe = if (descStr.contains(" ")) "\"$descStr\"" else descStr
+            addChip(dialogBinding.propertyChipsContainer, "Desc: ${truncate(descStr, 20)}", "desc:$safe", android.graphics.Color.parseColor("#4527A0"))
+        }
+        if (!classStr.isNullOrEmpty()) {
+            val shortClass = classStr.substringAfterLast(".")
+            val safe = if (classStr.contains(" ")) "\"$classStr\"" else classStr
+            addChip(dialogBinding.propertyChipsContainer, "Class: $shortClass", "class:$safe", android.graphics.Color.parseColor("#37474F"))
+        }
+        if (!pathStr.isNullOrEmpty()) {
+            val safe = if (pathStr.contains(" ")) "\"$pathStr\"" else pathStr
+            addChip(dialogBinding.propertyChipsContainer, "Path", "path:$safe", android.graphics.Color.parseColor("#455A64"))
+        }
+
+        // -- Action: how the blocked element is handled --
+        addChip(dialogBinding.actionChipsContainer, "← Back Press", "action:back", android.graphics.Color.parseColor("#8E24AA"))
+        addChip(dialogBinding.actionChipsContainer, "■ Overlay", "action:overlay", android.graphics.Color.parseColor("#3949AB"))
+        addChip(dialogBinding.actionChipsContainer, "○ Transparent", "color:#00000000 blocktouches:true", android.graphics.Color.parseColor("#00897B"))
+        addChip(dialogBinding.actionChipsContainer, "☞ Allow Clicks", "blocktouches:false", android.graphics.Color.parseColor("#00838F"))
+
+        // -- Advanced modifiers --
+        addChip(dialogBinding.modifierChipsContainer, "Limit: 1 per screen", "max:1", android.graphics.Color.parseColor("#5D4037"))
+        addChip(dialogBinding.modifierChipsContainer, "Only if clickable", "clickable:true", android.graphics.Color.parseColor("#455A64"))
+        if (!textStr.isNullOrEmpty()) {
+            val safe = if (textStr.contains(" ")) "\"$textStr\"" else textStr
+            addChip(dialogBinding.modifierChipsContainer, "Text contains", "textcontains:$safe", android.graphics.Color.parseColor("#546E7A"))
+        }
+        if (!descStr.isNullOrEmpty()) {
+            val safe = if (descStr.contains(" ")) "\"$descStr\"" else descStr
+            addChip(dialogBinding.modifierChipsContainer, "Desc contains", "desccontains:$safe", android.graphics.Color.parseColor("#546E7A"))
+        }
+
+        // Generate initial rule using simple options
+        val initialOptions = RuleOptions(matchStrategy = MatchStrategy.AUTO)
+        val initialRule = if (isBlockAll) {
+            generateRuleForAll(snapshot, currentPackageName, null, initialOptions)
+        } else {
+            generateRule(snapshot, currentPackageName, null, initialOptions)
+        }
+        
+        dialogBinding.ruleQueryInput.setText(initialRule)
+
+        dialogBinding.btnHelp.setOnClickListener {
+            // Provide a quick Toast help snippet or could be a Dialog
+            Toast.makeText(service, "Edit the query freely. Keys: pkg:, id:, class:, text:, action:, +... Modifiers: +text:\"req\"", Toast.LENGTH_LONG).show()
         }
 
         dialogBinding.cancelBtn.setOnClickListener { removeSafely(dialogBinding.root) }
 
         dialogBinding.confirmBtn.setOnClickListener {
-            var comment = dialogBinding.commentInput.text.toString().trim()
-            if (comment.isEmpty()) comment = selectorDesc
-
-            val options = getOptions()
-
-            val finalRule = if (isBlockAll) {
-                generateRuleForAll(snapshot, currentPackageName, comment, options)
-            } else {
-                generateRule(snapshot, currentPackageName, comment, options)
+            var rawRule = dialogBinding.ruleQueryInput.text.toString().trim()
+            val comment = dialogBinding.commentInput.text.toString().trim()
+            
+            if (comment.isNotEmpty() && !rawRule.contains("comment:")) {
+                val safeComment = if (comment.contains(" ")) "\"$comment\"" else comment
+                rawRule += " comment:$safeComment"
             }
-            listener.onRuleChosen(finalRule)
-            lastAppliedRule = finalRule
+            
+            listener.onRuleChosen(rawRule)
+            lastAppliedRule = rawRule
             removeSafely(dialogBinding.root)
             hideHighlight()
             recycleNodes()
-            showUndoBar(comment)
+            showUndoBar(comment.ifEmpty { selectorDesc })
         }
 
         dialogBinding.root.setOnClickListener { removeSafely(dialogBinding.root) }
-        dialogBinding.card.setOnClickListener { /* intercept */ }
 
         val overlayParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -541,10 +560,10 @@ class ElementPicker(
 
     // ── Rule Generation ───────────────────────────────────────────
 
-        private fun StringBuilder.appendSafe(key: String, value: String?) {
+    private fun StringBuilder.appendSafe(key: String, value: String?) {
         if (value.isNullOrEmpty()) return
-        val safeValue = if (value.contains(" ")) "\"\$value\"" else value
-        this.append(" \$key:\$safeValue")
+        val safeValue = if (value.contains(" ")) "\"$value\"" else value
+        this.append(" $key:$safeValue")
     }
 
     private fun appendOptions(rule: StringBuilder, snapshot: NodeSnapshot, options: RuleOptions) {

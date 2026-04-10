@@ -175,6 +175,11 @@ data class ViewBlockerFilterRule(
             val maxPerScreen = tokens["max"]?.toIntOrNull() ?: 0
             val blockTouches = parseBoolean(tokens["blocktouches"], true)
             
+            val parsedPath = targetPath?.let { 
+                ViewBlockerRuleParser.parsePath(it)
+            }
+            val baseKey = "$packageName::$raw"
+            
             return ViewBlockerFilterRule(
                 packageName = packageName,
                 targetViewId = targetViewId,
@@ -182,8 +187,10 @@ data class ViewBlockerFilterRule(
                 targetClassName = targetClassName,
                 targetText = targetText,
                 targetPath = targetPath,
+                parsedPath = parsedPath,
                 color = color,
                 ruleString = raw,
+                baseKey = baseKey,
                 blockTouches = blockTouches,
                 requireAbsent = requireAbsent,
                 requirePresent = requirePresent,
