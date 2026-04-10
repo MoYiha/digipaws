@@ -11,8 +11,13 @@ object ViewBlockerRuleParser {
         for (line in rawLines) {
             if (line.isBlank()) continue
 
-
             val trimmed = line.trim()
+
+            if (trimmed.startsWith("!DISABLED!")) {
+                currentComment = null
+                continue
+            }
+
             if (trimmed.startsWith("//")) {
                 currentComment = trimmed.removePrefix("//").trim()
                 continue

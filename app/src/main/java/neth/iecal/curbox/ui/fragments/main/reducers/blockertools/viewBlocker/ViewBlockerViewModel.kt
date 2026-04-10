@@ -77,7 +77,11 @@ class ViewBlockerViewModel(application: Application) : AndroidViewModel(applicat
                 if (!ruleString.startsWith("!DISABLED!")) "!DISABLED!$ruleString" else ruleString
             }
             updated[index] = newRule
-            updateConfig(_viewBlockerConfig.value.copy(customRules = updated))
+            
+            // Actually update _viewBlockerConfig synchronously so UI doesn't get stale
+            val newConfig = _viewBlockerConfig.value.copy(customRules = updated)
+            _viewBlockerConfig.value = newConfig
+            updateConfig(newConfig)
         }
     }
 
