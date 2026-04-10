@@ -67,6 +67,20 @@ class ViewBlockerViewModel(application: Application) : AndroidViewModel(applicat
         updateConfig(_viewBlockerConfig.value.copy(rules = updatedRules))
     }
 
+    fun setCustomRuleEnabled(ruleString: String, isEnabled: Boolean) {
+        val updated = _viewBlockerConfig.value.customRules.toMutableList()
+        val index = updated.indexOf(ruleString)
+        if (index != -1) {
+            val newRule = if (isEnabled) {
+                ruleString.removePrefix("!DISABLED!")
+            } else {
+                if (!ruleString.startsWith("!DISABLED!")) "!DISABLED!$ruleString" else ruleString
+            }
+            updated[index] = newRule
+            updateConfig(_viewBlockerConfig.value.copy(customRules = updated))
+        }
+    }
+
     fun addCustomRule(ruleString: String) {
         if (ruleString.isBlank()) return
         val updated = _viewBlockerConfig.value.customRules.toMutableList()

@@ -10,14 +10,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.chip.Chip
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.materialswitch.MaterialSwitch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.FragmentViewBlockerBinding
 
 
@@ -94,24 +96,95 @@ class ViewBlockerFragment : Fragment() {
             return null // not installed
         }
     }
+
+    private fun createRuleCard(title: String, subtitle: String, isChecked: Boolean, onClick: (() -> Unit)? = null, onSwitchChange: (Boolean) -> Unit): View {
+        val card = MaterialCardView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = (8 * resources.displayMetrics.density).toInt()
+            }
+            
+            val typedValue = android.util.TypedValue()
+            context.theme.resolveAttribute(com.google.android.material.R.attr.colorSurfaceContainerHigh, typedValue, true)
+            setCardBackgroundColor(typedValue.data)
+            radius = 16 * resources.displayMetrics.density
+            cardElevation = 0f
+            strokeWidth = 0
+            isClickable = true
+            isFocusable = true
+            
+            val container = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(
+                    (16 * resources.displayMetrics.density).toInt(),
+                    (16 * resources.displayMetrics.density).toInt(),
+                    (16 * resources.displayMetrics.density).toInt(),
+                    (16 * resources.displayMetrics.density).toInt()
+                )
+                gravity = android.view.Gravity.CENTER_VERTICAL
+            }
+            
+            val textContainer = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginEnd = (16 * resources.displayMetrics.density).toInt()
+                }
+            }
+            
+            val titleView = TextView(requireContext()).apply {
+                text = title
+                textSize = 15f
+                val colorTyped = android.util.TypedValue()
+                context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, colorTyped, true)
+                setTextColor(colorTyped.data)
+                setTypeface(null, android.graphics.Typeface.BOLD)
+            }
+            
+            val subtitleView = TextView(requireContext()).apply {
+                text = subtitle
+                textSize = 13f
+                val variantTyped = android.util.TypedValue()
+                context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurfaceVariant, variantTyped, true)
+                setTextColor(variantTyped.data)
+            }
+            
+            textContainer.addView(titleView)
+            textContainer.addView(subtitleView)
+            
+            val toggle = MaterialSwitch(requireContext()).apply {
+                this.isChecked = isChecked
+                setOnCheckedChangeListener { _, state ->
+                    if (!isUpdatingUi) onSwitchChange(state)
+                }
+            }
+            
+            container.addView(textContainer)
+            container.addView(toggle)
+            addView(container)
+
+            if (onClick != null) {
+                setOnClickListener { onClick() }
+            }
+        }
+        return card
+    }
+
     private fun buildRuleToggles(rules: List<neth.iecal.curbox.data.models.ViewBlockerRule>) {
         val container = binding.rulesContainer
         container.removeAllViews()
 
         var currentPackage = ""
-        var pm = requireContext().packageManager
         for (rule in rules) {
             if (rule.packageName != currentPackage) {
                 val appName = getAppNameIfInstalled(requireContext(),rule.packageName) ?: continue
                 currentPackage = rule.packageName
-                val header = android.widget.TextView(requireContext()).apply {
+                val header = TextView(requireContext()).apply {
                     text = appName
-                    setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelLarge)
+                    setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_TitleSmall)
                     val typedValue = android.util.TypedValue()
-                    context.theme.resolveAttribute(
-                        com.google.android.material.R.attr.colorOnSurfaceVariant,
-                        typedValue, true
-                    )
+                    context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true)
                     setTextColor(context.getColor(typedValue.resourceId))
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -119,57 +192,53 @@ class ViewBlockerFragment : Fragment() {
                     ).apply {
                         topMargin = (16 * resources.displayMetrics.density).toInt()
                         bottomMargin = (8 * resources.displayMetrics.density).toInt()
+                        marginStart = (4 * resources.displayMetrics.density).toInt()
                     }
                 }
                 container.addView(header)
             }
 
-            val toggle = MaterialSwitch(requireContext()).apply {
-                text = rule.label
-                isChecked = rule.isEnabled
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    bottomMargin = (4 * resources.displayMetrics.density).toInt()
-                }
-                setOnCheckedChangeListener { _, isChecked ->
-                    if (!isUpdatingUi) {
-                        viewModel.setRuleEnabled(rule.id, isChecked)
-                    }
-                }
+            val card = createRuleCard(rule.label, "Toggles view blocking for this specific element", rule.isEnabled, null) { isChecked ->
+                viewModel.setRuleEnabled(rule.id, isChecked)
             }
-            container.addView(toggle)
+            container.addView(card)
         }
     }
 
     private fun buildCustomRuleChips(customRules: List<String>) {
-        val chipGroup = binding.chipGroupCustomRules
-        chipGroup.removeAllViews()
+        val container = binding.chipGroupCustomRules
+        container.removeAllViews()
 
         for (rule in customRules) {
-            val label = extractLabel(rule)
-            val chip = Chip(requireContext()).apply {
-                text = label
-                isCloseIconVisible = true
-                setOnCloseIconClickListener {
-                    viewModel.removeCustomRule(rule)
-                }
-                setOnClickListener {
-                    val editText = android.widget.EditText(requireContext())
-                    editText.setText(rule)
-                    com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Edit Rule")
-                        .setView(editText)
-                        .setPositiveButton("Save") { _, _ ->
-                            viewModel.removeCustomRule(rule)
-                            viewModel.addCustomRule(editText.text.toString())
+            val isEnabled = !rule.startsWith("!DISABLED!")
+            val cleanRule = rule.removePrefix("!DISABLED!")
+            val label = extractLabel(cleanRule)
+
+            val onClickAction = {
+                val editText = android.widget.EditText(requireContext())
+                editText.setText(cleanRule)
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Edit Rule")
+                    .setView(editText)
+                    .setNeutralButton("Delete") { _, _ ->
+                        viewModel.removeCustomRule(rule)
+                    }
+                    .setPositiveButton("Save") { _, _ ->
+                        viewModel.removeCustomRule(rule)
+                        val newStr = editText.text.toString()
+                        if (newStr.isNotBlank()) {
+                            viewModel.addCustomRule(if (isEnabled) newStr else "!DISABLED!$newStr")
                         }
-                        .setNegativeButton("Cancel", null)
-                        .show()
-                }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+                Unit
             }
-            chipGroup.addView(chip)
+
+            val card = createRuleCard(label, "Tap to edit or delete", isEnabled, onClickAction) { checked ->
+                viewModel.setCustomRuleEnabled(rule, checked)
+            }
+            container.addView(card)
         }
     }
 
