@@ -11,13 +11,24 @@ object ViewBlockerRuleParser {
         for (line in rawLines) {
             if (line.isBlank()) continue
 
+
             val trimmed = line.trim()
             if (trimmed.startsWith("//")) {
                 currentComment = trimmed.removePrefix("//").trim()
                 continue
             }
 
+            if (!trimmed.contains("##")) {
+                val rule = ViewBlockerFilterRule.parse(trimmed)
+                if (rule != null) {
+                    rules.add(if (currentComment != null) rule.copy(description = currentComment) else rule)
+                    currentComment = null
+                }
+                continue
+            }
+
             val parts = trimmed.split("##")
+
             if (parts.size < 2) continue
 
             val packageName = parts[0].trim()

@@ -541,23 +541,29 @@ class ElementPicker(
 
     // ── Rule Generation ───────────────────────────────────────────
 
+        private fun StringBuilder.appendSafe(key: String, value: String?) {
+        if (value.isNullOrEmpty()) return
+        val safeValue = if (value.contains(" ")) "\"\$value\"" else value
+        this.append(" \$key:\$safeValue")
+    }
+
     private fun appendOptions(rule: StringBuilder, snapshot: NodeSnapshot, options: RuleOptions) {
         if (options.pressBack) {
-            rule.append("##action=back")
+            rule.append(" action:back")
         }
         if (!options.blockTouches) {
-            rule.append("##blockTouches=false")
+            rule.append(" blockTouches:false")
         }
         if (options.matchByText) {
             val text = snapshot.text
             if (!text.isNullOrEmpty()) {
-                rule.append("##textContains=").append(text)
+                rule.appendSafe("textContains", text)
             }
         }
         if (options.matchByDesc) {
             val desc = snapshot.desc
             if (!desc.isNullOrEmpty()) {
-                rule.append("##descContains=").append(desc)
+                rule.appendSafe("descContains", desc)
             }
         }
         if (options.requireAbsent && options.absentViewId.isNotEmpty()) {
@@ -566,19 +572,19 @@ class ElementPicker(
             } else {
                 "text:${options.absentViewId}"
             }
-            rule.append("##requireAbsent=").append(value)
+            rule.appendSafe("requireAbsent", value)
         }
         if (options.blockLayout) {
             val parentViewId = snapshot.parentViewId
             if (!parentViewId.isNullOrEmpty()) {
-                rule.append("##blockLayout=viewId:").append(parentViewId)
+                rule.appendSafe("blockLayout", "viewId:$parentViewId")
             }
         }
         if (options.matchChildren && options.childrenText.isNotEmpty()) {
-            rule.append("##matchChildren=text:").append(options.childrenText)
+            rule.appendSafe("matchChildren", "text:${options.childrenText}")
         }
         if (options.clickableOnly) {
-            rule.append("##clickable=true")
+            rule.append(" clickable:true")
         }
     }
 
@@ -595,11 +601,11 @@ class ElementPicker(
 
         val path = if (isBlockAll) snapshot.wildcardPath else snapshot.path
 
-        val appendViewId = { if (!viewId.isNullOrEmpty()) rule.append("##viewId=").append(viewId) }
-        val appendDesc = { if (!desc.isNullOrEmpty() && !options.matchByDesc) rule.append("##desc=").append(desc) }
-        val appendText = { if (!text.isNullOrEmpty() && !options.matchByText) rule.append("##text=").append(text) }
-        val appendClass = { if (!className.isNullOrEmpty()) rule.append("##className=").append(className) }
-        val appendPath = { if (path != null) rule.append("##path=").append(path) }
+        val appendViewId = { rule.appendSafe("id", viewId) }
+        val appendDesc = { if (!options.matchByDesc) rule.appendSafe("desc", desc) }
+        val appendText = { if (!options.matchByText) rule.appendSafe("text", text) }
+        val appendClass = { rule.appendSafe("class", className) }
+        val appendPath = { rule.appendSafe("path", path) }
 
         when (options.matchStrategy) {
             MatchStrategy.VIEW_ID -> appendViewId()
@@ -641,12 +647,12 @@ class ElementPicker(
         comment: String?,
         options: RuleOptions
     ): String {
-        val rule = StringBuilder(packageName)
+        val rule = StringBuilder("pkg:$packageName")
         applyMainStrategy(rule, snapshot, options, false)
         appendOptions(rule, snapshot, options)
 
         if (!comment.isNullOrEmpty()) {
-            rule.append("##comment=").append(comment)
+            rule.appendSafe("comment", comment)
         }
         return rule.toString()
     }
@@ -657,12 +663,12 @@ class ElementPicker(
         comment: String?,
         options: RuleOptions
     ): String {
-        val rule = StringBuilder(packageName)
+        val rule = StringBuilder("pkg:$packageName")
         applyMainStrategy(rule, snapshot, options, true)
         appendOptions(rule, snapshot, options)
 
         if (!comment.isNullOrEmpty()) {
-            rule.append("##comment=").append(comment)
+            rule.appendSafe("comment", comment)
         }
         return rule.toString()
     }

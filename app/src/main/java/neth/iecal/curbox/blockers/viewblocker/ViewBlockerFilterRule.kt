@@ -104,4 +104,98 @@ data class ViewBlockerFilterRule(
     }
 
     override fun hashCode(): Int = ruleString.hashCode()
+
+    companion object {
+        private val tokenRegex = Regex("""([+\-~]?[a-zA-Z0-9_]+~?):(?:([^"\s]+)|"([^"]*)")""")
+        
+        fun parse(raw: String): ViewBlockerFilterRule? {
+            if (raw.isBlank()) return null
+            
+            val tokens = mutableMapOf<String, String>()
+            val requirePresent = mutableListOf<NodeMatcher>()
+            val requireAbsent = mutableListOf<NodeMatcher>()
+            val matchChildren = mutableListOf<NodeMatcher>()
+            
+            tokenRegex.findAll(raw).forEach { match ->
+                val fullKey = match.groupValues[1]
+                val value = if (match.groupValues[3].isNotEmpty()) match.groupValues[3] else match.groupValues[2]
+                
+                when {
+                    fullKey.startsWith("+") -> {
+                        val key = fullKey.drop(1).lowercase()
+                        NodeMatcher.parse("$key:$value")?.let { requirePresent.add(it) }
+                    }
+                    fullKey.startsWith("-") -> {
+                        val key = fullKey.drop(1).lowercase()
+                        NodeMatcher.parse("$key:$value")?.let { requireAbsent.add(it) }
+                    }
+                    fullKey.startsWith("~") -> {
+                        val key = fullKey.drop(1).lowercase()
+                        NodeMatcher.parse("$key:$value")?.let { matchChildren.add(it) }
+                    }
+                    else -> tokens[fullKey.lowercase()] = value
+                }
+            }
+            
+            val packageName = tokens["pkg"] ?: return null
+            
+            val targetViewId = tokens["id"]
+            val targetClassName = tokens["class"]
+            val targetText = tokens["text"]
+            val targetPath = tokens["path"]
+            val description = tokens["desc"]?.let { setOf(it) } ?: emptySet()
+            
+            val color = tokens["color"]?.let { colorStr ->
+                try {
+                    android.graphics.Color.parseColor(if (colorStr.startsWith("#")) colorStr else "#$colorStr")
+                } catch (e: Exception) {
+                    android.graphics.Color.WHITE
+                }
+            } ?: android.graphics.Color.WHITE
+            
+            fun parseBoolean(value: String?, default: Boolean): Boolean {
+                return when (value?.lowercase()) {
+                    "true", "1", "yes" -> true
+                    "false", "0", "no" -> false
+                    else -> default
+                }
+            }
+            
+            val action = when (tokens["action"]?.lowercase()) {
+                "back" -> RuleAction.BACK
+                else -> RuleAction.OVERLAY
+            }
+            
+            val textContains = tokens["textcontains"]
+            val descContains = tokens["desccontains"]
+            val textRegex = tokens["text~"]?.let { try { Regex(it) } catch (e: Exception) { null } }
+            val descRegex = tokens["desc~"]?.let { try { Regex(it) } catch (e: Exception) { null } }
+            
+            val clickableFilter = tokens["clickable"]?.let { parseBoolean(it, false) }
+            val maxPerScreen = tokens["max"]?.toIntOrNull() ?: 0
+            val blockTouches = parseBoolean(tokens["blocktouches"], true)
+            
+            return ViewBlockerFilterRule(
+                packageName = packageName,
+                targetViewId = targetViewId,
+                contentDescriptions = description,
+                targetClassName = targetClassName,
+                targetText = targetText,
+                targetPath = targetPath,
+                color = color,
+                ruleString = raw,
+                blockTouches = blockTouches,
+                requireAbsent = requireAbsent,
+                requirePresent = requirePresent,
+                matchChildren = matchChildren,
+                action = action,
+                textContains = textContains,
+                descContains = descContains,
+                textRegex = textRegex,
+                descRegex = descRegex,
+                clickableFilter = clickableFilter,
+                maxPerScreen = maxPerScreen
+            )
+        }
+    }
 }
