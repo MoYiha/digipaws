@@ -94,4 +94,21 @@ class ViewBlockerViewModel(application: Application) : AndroidViewModel(applicat
         updated.remove(ruleString)
         updateConfig(_viewBlockerConfig.value.copy(customRules = updated))
     }
+
+    fun editCustomRule(oldRule: String, newRule: String) {
+        if (newRule.isBlank()) {
+            removeCustomRule(oldRule)
+            return
+        }
+        val updated = _viewBlockerConfig.value.customRules.toMutableList()
+        val index = updated.indexOf(oldRule)
+        if (index != -1) {
+            updated[index] = newRule
+        } else {
+            if (!updated.contains(newRule)) {
+                updated.add(newRule)
+            }
+        }
+        updateConfig(_viewBlockerConfig.value.copy(customRules = updated))
+    }
 }

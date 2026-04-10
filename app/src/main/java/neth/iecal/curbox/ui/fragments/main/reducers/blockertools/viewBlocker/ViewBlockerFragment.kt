@@ -20,6 +20,7 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.R
+import neth.iecal.curbox.blockers.viewblocker.ViewBlockerRuleParser
 import neth.iecal.curbox.databinding.FragmentViewBlockerBinding
 
 
@@ -54,8 +55,8 @@ class ViewBlockerFragment : Fragment() {
 
         binding.btnAddRule.setOnClickListener {
             val ruleText = binding.editCustomRule.text?.toString()?.trim() ?: ""
-            if (ruleText.isEmpty() || !ruleText.contains("##")) {
-                Toast.makeText(requireContext(), "Rule must be in format: package##key=value", Toast.LENGTH_SHORT).show()
+            if (ruleText.isEmpty()) {
+                Toast.makeText(requireContext(), "Empty Rule", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             viewModel.addCustomRule(ruleText)
@@ -97,7 +98,7 @@ class ViewBlockerFragment : Fragment() {
         }
     }
 
-    private fun createRuleCard(title: String, subtitle: String, isChecked: Boolean, onClick: (() -> Unit)? = null, onSwitchChange: (Boolean) -> Unit): View {
+    private fun createRuleCard(title: String ,isChecked: Boolean, onClick: (() -> Unit)? = null, onSwitchChange: (Boolean) -> Unit): View {
         val card = MaterialCardView(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -142,17 +143,8 @@ class ViewBlockerFragment : Fragment() {
                 setTypeface(null, android.graphics.Typeface.BOLD)
             }
             
-            val subtitleView = TextView(requireContext()).apply {
-                text = subtitle
-                textSize = 13f
-                val variantTyped = android.util.TypedValue()
-                context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurfaceVariant, variantTyped, true)
-                setTextColor(variantTyped.data)
-            }
-            
             textContainer.addView(titleView)
-            textContainer.addView(subtitleView)
-            
+
             val toggle = MaterialSwitch(requireContext()).apply {
                 this.isChecked = isChecked
                 setOnCheckedChangeListener { _, state ->
@@ -198,7 +190,7 @@ class ViewBlockerFragment : Fragment() {
                 container.addView(header)
             }
 
-            val card = createRuleCard(rule.label, "Toggles view blocking for this specific element", rule.isEnabled, null) { isChecked ->
+            val card = createRuleCard(rule.label, rule.isEnabled, null) { isChecked ->
                 viewModel.setRuleEnabled(rule.id, isChecked)
             }
             container.addView(card)
@@ -224,10 +216,11 @@ class ViewBlockerFragment : Fragment() {
                         viewModel.removeCustomRule(rule)
                     }
                     .setPositiveButton("Save") { _, _ ->
-                        viewModel.removeCustomRule(rule)
                         val newStr = editText.text.toString()
                         if (newStr.isNotBlank()) {
-                            viewModel.addCustomRule(if (isEnabled) newStr else "!DISABLED!$newStr")
+                            viewModel.editCustomRule(rule, if (isEnabled) newStr else "!DISABLED!$newStr")
+                        } else {
+                            viewModel.removeCustomRule(rule)
                         }
                     }
                     .setNegativeButton("Cancel", null)
@@ -235,7 +228,7 @@ class ViewBlockerFragment : Fragment() {
                 Unit
             }
 
-            val card = createRuleCard(label, "Tap to edit or delete", isEnabled, onClickAction) { checked ->
+            val card = createRuleCard(label, isEnabled, onClickAction) { checked ->
                 viewModel.setCustomRuleEnabled(rule, checked)
             }
             container.addView(card)

@@ -15,11 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="20dp"
-            app:cardBackgroundColor="?attr/colorTertiaryContainer"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            android:layout_marginTop="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -31,7 +27,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="View Blocking is Experimental"
-                    android:textColor="?attr/colorOnTertiaryContainer"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -40,7 +35,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="This feature is still in beta and might occasionally break. The element picker is recommended for advanced users only. Join our Discord for more blocking rules."
-                    android:textColor="?attr/colorOnTertiaryContainer"
                     android:alpha="0.9" />
 
             </LinearLayout>
@@ -63,7 +57,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="8dp"
                 app:cardBackgroundColor="?attr/colorSurfaceContainer"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
@@ -126,15 +120,6 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Default Rules Title -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/default_rules"
-                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:letterSpacing="0.1"
-                android:layout_marginBottom="12dp"
-                android:layout_marginStart="4dp"/>
 
             <LinearLayout
                 android:id="@+id/rules_container"
