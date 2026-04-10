@@ -20,11 +20,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.Constants
+import neth.iecal.curbox.blockers.viewblocker.NodeMatcher
+import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
 import neth.iecal.curbox.data.models.ReelBlocker
 import neth.iecal.curbox.data.models.ReelBlockingType
 import neth.iecal.curbox.data.models.ReelTimeConfig
 import neth.iecal.curbox.data.models.ReelCountConfig
 import neth.iecal.curbox.data.db.AppDatabase
+import neth.iecal.curbox.hardcoded.ReelAppConfig.Companion.reelData
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.activity.WarningActivity
 import neth.iecal.curbox.utils.TimeTools
@@ -49,13 +52,6 @@ class ReelBlocker : BaseBlocker() {
             return targetNode
         }
 
-        val BLOCKED_VIEW_ID_LIST = mutableListOf(
-            "com.instagram.android:id/root_clips_layout",
-            "com.myinsta.android:id/root_clips_layout",
-            "com.google.android.youtube:id/reel_recycler",
-            "app.revanced.android.youtube:id/reel_recycler"
-        )
-
         private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
                 AccessibilityEvent.TYPE_VIEW_SCROLLED or
                 AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
@@ -63,6 +59,7 @@ class ReelBlocker : BaseBlocker() {
 
     }
     private lateinit var service : BaseBlockingService
+    private val viewBlockerHelper = ViewBlocker()
 
     private var reelBlockerConfig: ReelBlocker = ReelBlocker(isActive = false)
     private var timeBAsedConfig : ReelTimeConfig? = null
@@ -83,7 +80,7 @@ class ReelBlocker : BaseBlocker() {
         event: AccessibilityEvent?
     ){
         fun showWarningScreen(viewId: String){
-            if(service.isDelayOver(service.lastBackPressTimeStamp,1000)) {
+            if(service.isDelayOver(service.lastBackPressTimeStamp,3000)) {
                 service.pressBack()
 
                 if (reelBlockerConfig.warningScreenConfig.isWarningDialogHidden) return
@@ -106,34 +103,55 @@ class ReelBlocker : BaseBlocker() {
         }
 
         val node = service.rootInActiveWindow
-        if(node==null) return
+        if (node == null) return
+        
+        val pkg = event.packageName?.toString() ?: return
+        val data = reelData[pkg] ?: return
+        val viewId = data.viewId
 
-        BLOCKED_VIEW_ID_LIST.forEach { viewId ->
-            if(isViewOpened(node,viewId)){
-                // ignore if view-id under cooldown
-                if (isCooldownActive(viewId)) {
-                    return
+        if(isViewOpened(node, viewId, pkg)){
+            Log.d("reelblocker","view found")
+            for (req in data.requiresPresent) {
+                val matcher = NodeMatcher.parse(req)
+                if (matcher != null) {
+                    if (!viewBlockerHelper.findNodeByMatcher(node, matcher, pkg)) return
+                } else {
+                    if (findElementById(node, req) == null) return
                 }
+            }
+            Log.d("reelblocker","all present")
 
-                // check if currently under allowed hours
-                when(reelBlockerConfig.blockingType) {
-                    ReelBlockingType.TIMED -> {
-                        val endAllowedMillis = getEndTimeInMillis()
-                        if(endAllowedMillis==null) {
-                            showWarningScreen(viewId)
-                        }
-                    }
-                    ReelBlockingType.USAGE -> TODO()
-                    ReelBlockingType.REEL_COUNT -> {
-                        val limit = getDailyReelCountLimit()
-                        if (limit != null && limit > 0 && currentDailyCount >= limit) {
-                            showWarningScreen(viewId)
-                        }
+            for (req in data.requiresAbsent) {
+                val matcher = NodeMatcher.parse(req)
+                if (matcher != null) {
+                    if (viewBlockerHelper.findNodeByMatcher(node, matcher, pkg)) return
+                } else {
+                    if (findElementById(node, req) != null) return
+                }
+            }
+            Log.d("reelblocker","all absent")
+
+            if (isCooldownActive(viewId)) {
+                return
+            }
+
+            when(reelBlockerConfig.blockingType) {
+                ReelBlockingType.TIMED -> {
+                    val endAllowedMillis = getEndTimeInMillis()
+                    if(endAllowedMillis==null) {
+                        showWarningScreen(viewId)
                     }
                 }
-
+                ReelBlockingType.USAGE -> TODO()
+                ReelBlockingType.REEL_COUNT -> {
+                    val limit = getDailyReelCountLimit()
+                    if (limit != null && limit > 0 && currentDailyCount >= limit) {
+                        showWarningScreen(viewId)
+                    }
+                }
             }
         }
+        
         lastEventTimeStamp = SystemClock.uptimeMillis()
 
     }
@@ -147,6 +165,7 @@ class ReelBlocker : BaseBlocker() {
 
     fun setupBlocker(service: BaseBlockingService) {
         this.service = service
+        this.viewBlockerHelper.service = service
 
         notificationManager = TimerNotification(service)
         var displayMetrics: DisplayMetrics = service.resources.displayMetrics
@@ -227,9 +246,13 @@ class ReelBlocker : BaseBlocker() {
         return true
     }
 
-    private fun isViewOpened(rootNode: AccessibilityNodeInfo, viewId: String): Boolean {
-        val viewNode =
+    private fun isViewOpened(rootNode: AccessibilityNodeInfo, viewId: String, pkg: String): Boolean {
+        val viewIdMatcher = NodeMatcher.parse(viewId)
+        val viewNode = if (viewIdMatcher != null) {
+            viewBlockerHelper.resolveMatcherToNode(rootNode, viewIdMatcher, pkg)
+        } else {
             findElementById(rootNode, viewId)
+        }
         val nodeRect = Rect()
         viewNode?.getBoundsInScreen(nodeRect)
         val isOffScreenLeft = nodeRect.right <= 0

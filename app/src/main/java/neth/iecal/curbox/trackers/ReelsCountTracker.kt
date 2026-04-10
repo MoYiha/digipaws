@@ -25,19 +25,13 @@ import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
 import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.data.db.ReelStatsDao
 import neth.iecal.curbox.data.db.ReelStatsEntity
-import neth.iecal.curbox.hardcoded.ReelsCounterConsts.Companion.reelData
+import neth.iecal.curbox.data.models.ReelAppData
+import neth.iecal.curbox.hardcoded.ReelAppConfig.Companion.reelData
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
 import neth.iecal.curbox.utils.TimeTools
 
-data class ReelCounterData(
-    val viewId: String,
-    val requiresPresent: List<String>,
-    val requiresAbsent: List<String> = emptyList(),
-    val dynamicComparator: List<String>,
-    val comparsionResultCleanser: (String)->String = {s->s},
-    val eventType:Int = AccessibilityEvent.TYPE_VIEW_SCROLLED
-)
+
 
 class ReelsCountTracker {
 
@@ -110,7 +104,7 @@ class ReelsCountTracker {
         } catch (_: Exception) { }
     }
 
-    private fun checkForReelProgression(pkg: String, data: ReelCounterData) {
+    private fun checkForReelProgression(pkg: String, data: ReelAppData) {
         val root = service.rootInActiveWindow ?: return
 
         Log.d("reel","searchin view")
