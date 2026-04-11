@@ -29,7 +29,9 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _autoFocusGroups = MutableStateFlow<List<neth.iecal.curbox.data.models.AutoFocusGroup>>(emptyList())
     val autoFocusGroups: StateFlow<List<neth.iecal.curbox.data.models.AutoFocusGroup>> = _autoFocusGroups
-    var selectedMins = 25
+    
+    private val prefs = application.getSharedPreferences("AppPreferences", android.content.Context.MODE_PRIVATE)
+    var selectedMins = prefs.getInt("lastFocusDuration", 25)
 
     var selectedGroup : ManualFocusGroup? = null
 
@@ -87,8 +89,10 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
             requestFocusBlockerRefresh()
         }
     }
-    fun startFocusing(){
+    fun startFocusing() {
         if(selectedGroup == null) return
+        prefs.edit().putInt("lastFocusDuration", selectedMins).apply()
+        
         val durationMs = selectedMins * 60_000L
         val startTime = System.currentTimeMillis()
         val endTime = startTime + durationMs

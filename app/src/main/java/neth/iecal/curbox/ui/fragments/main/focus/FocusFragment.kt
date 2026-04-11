@@ -154,6 +154,9 @@ class FocusFragment : Fragment() {
     }
 
     private fun setupRuler() {
+        val initialSelectedMins = viewModel.selectedMins
+        isProgrammaticScroll = true
+
         val layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         binding.rvRuler.layoutManager = layoutManager
         binding.rvRuler.adapter = RulerAdapter(240)
@@ -179,6 +182,10 @@ class FocusFragment : Fragment() {
                 val padding = (binding.rvRuler.width / 2) - (itemWidthPx / 2)
                 binding.rvRuler.setPadding(padding, 0, padding, 0)
                 binding.rvRuler.clipToPadding = false
+                
+                binding.rvRuler.post {
+                    scrollToMinute(initialSelectedMins, smooth = false)
+                }
             }
         })
     }
