@@ -1,7 +1,6 @@
 package neth.iecal.curbox.ui.fragments.installation.onboarding.screens
 
 import android.Manifest
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,14 +8,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -30,11 +27,9 @@ import neth.iecal.curbox.data.models.AppUsageConfig
 import neth.iecal.curbox.services.AppBlockerService
 import neth.iecal.curbox.services.UsageTrackingService
 import neth.iecal.curbox.ui.activity.FragmentActivity
-import neth.iecal.curbox.ui.fragments.installation.AccessibilityGuide
-import neth.iecal.curbox.ui.fragments.installation.onboarding.OnboardingFragment
 import neth.iecal.curbox.ui.fragments.installation.onboarding.OnboardingViewModel
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerSettingViewModel
-import neth.iecal.curbox.ui.fragments.usage.AllAppsUsageFragment
+import neth.iecal.curbox.ui.fragments.main.usage.AllAppsUsageFragment
 import neth.iecal.curbox.utils.PermissionUtils
 import neth.iecal.curbox.utils.ZipUtils
 import neth.iecal.curbox.utils.ZipUtils.unzipSharedPreferencesFromUri

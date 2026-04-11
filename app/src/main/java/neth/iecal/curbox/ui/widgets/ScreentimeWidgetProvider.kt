@@ -9,7 +9,7 @@ import android.util.Log
 import android.widget.RemoteViews
 import neth.iecal.curbox.R
 import neth.iecal.curbox.ui.activity.FragmentActivity
-import neth.iecal.curbox.ui.fragments.usage.AllAppsUsageFragment
+import neth.iecal.curbox.ui.fragments.main.usage.AllAppsUsageFragment
 import neth.iecal.curbox.utils.DataStoreManager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking

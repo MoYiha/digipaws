@@ -1,39 +1,33 @@
-package neth.iecal.curbox.ui.fragments.usage
+package neth.iecal.curbox.ui.fragments.main.usage
 
 import android.annotation.SuppressLint
-import android.app.AppOpsManager
-import android.app.DatePickerDialog
-import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.usage.UsageStatsManager
-import android.content.Context
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.icu.util.Calendar
-import android.os.Build
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.provider.Settings
+import android.text.TextUtils
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity.RESULT_OK
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.pm.ShortcutInfoCompat
-import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.drawable.IconCompat
-import androidx.core.graphics.toColor
+import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -45,10 +39,10 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import neth.iecal.curbox.R
+import neth.iecal.curbox.data.db.WebsiteStatsEntity
 import neth.iecal.curbox.databinding.AppUsageItemBinding
 
 import neth.iecal.curbox.databinding.FragmentAllAppUsageBinding
@@ -56,12 +50,15 @@ import neth.iecal.curbox.ui.views.PebbleBubbleView
 import neth.iecal.curbox.ui.activity.FragmentActivity
 import neth.iecal.curbox.ui.activity.SelectAppsActivity
 import neth.iecal.curbox.ui.fragments.installation.onboarding.OnboardingFragment
-import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
+import neth.iecal.curbox.ui.widgets.ReelsWidgetProvider
+import neth.iecal.curbox.ui.widgets.ScreentimeWidgetProvider
+import neth.iecal.curbox.utils.ColorUtils
+import neth.iecal.curbox.utils.DataStoreManager
+import neth.iecal.curbox.utils.PermissionUtils
 import neth.iecal.curbox.utils.TimeTools
 import neth.iecal.curbox.utils.UsageStatsHelper
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Date
@@ -89,7 +86,7 @@ class AllAppsUsageFragment : Fragment() {
                 val selectedApps = result.data?.getStringArrayListExtra("SELECTED_APPS")
                 selectedApps?.let {
                     lifecycleScope.launch(Dispatchers.IO) {
-                        neth.iecal.curbox.utils.DataStoreManager(requireContext()).updateUsageTrackerIgnoredApps(it)
+                        DataStoreManager(requireContext()).updateUsageTrackerIgnoredApps(it)
                     }
                     viewModel.ignoredPackages.addAll(it)
                     viewModel.reload()
@@ -141,7 +138,7 @@ class AllAppsUsageFragment : Fragment() {
         viewModel = ViewModelProvider(this)[AllAppsUsageViewModel::class.java]
         usageStatsHelper = UsageStatsHelper(requireContext().applicationContext)
 
-        if (!neth.iecal.curbox.utils.PermissionUtils.hasAllRequiredPermissions(requireContext())) {
+        if (!PermissionUtils.hasAllRequiredPermissions(requireContext())) {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
                 putExtra("fragment", OnboardingFragment.FRAGMENT_ID)
             }
@@ -179,7 +176,7 @@ class AllAppsUsageFragment : Fragment() {
                 when (item.itemId) {
                     R.id.select_ignored -> {
                         lifecycleScope.launch(Dispatchers.IO) {
-                            val ignoredApps = neth.iecal.curbox.utils.DataStoreManager(requireContext()).settings.first().usageTrackerIgnoredApps
+                            val ignoredApps = DataStoreManager(requireContext()).settings.first().usageTrackerIgnoredApps
                             withContext(Dispatchers.Main) {
                                 val intent = Intent(requireContext(), SelectAppsActivity::class.java)
                                 intent.putStringArrayListExtra(
@@ -204,7 +201,7 @@ class AllAppsUsageFragment : Fragment() {
                         val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
                             .setTitleText("Select Export Range")
                             .setSelection(
-                                androidx.core.util.Pair(
+                                Pair(
                                     MaterialDatePicker.thisMonthInUtcMilliseconds(),
                                     MaterialDatePicker.todayInUtcMilliseconds()
                                 )
@@ -230,7 +227,7 @@ class AllAppsUsageFragment : Fragment() {
                     }
 
                     R.id.add_widget_usage_tracker -> {
-                        val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(requireContext())
+                        val appWidgetManager = AppWidgetManager.getInstance(requireContext())
 
                         if (appWidgetManager.isRequestPinAppWidgetSupported) {
                             val options = arrayOf("Screentime Stats", "Reels Stats")
@@ -238,9 +235,9 @@ class AllAppsUsageFragment : Fragment() {
                                 .setTitle("Select Widget to Pin")
                                 .setItems(options) { dialog, which ->
                                     val myProvider = if (which == 0) {
-                                        android.content.ComponentName(requireContext(), neth.iecal.curbox.ui.widgets.ScreentimeWidgetProvider::class.java)
+                                        ComponentName(requireContext(), ScreentimeWidgetProvider::class.java)
                                     } else {
-                                        android.content.ComponentName(requireContext(), neth.iecal.curbox.ui.widgets.ReelsWidgetProvider::class.java)
+                                        ComponentName(requireContext(), ReelsWidgetProvider::class.java)
                                     }
                                     appWidgetManager.requestPinAppWidget(myProvider, null, null)
                                     dialog.dismiss()
@@ -397,7 +394,7 @@ class AllAppsUsageFragment : Fragment() {
 
             val metadata = viewModel.getAppMetadata(stat.packageName)
             val blendedColor = metadata.icon?.let { icon ->
-                val dominantColor = neth.iecal.curbox.utils.ColorUtils.getDominantColor(icon)
+                val dominantColor = ColorUtils.getDominantColor(icon)
                 MaterialColors.layer(colorOnSurface, dominantColor, 0.45f)
             } ?: fallbackColors.getOrElse(index) { colorSurfaceVariant }
 
@@ -413,18 +410,18 @@ class AllAppsUsageFragment : Fragment() {
         val density = resources.displayMetrics.density
 
         topApps.forEachIndexed { index, stat ->
-            val itemLayout = android.widget.LinearLayout(requireContext()).apply {
-                orientation = android.widget.LinearLayout.HORIZONTAL
-                gravity = android.view.Gravity.CENTER_VERTICAL
+            val itemLayout = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
                 setPadding((8 * density).toInt(), 0, (8 * density).toInt(), 0)
             }
 
             // Colored dot
-            val dot = android.view.View(requireContext()).apply {
+            val dot = View(requireContext()).apply {
                 val size = (7 * density).toInt()
-                layoutParams = android.widget.LinearLayout.LayoutParams(size, size)
-                val drawable = android.graphics.drawable.GradientDrawable().apply {
-                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                layoutParams = LinearLayout.LayoutParams(size, size)
+                val drawable = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
                     setColor(legendColors.getOrElse(index) { colorSurfaceVariant })
                 }
                 background = drawable
@@ -433,15 +430,15 @@ class AllAppsUsageFragment : Fragment() {
 
             // App name
             val metadata = viewModel.getAppMetadata(stat.packageName)
-            val nameView = android.widget.TextView(requireContext()).apply {
+            val nameView = TextView(requireContext()).apply {
                 text = metadata.label
                 setTextColor(MaterialColors.getColor(requireView(), com.google.android.material.R.attr.colorOnSurfaceVariant))
                 textSize = 11f
                 maxLines = 1
-                ellipsize = android.text.TextUtils.TruncateAt.END
-                layoutParams = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+                ellipsize = TextUtils.TruncateAt.END
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
                     marginStart = (5 * density).toInt()
                 }
@@ -565,7 +562,7 @@ class AllAppsUsageFragment : Fragment() {
     inner class AppUsageViewHolder(private val binding: AppUsageItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(stats: Stat, websiteStats: List<neth.iecal.curbox.data.db.WebsiteStatsEntity>) {
+        fun bind(stats: Stat, websiteStats: List<WebsiteStatsEntity>) {
             val metadata = viewModel.getAppMetadata(stats.packageName)
             binding.appIcon.setImageDrawable(metadata.icon ?: ContextCompat.getDrawable(requireContext(), R.drawable.baseline_warning_24))
             binding.root.setOnClickListener {
@@ -583,7 +580,7 @@ class AllAppsUsageFragment : Fragment() {
                     .setCancelable(true)
                     .setPositiveButton("Okay") { _, _ ->
                         lifecycleScope.launch(Dispatchers.IO) {
-                            val dataStore = neth.iecal.curbox.utils.DataStoreManager(requireContext())
+                            val dataStore = DataStoreManager(requireContext())
                             val ignoredAppsSP = dataStore.settings.first().usageTrackerIgnoredApps.toMutableList()
                             if (!ignoredAppsSP.contains(stats.packageName)) {
                                 ignoredAppsSP.add(stats.packageName)
@@ -614,13 +611,13 @@ class AllAppsUsageFragment : Fragment() {
                 for (i in browserWebsites.indices) {
                     val website = browserWebsites[i]
                     val prefix = if (i == browserWebsites.size - 1) "└" else "├"
-                    val tv = android.widget.TextView(binding.root.context).apply {
-                        text = "$prefix  ${website.domain} • ${neth.iecal.curbox.utils.TimeTools.formatTimeForWidget(website.totalTime)}"
+                    val tv = TextView(binding.root.context).apply {
+                        text = "$prefix  ${website.domain} • ${TimeTools.formatTimeForWidget(website.totalTime)}"
                         textSize = 12f
-                        setTextColor(com.google.android.material.color.MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorOnSurfaceVariant))
+                        setTextColor(MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorOnSurfaceVariant))
                         setPadding(0, 4, 0, 4)
                         maxLines = 1
-                        ellipsize = android.text.TextUtils.TruncateAt.END
+                        ellipsize = TextUtils.TruncateAt.END
                     }
                     binding.threadContainer.addView(tv)
                 }
@@ -632,7 +629,7 @@ class AllAppsUsageFragment : Fragment() {
 
     inner class AppUsageAdapter(
         private var appUsageStats: List<Stat>,
-        private var websiteStats: List<neth.iecal.curbox.data.db.WebsiteStatsEntity> = emptyList()
+        private var websiteStats: List<WebsiteStatsEntity> = emptyList()
     ) : RecyclerView.Adapter<AppUsageViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppUsageViewHolder {
@@ -646,7 +643,7 @@ class AllAppsUsageFragment : Fragment() {
         }
 
         @SuppressLint("NotifyDataSetChanged")
-        fun updateData(newAppUsageStats: List<Stat>, newWebsiteStats: List<neth.iecal.curbox.data.db.WebsiteStatsEntity> = emptyList()) {
+        fun updateData(newAppUsageStats: List<Stat>, newWebsiteStats: List<WebsiteStatsEntity> = emptyList()) {
             appUsageStats = newAppUsageStats
             websiteStats = newWebsiteStats
             notifyDataSetChanged()

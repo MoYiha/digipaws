@@ -1,8 +1,7 @@
-package neth.iecal.curbox.ui.fragments.usage
+package neth.iecal.curbox.ui.fragments.main.usage
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -23,6 +22,10 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import neth.iecal.curbox.data.db.WebsiteStatsEntity
 import neth.iecal.curbox.data.db.AppDatabase
+import neth.iecal.curbox.utils.DataStoreManager
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class AllAppsUsageViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -93,7 +96,7 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             getDefaultLauncherPackageName(getApplication<Application>().packageManager)?.let {
                 ignoredPackages.add(it)
             }
-            val datastore = neth.iecal.curbox.utils.DataStoreManager(getApplication())
+            val datastore = DataStoreManager(getApplication())
             ignoredPackages.addAll(datastore.settings.first().usageTrackerIgnoredApps)
             loadWeekData()
         }
@@ -204,7 +207,7 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             "TOTAL · ${date.format(dayLabelFormatter)}"
         }
 
-        val dateString = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", java.util.Locale.getDefault()))
+        val dateString = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
         val websiteStats = websiteStatsDao.getStatsForDate(dateString)
 
         withContext(Dispatchers.Main) {
@@ -298,10 +301,10 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
                     label = appInfo.loadLabel(packageManager),
                     category = category,
                     isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
-                    installDate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                        .format(java.util.Date(packageInfo.firstInstallTime)),
-                    lastUpdate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                        .format(java.util.Date(packageInfo.lastUpdateTime)),
+                    installDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        .format(Date(packageInfo.firstInstallTime)),
+                    lastUpdate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        .format(Date(packageInfo.lastUpdateTime)),
                     icon = appInfo.loadIcon(packageManager)
                 )
             } catch (e: Exception) {

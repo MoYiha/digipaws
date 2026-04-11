@@ -4,10 +4,8 @@ import android.app.ActivityManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.util.Log
-import neth.iecal.curbox.ui.fragments.usage.AllAppsUsageFragment
+import neth.iecal.curbox.ui.fragments.main.usage.AllAppsUsageFragment
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId

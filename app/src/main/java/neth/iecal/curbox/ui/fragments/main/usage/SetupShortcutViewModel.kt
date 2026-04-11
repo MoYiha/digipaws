@@ -1,4 +1,4 @@
-package neth.iecal.curbox.ui.fragments.usage
+package neth.iecal.curbox.ui.fragments.main.usage
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
