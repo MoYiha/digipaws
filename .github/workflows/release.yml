@@ -3,8 +3,6 @@ name: Release CI
 on:
   push:
     branches: [ "kt-rewrite" ]
-  pull_request:
-    branches: [ "kt-rewrite" ]
   workflow_dispatch:
 
 jobs:
