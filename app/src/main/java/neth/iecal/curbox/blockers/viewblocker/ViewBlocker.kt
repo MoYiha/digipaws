@@ -40,64 +40,59 @@ class ViewBlocker : BaseBlocker() {
         private const val TARGET_EVENTS_MASK =
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or
-            AccessibilityEvent.TYPE_VIEW_SCROLLED or AccessibilityEvent.TYPE_VIEW_SELECTED
+            AccessibilityEvent.TYPE_VIEW_SCROLLED or
+            AccessibilityEvent.TYPE_VIEW_SELECTED
 
+        /**
+         * Built-in rules shipped with the app and shown as toggles in the UI.
+         * Converted to [ViewBlockerFilterRule] at runtime via [ViewBlockerRule.toFilterRule].
+         * [requirePresent] / [requireAbsent] use [NodeMatcher] syntax: `"type:value;type2:value2"`.
+         */
         val DEFAULT_RULES = listOf(
-            ViewBlockerRule("ig_stories_tray", "com.instagram.android", "Hide Stories", path = "com.instagram.android##path=androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.LinearLayout[0]", requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
-            ViewBlockerRule("ig_search_suggestions", "com.instagram.android", "Hide Explore Grid", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[3]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.FrameLayout[*]"),
-            ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide main feed ", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
-            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab", path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]", requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
-            ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons like, share, comment, in the reels tab", viewId = "com.instagram.android##viewId=com.instagram.android:id/clips_ufi_component"),
+            // ── Instagram ──
+            ViewBlockerRule("ig_stories_tray", "com.instagram.android", "Hide Stories",
+                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.LinearLayout[0]",
+                requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
+            ViewBlockerRule("ig_search_suggestions", "com.instagram.android", "Hide Explore Grid",
+                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[3]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.FrameLayout[*]"),
+            ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide main feed",
+                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
+            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab",
+                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]",
+                requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
+            ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons (like, share, comment) in the reels tab",
+                viewId = "com.instagram.android:id/clips_ufi_component"),
 
-            ViewBlockerRule("yt_video_thingies", "com.google.android.youtube", "Hide everything(recommendations, comments, description etc) except the video ", viewId = "com.google.android.youtube:id/watch_list"),
-            ViewBlockerRule("yt_video_everything_excpt_results", "com.google.android.youtube", "Hide feed and only let me access search results ", viewId = "com.google.android.youtube:id/results", requirePresent = listOf("descres:accessibility_feed_filter_bar_content_description")),
+            // ── YouTube ──
+            ViewBlockerRule("yt_video_thingies", "com.google.android.youtube", "Hide everything (recommendations, comments, description etc) except the video",
+                viewId = "com.google.android.youtube:id/watch_list"),
+            ViewBlockerRule("yt_video_everything_except_results", "com.google.android.youtube", "Hide feed and only let me access search results",
+                viewId = "com.google.android.youtube:id/results",
+                requirePresent = listOf("descres:accessibility_feed_filter_bar_content_description")),
 
+            // ── X / Twitter ──
+            ViewBlockerRule("x_feed_but_allow_following", "com.twitter.android", "Hide 'For You' and only let me access the Following tab",
+                viewId = "android:id/list",
+                requirePresent = listOf("descres:guide_tab_title_for_you;isSelected:true")),
 
-            ViewBlockerRule("x_feed_but_allow_following", "com.twitter.android", "Hide for you and only let me access the following tab ", viewId = "android:id/list", requirePresent = listOf("descres:guide_tab_title_for_you;isSelected:true")),
+            // ── LinkedIn ──
+            ViewBlockerRule("li_feed_item", "com.linkedin.android", "Hide feed item",
+                viewId = "com.linkedin.android:id/feed_item_update_card"),
+            ViewBlockerRule("li_notifications", "com.linkedin.android", "Hide notifications",
+                viewId = "com.linkedin.android:id/tab_notifications"),
 
-            ViewBlockerRule("li_feed_item", "com.linkedin.android", "Hide feed item", viewId = "com.linkedin.android:id/feed_item_update_card"),
-            ViewBlockerRule("li_notifications", "com.linkedin.android", "Hide notifications", viewId = "com.linkedin.android:id/tab_notifications"),
-            ViewBlockerRule("wa_ai_search", "com.whatsapp", "Hide AI suggestions in search", viewId = "com.whatsapp:id/search_meta_ai_input_send_button"),
-            ViewBlockerRule("wa_ai_button", "com.whatsapp", "Hide AI button", viewId = "com.whatsapp:id/extended_mini_fab"),
-            ViewBlockerRule("wa_rec_channels", "com.whatsapp", "Hide recommended channels", viewId = "com.whatsapp:id/newsletter_directory_row_container"),
-            ViewBlockerRule("wa_updates_button", "com.whatsapp", "Hide Updates button", path = "android.view.ViewGroup[0]>android.widget.FrameLayout[1]"),
-            ViewBlockerRule("wa_channels_path", "com.whatsapp", "Hide channels", path = "androidx.viewpager.widget.ViewPager[0]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.RelativeLayout[*]")
+            // ── WhatsApp ──
+            ViewBlockerRule("wa_ai_search", "com.whatsapp", "Hide AI suggestions in search",
+                viewId = "com.whatsapp:id/search_meta_ai_input_send_button"),
+            ViewBlockerRule("wa_ai_button", "com.whatsapp", "Hide AI button",
+                viewId = "com.whatsapp:id/extended_mini_fab"),
+            ViewBlockerRule("wa_rec_channels", "com.whatsapp", "Hide recommended channels",
+                viewId = "com.whatsapp:id/newsletter_directory_row_container"),
+            ViewBlockerRule("wa_updates_button", "com.whatsapp", "Hide Updates button",
+                path = "android.view.ViewGroup[0]>android.widget.FrameLayout[1]"),
+            ViewBlockerRule("wa_channels_path", "com.whatsapp", "Hide channels",
+                path = "androidx.viewpager.widget.ViewPager[0]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.RelativeLayout[*]")
         )
-
-        private fun defaultRuleToRuleString(rule: ViewBlockerRule): String {
-            val sb = StringBuilder(rule.packageName)
-            rule.viewId?.let { sb.append("##viewId=").append(it) }
-            rule.desc?.let { sb.append("##desc=").append(it) }
-            rule.path?.let { sb.append("##path=").append(it) }
-            rule.className?.let { sb.append("##className=").append(it) }
-            rule.text?.let { sb.append("##text=").append(it) }
-            if (rule.color != Color.WHITE) {
-                sb.append("##color=#").append(Integer.toHexString(rule.color))
-            }
-            if (!rule.blockTouches) {
-                sb.append("##blockTouches=false")
-            }
-            if (rule.requireAbsent.isNotEmpty()) {
-                sb.append("##requireAbsent=").append(rule.requireAbsent.joinToString("|"))
-            }
-            if (rule.requirePresent.isNotEmpty()) {
-                sb.append("##requirePresent=").append(rule.requirePresent.joinToString("|"))
-            }
-            rule.action?.let { sb.append("##action=").append(it) }
-            rule.textContains?.let { sb.append("##textContains=").append(it) }
-            rule.descContains?.let { sb.append("##descContains=").append(it) }
-            rule.textRegex?.let { sb.append("##textRegex=").append(it) }
-            rule.descRegex?.let { sb.append("##descRegex=").append(it) }
-            rule.matchChildren?.let { sb.append("##matchChildren=").append(it) }
-            rule.blockLayout?.let { sb.append("##blockLayout=").append(it) }
-            rule.excludeFromLayout?.let { sb.append("##excludeFromLayout=").append(it) }
-            rule.clickable?.let { sb.append("##clickable=").append(it) }
-            if (rule.maxPerScreen > 0) {
-                sb.append("##maxPerScreen=").append(rule.maxPerScreen)
-            }
-            sb.append("##comment=").append(rule.label)
-            return sb.toString()
-        }
     }
 
     lateinit var service: BaseBlockingService
@@ -160,32 +155,32 @@ class ViewBlocker : BaseBlocker() {
             return
         }
 
-        val ruleStrings = mutableListOf<String>()
-        config.rules.filter { it.isEnabled }.forEach { rule ->
-            ruleStrings.add(defaultRuleToRuleString(rule))
-        }
-        ruleStrings.addAll(config.customRules)
+        // Convert enabled built-in rules directly to filter rules (no string round-trip).
+        val builtInFilterRules = config.rules
+            .filter { it.isEnabled }
+            .map { it.toFilterRule() }
 
-        val allRules = ViewBlockerRuleParser.parseRules(ruleStrings).map {
-            it.copy(enabled = true)
-        }
+        val customFilterRules = ViewBlockerRuleParser.parseRules(config.customRules)
 
+        val allRules = (builtInFilterRules + customFilterRules).map { it.copy(enabled = true) }
+
+        // Group rules by package, then categorise by matching strategy so the hot path in
+        // collectOverlayActions can pick the most efficient lookup method per rule type.
         val newMap = HashMap<String, PackageRules>(allRules.size)
-        val grouped = allRules.groupBy { it.packageName }
-        for ((pkg, rules) in grouped) {
-            val pathRules = ArrayList<ViewBlockerFilterRule>()
-            val viewIdRules = ArrayList<ViewBlockerFilterRule>()
-            val viewIdDescRules = ArrayList<ViewBlockerFilterRule>()
-            val recursiveRules = ArrayList<ViewBlockerFilterRule>()
-            val layoutRules = ArrayList<ViewBlockerFilterRule>()
+        for ((pkg, rules) in allRules.groupBy { it.packageName }) {
+            val pathRules        = ArrayList<ViewBlockerFilterRule>()
+            val viewIdRules      = ArrayList<ViewBlockerFilterRule>()
+            val viewIdDescRules  = ArrayList<ViewBlockerFilterRule>()
+            val recursiveRules   = ArrayList<ViewBlockerFilterRule>()
+            val layoutRules      = ArrayList<ViewBlockerFilterRule>()
 
             for (rule in rules) {
                 when {
-                    rule.isLayoutRule -> layoutRules.add(rule)
-                    rule.parsedPath != null -> pathRules.add(rule)
+                    rule.isLayoutRule              -> layoutRules.add(rule)
+                    rule.parsedPath != null        -> pathRules.add(rule)
                     rule.needsViewIdWithDescLookup -> viewIdDescRules.add(rule)
-                    rule.needsViewIdLookup -> viewIdRules.add(rule)
-                    rule.isRecursiveRule -> recursiveRules.add(rule)
+                    rule.needsViewIdLookup         -> viewIdRules.add(rule)
+                    rule.isRecursiveRule           -> recursiveRules.add(rule)
                 }
             }
             newMap[pkg] = PackageRules(pathRules, viewIdRules, viewIdDescRules, recursiveRules, layoutRules)
@@ -487,9 +482,11 @@ class ViewBlocker : BaseBlocker() {
         return false
     }
 
-
+    // Cache of resolved app strings (package:resName → resolved string value).
+    // Used by the DESC_RES MatchType to look up a string resource from another app by name.
     private val appStringCache = HashMap<String, String>()
 
+    /** Resolve a string resource name from a foreign app's package, with in-memory caching. */
     private fun getAppString(packageName: String, resName: String): String? {
         val key = "$packageName:$resName"
         appStringCache[key]?.let { return it }
@@ -498,46 +495,12 @@ class ViewBlocker : BaseBlocker() {
             val resId = resources.getIdentifier(resName, "string", packageName)
             if (resId != 0) {
                 val str = resources.getString(resId)
-                Log.d("str",str)
                 appStringCache[key] = str
                 return str
             }
         } catch (_: Exception) {}
         return null
     }
-    // requires perm android.permission.READ_APP_SPECIFIC_LOCALES
-//    private fun getAppString(packageName: String, resName: String): String? {
-//        val key = "$packageName:$resName"
-//        appStringCache[key]?.let { return it }
-//        try {
-//            val foreignContext = service.createPackageContext(packageName, 0)
-//            var resources = foreignContext.resources
-//
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                val localeManager = service.getSystemService(Context.LOCALE_SERVICE) as? android.app.LocaleManager
-//                val locales = localeManager?.getApplicationLocales(packageName)
-//                if (locales != null && !locales.isEmpty) {
-//                    val actualLocale = locales.get(0)
-//                    val config = Configuration(resources.configuration)
-//                    config.setLocale(actualLocale)
-//                    val localizedContext = foreignContext.createConfigurationContext(config)
-//                    resources = localizedContext.resources
-//                }
-//            }
-//
-//            val resId = resources.getIdentifier(resName, "string", packageName)
-//            if (resId != 0) {
-//                val str = resources.getString(resId)
-//                appStringCache[key] = str
-//                Log.d("str",str)
-//                return str
-//            }
-//        } catch (e: Exception) {
-//            Log.e("AppStringFetcher", "Failed to get string from $packageName", e)
-//        }
-//        return null
-//    }
-
 
     // ── Node-level filters ──
 
@@ -635,7 +598,6 @@ class ViewBlocker : BaseBlocker() {
             val found = root.findAccessibilityNodeInfosByViewId(viewIdCriterion.second)
             return found?.firstOrNull { doesNodeMatch(it, matcher, packageName) }
         }
-        Log.d("reel_checking", matcher.toString())
         return findFirstNodeRecursive(root) { doesNodeMatch(it, matcher, packageName) }
     }
     @Suppress("DEPRECATION")

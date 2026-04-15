@@ -20,7 +20,6 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.R
-import neth.iecal.curbox.blockers.viewblocker.ViewBlockerRuleParser
 import neth.iecal.curbox.databinding.FragmentViewBlockerBinding
 
 
@@ -235,17 +234,42 @@ class ViewBlockerFragment : Fragment() {
         }
     }
 
+    /**
+     * Extract a human-readable label from a custom rule string.
+     *
+     * Handles both rule formats:
+     * - Legacy `##`-delimited: looks for a `comment=` segment.
+     * - Token-based: looks for a `comment:` token (quoted or unquoted).
+     *
+     * Falls back to the package name short form + first key:value pair when
+     * neither marker is present.
+     */
     private fun extractLabel(ruleString: String): String {
-        val parts = ruleString.split("##")
-        for (part in parts) {
-            if (part.startsWith("comment=")) {
-                return part.removePrefix("comment=")
+        // Legacy ##-delimited format: "com.pkg##viewId=foo##comment=My Rule"
+        if (ruleString.contains("##")) {
+            val parts = ruleString.split("##")
+            for (part in parts) {
+                if (part.startsWith("comment=")) {
+                    return part.removePrefix("comment=")
+                }
             }
+            // Fallback: package short name + first selector segment
+            val pkg = parts.getOrNull(0)?.substringAfterLast(".") ?: "rule"
+            val selector = parts.getOrNull(1) ?: ""
+            return "$pkg: $selector"
         }
-        // Fallback: show package + first selector
-        val pkg = parts.getOrNull(0)?.substringAfterLast(".") ?: "rule"
-        val selector = parts.getOrNull(1) ?: ""
-        return "$pkg: $selector"
+
+        // Token-based format: "pkg:com.example id:foo comment:My Rule"
+        val commentMatch = Regex("""comment:(?:"([^"]*)"|(\S+))""").find(ruleString)
+        if (commentMatch != null) {
+            return commentMatch.groupValues[1].ifEmpty { commentMatch.groupValues[2] }
+        }
+
+        // Fallback: extract pkg: short name + first non-pkg token
+        val pkgMatch = Regex("""pkg:(\S+)""").find(ruleString)
+        val pkgShort = pkgMatch?.groupValues?.get(1)?.substringAfterLast(".") ?: "rule"
+        val firstToken = ruleString.trim().split(" ").firstOrNull { !it.startsWith("pkg:") } ?: ""
+        return if (firstToken.isEmpty()) pkgShort else "$pkgShort: $firstToken"
     }
 
     override fun onDestroyView() {
