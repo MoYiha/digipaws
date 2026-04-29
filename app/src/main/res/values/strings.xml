@@ -273,4 +273,16 @@
     <string name="picker_notification_text">Tap to start picking an element</string>
     <string name="picker_active_title">Element Picker Active</string>
     <string name="picker_active_text">Tap elements on screen to select them</string>
+
+    <string name="appearance">Appearance</string>
+    <string name="btn_set_position">Set Position</string>
+    <string name="text_size_label">Text Size: 14sp</string>
+    <string name="text_size_value">Text Size: %dsp</string>
+    <string name="background_color">Background Color</string>
+    <string name="opacity_label">Opacity: 37%</string>
+    <string name="opacity_value">Opacity: %d%%</string>
+    <string name="text_opacity_label">Text Opacity: 100%</string>
+    <string name="text_opacity_value">Text Opacity: %d%%</string>
+    <string name="position_label">Position</string>
+    <string name="position_hint">Drag the indicator to set where the overlay appears</string>
 </resources>

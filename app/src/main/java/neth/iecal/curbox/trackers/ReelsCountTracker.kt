@@ -26,6 +26,7 @@ import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.data.db.ReelStatsDao
 import neth.iecal.curbox.data.db.ReelStatsEntity
 import neth.iecal.curbox.data.models.ReelAppData
+import neth.iecal.curbox.data.models.ReelCounterOverlayConfig
 import neth.iecal.curbox.hardcoded.ReelAppConfig.Companion.reelData
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
@@ -46,6 +47,7 @@ class ReelsCountTracker {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private var isOnDisplayCounter = true
+    private var overlayConfig = ReelCounterOverlayConfig()
     private var todayCount = 0
     private var lastDateStr = TimeTools.getCurrentDate()
 
@@ -65,6 +67,7 @@ class ReelsCountTracker {
         scope.launch {
             service.dataStoreManager.settings.collectLatest { settings ->
                 isOnDisplayCounter = settings.isReelCounterOn
+                overlayConfig = settings.reelCounterOverlayConfig
             }
         }
 
@@ -89,7 +92,7 @@ class ReelsCountTracker {
             if (reelData.containsKey(pkg)) {
                 if((event.eventType and reelData[pkg]!!.eventType) == 0) return
                 if (Settings.canDrawOverlays(service)) {
-                    overlayManager.startDisplaying()
+                    overlayManager.startDisplaying(overlayConfig)
                 }
             } else if (overlayManager   .isOverlayVisible) {
                 overlayManager.removeOverlay()
