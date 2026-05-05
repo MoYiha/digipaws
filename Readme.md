@@ -2,11 +2,11 @@
   <img src="fastlane/metadata/android/en-US/images/icon.png" style="width: 30%;" />
    <h2>Curbox</h2>
    
-   [![GitHub contributors](https://img.shields.io/github/contributors/nethical6/curbox)](https://github.com/nethical6/curbox/graphs/contributors)
+   [![GitHub contributors](https://img.shields.io/github/contributors/nethical6/digipaws)](https://github.com/nethical6/digipaws/graphs/contributors)
    [![Discord Server](https://img.shields.io/badge/Discord%20Server-white?style=flat&logo=discord)](https://discord.com/invite/Vs9mwUtuCN)
    [![Telegram Group](https://img.shields.io/badge/Telegram%20Group-blue?style=flat&logo=telegram)](https://t.me/curbox6)
-   [![Total downloads](https://img.shields.io/github/downloads/nethical6/curbox/total)](https://github.com/nethical6/curbox/releases)
-   [![Repository Size](https://img.shields.io/github/repo-size/nethical6/curbox)](https://github.com/nethical6/curbox)
+   [![Total downloads](https://img.shields.io/github/downloads/nethical6/digipaws/total)](https://github.com/nethical6/digipaws/releases)
+   [![Repository Size](https://img.shields.io/github/repo-size/nethical6/digipaws)](https://github.com/nethical6/digipaws)
 
 </div>
 
@@ -25,11 +25,8 @@ Curbox is an open-source Android productivity utility designed to help users red
 
 
 > [!CAUTION]
-> Please switch to the latest beta build if you face issues [Github Actions](
-https://github.com/nethical6/curbox/actions)
-
-> [!CAUTION]
-> I am rewriting the project as the old code was a mess. For stable local builds, please try [this commit](https://github.com/nethical6/curbox/tree/7ab40881d27ef6f83c9690cc03b97a763ea3d009). 
+> A new release is taking longer than expected because we're going through a rebrand. We very highly recommend you to use the beta app (available on our discord, telegram, and gh actions) over the current release.[Github Actions](
+https://github.com/nethical6/digipaws/actions)
 
 > [!CAUTION]
 > This project is experimental and not yet ready for full production. [Donate](https://curbox.life/donate)
