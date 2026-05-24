@@ -19,6 +19,7 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import neth.iecal.curbox.Constants
@@ -48,20 +49,24 @@ class FocusModeBlocker : BaseBlocker() {
         private const val AUTO_FOCUS_CHANNEL_ID = "AutoFocusChannel"
     }
 
-    private var focusModeData: ManualFocusModeData? = null
+    @Volatile private var focusModeData: ManualFocusModeData? = null
     private var lastPackage = ""
     private lateinit var service: BaseBlockingService
     private lateinit var notificationManager: TimerNotification
 
-    private var autoFocusGroups: List<AutoFocusGroup> = emptyList()
-    private val dismissedAutoFocusGroupIds = mutableSetOf<String>()
+    @Volatile private var autoFocusGroups: List<AutoFocusGroup> = emptyList()
+    private val dismissedAutoFocusGroupIds = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     private var autoFocusNotificationShown = false
-    private var essentialPackages: Set<String> = emptySet()
+    @Volatile private var essentialPackages: Set<String> = emptySet()
     private var currentActiveAutoFocusGroupId: String? = null
 
-    private var currentlySuspendedPackages = setOf<String>()
+    @Volatile private var currentlySuspendedPackages = setOf<String>()
     private var lastEvaluatedMinute = -1
 
+    // Tracks the active settings-watching coroutine so it can be cancelled on re-setup
+    private var settingsJob: kotlinx.coroutines.Job? = null
+
+    @Synchronized
     private fun updateSuspendedPackages(serviceContext: Context) {
         val newSuspendedPackages = mutableSetOf<String>()
 
@@ -321,7 +326,9 @@ class FocusModeBlocker : BaseBlocker() {
 
     fun setupFocusMode(service: BaseBlockingService) {
         this.service = service
-        notificationManager = TimerNotification(service)
+        if (!this::notificationManager.isInitialized) {
+            notificationManager = TimerNotification(service)
+        }
         createAutoFocusNotificationChannel()
 
         // cache essential packages
@@ -342,43 +349,73 @@ class FocusModeBlocker : BaseBlocker() {
             }
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        // Cancel any previously running settings watcher to prevent multiple competing coroutines
+        settingsJob?.cancel()
+        settingsJob = CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->
-
-                if (settings.activeManualFocusGroupId.first != null) {
-                    val currentFocusingGroup = settings.manualFocusGroups.find { it.groupId == settings.activeManualFocusGroupId.first }
-                    if (currentFocusingGroup != null && settings.activeManualFocusGroupId.second > System.currentTimeMillis()) {
-                        if (currentFocusingGroup.blockMode == FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED) {
-                            currentFocusingGroup.packages.addAll(essentialPackages)
-                        }
-                        focusModeData = ManualFocusModeData(currentFocusingGroup, settings.activeManualFocusGroupId.second)
-                        withContext(Dispatchers.Main) {
-                            notificationManager.startTimer(
-                                focusModeData!!.endTimeInMillis - System.currentTimeMillis(),
-                                timerId = "focus_mode",
-                                title = "Focus Mode is on"
-                            )
-                        }
-                    }
-                } else {
-                    focusModeData = null
-                    withContext(Dispatchers.Main) {
-                        notificationManager.stopTimer()
-                    }
-                }
-
-                autoFocusGroups = settings.autoFocusGroups
-                dismissedAutoFocusGroupIds.clear()
-                updateSuspendedPackages(service)
+                applySettings(settings)
             }
         }
+    }
+
+    /**
+     * Applies settings to in-memory state and updates suspended packages.
+     * Must be called from a coroutine context.
+     */
+    private suspend fun applySettings(settings: neth.iecal.curbox.data.models.Settings) {
+        if (settings.activeManualFocusGroupId.first != null) {
+            val currentFocusingGroup = settings.manualFocusGroups.find { it.groupId == settings.activeManualFocusGroupId.first }
+            if (currentFocusingGroup != null && settings.activeManualFocusGroupId.second > System.currentTimeMillis()) {
+                // Fix: copy the packages set instead of mutating the original data object
+                val effectiveGroup = if (currentFocusingGroup.blockMode == FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED) {
+                    val packagesCopy = HashSet(currentFocusingGroup.packages)
+                    packagesCopy.addAll(essentialPackages)
+                    currentFocusingGroup.copy(packages = packagesCopy)
+                } else {
+                    currentFocusingGroup
+                }
+                focusModeData = ManualFocusModeData(effectiveGroup, settings.activeManualFocusGroupId.second)
+                withContext(Dispatchers.Main) {
+                    notificationManager.startTimer(
+                        focusModeData!!.endTimeInMillis - System.currentTimeMillis(),
+                        timerId = "focus_mode",
+                        title = "Focus Mode is on"
+                    )
+                }
+            } else {
+                focusModeData = null
+                withContext(Dispatchers.Main) {
+                    notificationManager.stopTimer()
+                }
+            }
+        } else {
+            focusModeData = null
+            withContext(Dispatchers.Main) {
+                notificationManager.stopTimer()
+            }
+        }
+
+        val newAutoFocusGroups = settings.autoFocusGroups
+        // Fix: only clear dismissed IDs when the auto-focus groups themselves change, not on every settings update
+        if (newAutoFocusGroups != autoFocusGroups) {
+            dismissedAutoFocusGroupIds.clear()
+        }
+        autoFocusGroups = newAutoFocusGroups
+        updateSuspendedPackages(service)
     }
 
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent == null) return
             when (intent.action) {
-                INTENT_ACTION_REFRESH_FOCUS_MODE -> setupFocusMode(service)
+                INTENT_ACTION_REFRESH_FOCUS_MODE -> {
+                    // Do a one-shot re-read of current settings instead of calling setupFocusMode()
+                    // again, which would create a duplicate competing collectLatest coroutine.
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val settings = service.dataStoreManager.settings.first()
+                        applySettings(settings)
+                    }
+                }
                 INTENT_ACTION_EXIT_AUTO_FOCUS -> {
                     val specificGroupId = intent.getStringExtra("group_id")
                     if (specificGroupId != null) {
