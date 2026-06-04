@@ -25,6 +25,14 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.Vie
 class FragmentActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedPreferences = getSharedPreferences("AppPreferences", android.content.Context.MODE_PRIVATE)
+        val isFirstLaunchComplete = sharedPreferences.getBoolean("isFirstLaunchComplete", false)
+        val selectedFragment = intent.getStringExtra("fragment") ?: if (!isFirstLaunchComplete) OnboardingFragment.FRAGMENT_ID else AllAppsUsageFragment.FRAGMENT_ID
+
+        if (selectedFragment == OnboardingFragment.FRAGMENT_ID) {
+            setTheme(R.style.Theme_Curbox_Onboarding)
+        }
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_fragment)
@@ -36,13 +44,6 @@ class FragmentActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
 
-        val sharedPreferences = getSharedPreferences("AppPreferences", android.content.Context.MODE_PRIVATE)
-        val isFirstLaunchComplete = sharedPreferences.getBoolean("isFirstLaunchComplete", false)
-        var selectedFragment = intent.getStringExtra("fragment") ?: AllAppsUsageFragment.FRAGMENT_ID
-        if (!isFirstLaunchComplete && intent.getStringExtra("fragment") == null) {
-            selectedFragment = OnboardingFragment.FRAGMENT_ID
-        }
-        
         when (selectedFragment) {
             OnboardingFragment.FRAGMENT_ID,
             AccessibilityGuide.FRAGMENT_ID,
