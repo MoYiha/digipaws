@@ -9,12 +9,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.FragmentOnboardingBinding
 import neth.iecal.curbox.ui.fragments.installation.onboarding.screens.EmpathyFragment
 import neth.iecal.curbox.ui.fragments.installation.onboarding.screens.ScreenTimeEstimateFragment
 import neth.iecal.curbox.ui.fragments.installation.onboarding.screens.CoreValuesFragment
-import neth.iecal.curbox.ui.fragments.installation.onboarding.screens.FrictionExplanationFragment
 import neth.iecal.curbox.ui.fragments.installation.onboarding.screens.TargetSelectionFragment
 import neth.iecal.curbox.ui.fragments.installation.onboarding.screens.OnboardingPermissionsFragment
 
@@ -65,16 +63,15 @@ class OnboardingFragment : Fragment() {
     }
 
     private inner class OnboardingPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
-        override fun getItemCount(): Int = 6
+        override fun getItemCount(): Int = 5
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
                 0 -> EmpathyFragment()
                 1 -> ScreenTimeEstimateFragment()
                 2 -> CoreValuesFragment()
-                3 -> FrictionExplanationFragment()
-                4 -> TargetSelectionFragment()
-                5 -> OnboardingPermissionsFragment()
+                3 -> TargetSelectionFragment()
+                4 -> OnboardingPermissionsFragment()
                 else -> throw IllegalArgumentException("Invalid position $position")
             }
         }

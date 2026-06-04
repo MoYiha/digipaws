@@ -185,13 +185,18 @@
     <string name="val_60">60</string>
     <string name="val_120">120</string>
     <string name="val_0000">00:00</string>
-    <string name="your_phone_is_designed_to_be">Your phone is designed to be addictive.</string>
-    <string name="you_arent_lazy_and_your_willpower">You aren’t lazy, and your willpower isn\'t broken. You\'re just fighting algorithms built by thousands of engineers to keep you scrolling.</string>
-    <string name="lets_level_the_playing_field">Let\'s level the playing field.</string>
+    <string name="your_phone_is_designed_to_be">Your
+        phone
+        is
+        designed
+        to be
+        addictive</string>
+    <string name="you_arent_lazy_and_your_willpower">You aren’t lazy, and your willpower isn\'t broken. You\'re just fighting algorithms built by thousands of psychologists to keep you scrolling.</string>
+    <string name="lets_level_the_playing_field">Reduce the load on my willpower.</string>
     <string name="lets_look_at_the_numbers">Let\'s look at the numbers.</string>
     <string name="how_many_hours_a_day_do">How many hours a day do you think you spend on your phone?</string>
     <string name="val_4_hrs">4 hrs</string>
-    <string name="over_a_year_that_is_60">Over a year, that is 60 full days of your life staring at a screen.</string>
+    <string name="over_a_year_that_is_60">That is 1 full week of your life staring at a screen per year.</string>
     <string name="i_want_my_time_back">I want my time back.</string>
     <string name="what_are_you_making_room_for">What are you making room for?</string>
     <string name="mindless_scrolling_leaves_us_with_brain">Mindless scrolling leaves us with brain fog instead of actual rest. What would you rather be doing with those recovered hours?</string>

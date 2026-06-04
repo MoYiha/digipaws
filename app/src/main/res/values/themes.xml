@@ -49,7 +49,10 @@
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
     </style>
 
-    <style name="Theme.Curbox" parent="Base.Theme.Curbox" />
+    <style name="Theme.Curbox" parent="Base.Theme.Curbox">
+        <item name="android:fontFamily">@font/coolvetica</item>
+        <item name="fontFamily">@font/coolvetica</item>
+    </style>
 
     <style name="Theme.Curbox.TransparentDialog" parent="Theme.Material3.DayNight">
         <item name="android:windowNoTitle">true</item>

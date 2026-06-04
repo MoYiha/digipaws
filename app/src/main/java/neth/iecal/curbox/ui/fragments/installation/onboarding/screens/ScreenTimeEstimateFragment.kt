@@ -55,7 +55,7 @@ class ScreenTimeEstimateFragment : Fragment() {
         
         val weeks = daysPerYear / 7
         
-        binding.tvRealitySubtext.text = "Over a year, that is $weeks full weeks of your life staring at a screen."
+        binding.tvRealitySubtext.text = "That is $weeks full weeks of your life staring at a screen per year."
     }
 
     override fun onDestroyView() {
