@@ -13,7 +13,6 @@ import android.text.TextUtils
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.startActivity
 import neth.iecal.curbox.services.AppBlockerService
-import neth.iecal.curbox.services.UsageTrackingService
 
 object PermissionUtils {
     fun openAccessibilityServiceScreen(context: Context, cls: Class<*>) {
@@ -80,8 +79,7 @@ object PermissionUtils {
         return hasOverlayPermission(context) &&
                 hasUsageStatsPermission(context) &&
                 isNotificationPermissionGiven(context) &&
-                isAccessibilityServiceEnabled(context, AppBlockerService::class.java) &&
-                isAccessibilityServiceEnabled(context, UsageTrackingService::class.java)
+                isAccessibilityServiceEnabled(context, AppBlockerService::class.java)
     }
 
     fun isShizukuAvailable(): Boolean {

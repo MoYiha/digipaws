@@ -17,13 +17,17 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.CrashLogger
 import neth.iecal.curbox.anti_stimulants.GrayScaleFilter
+import neth.iecal.curbox.anti_stimulants.MindfulMessageTracker
 import neth.iecal.curbox.blockers.AppBlocker
 import neth.iecal.curbox.blockers.FocusModeBlocker
 import neth.iecal.curbox.blockers.KeywordBlocker
 import neth.iecal.curbox.blockers.ReelBlocker
 import neth.iecal.curbox.blockers.viewblocker.ElementPickerNotification
 import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
+import neth.iecal.curbox.trackers.ReelsCountTracker
+import neth.iecal.curbox.trackers.WebsiteUsageTracker
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
+import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
 
 @Suppress("DEPRECATION")
 class AppBlockerService : BaseBlockingService() {
@@ -58,6 +62,10 @@ class AppBlockerService : BaseBlockingService() {
 
 
     private var grayScaleFilter = GrayScaleFilter()
+    private val reelsOverlayManager by lazy { ReelsOverlayManager(this) }
+    private val reelsCountTracker = ReelsCountTracker()
+    private val mindfulMessageTracker = MindfulMessageTracker()
+    private val websiteUsageTracker = WebsiteUsageTracker()
 
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
@@ -85,6 +93,9 @@ class AppBlockerService : BaseBlockingService() {
             appBlocker.doAppBlockerCheck(event)
             grayScaleFilter.doGrayscaleCheck(event)
             focusModeBlocker.doFocusModeCheck(event)
+            reelsCountTracker.onEvent(event)
+            mindfulMessageTracker.onEvent(event)
+            websiteUsageTracker.onEvent(event)
         } catch (t: Throwable) {
             Log.e("error",t.message.toString())
             crashLogger.logNonFatalError(Exception(t))
@@ -133,6 +144,9 @@ class AppBlockerService : BaseBlockingService() {
         viewBlocker.setupElementPicker()
         pickerNotification = ElementPickerNotification(this)
         grayScaleFilter.setup(this)
+        reelsCountTracker.setup(this, reelsOverlayManager)
+        mindfulMessageTracker.setup(this)
+        websiteUsageTracker.setup(this)
 
         focusModeBlocker.setupReceivers()
         appBlocker.setupReceivers()
@@ -140,6 +154,7 @@ class AppBlockerService : BaseBlockingService() {
         keywordBlocker.setupReceivers()
         grayScaleFilter.setupReceivers()
         viewBlocker.setupReceivers()
+        reelsCountTracker.setupReceivers()
 
         val pickerFilter = IntentFilter().apply {
             addAction(ViewBlockerFragment.INTENT_ACTION_SHOW_PICKER_NOTIFICATION)
@@ -165,6 +180,9 @@ class AppBlockerService : BaseBlockingService() {
             keywordBlocker.removeReceivers()
             grayScaleFilter.unregisterReceivers()
             viewBlocker.removeReceivers()
+            mindfulMessageTracker.onDestroy()
+            reelsCountTracker.onDestroy()
+            websiteUsageTracker.onDestroy()
             try { unregisterReceiver(pickerReceiver) } catch (_: Exception) {}
             pickerNotification?.cancelNotification()
 

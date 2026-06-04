@@ -45,8 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:visibility="gone"
-                android:text="Grant all perms with Shizuku" />
+                android:text="Grant all permissions with Shizuku" />
 
             <!-- 1. Overlay Perm -->
             <com.google.android.material.card.MaterialCardView
@@ -246,35 +245,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:id="@+id/tracker_acc_perm_root"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="horizontal"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:id="@+id/tracker_acc_perm_title"
-                        style="@style/TextAppearance.Material3.BodyLarge"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/usage_tracker_accessibility"
-                        android:textColor="?attr/colorOnSurface" />
-
-                    <ImageView
-                        android:id="@+id/tracker_acc_perm_icon"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/baseline_close_24"
-                        app:tint="?attr/colorError" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                app:strokeWidth="1dp"/>
 
             <!-- 6. Shizuku Perm -->
             <com.google.android.material.card.MaterialCardView
@@ -284,44 +255,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:id="@+id/shizuku_perm_root"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="horizontal"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:id="@+id/shizuku_perm_title"
-                        style="@style/TextAppearance.Material3.BodyLarge"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Shizuku (Optional)"
-                        android:textColor="?attr/colorOnSurface" />
-
-                    <ImageView
-                        android:id="@+id/shizuku_perm_icon"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/baseline_close_24"
-                        app:tint="?attr/colorError" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                style="@style/TextAppearance.Material3.BodyLarge"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
-                android:gravity="center"
-                android:text="@string/do_you_want_to_restore_a"
-                android:textColor="?attr/colorOnSurfaceVariant" />
+                app:strokeWidth="1dp"/>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -330,35 +264,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:id="@+id/restore_root"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="horizontal"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:id="@+id/restore_title"
-                        style="@style/TextAppearance.Material3.BodyLarge"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/restore_backup"
-                        android:textColor="?attr/colorOnSurface" />
-
-                    <ImageView
-                        android:id="@+id/restore_icon"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@android:drawable/ic_menu_save"
-                        app:tint="?attr/colorPrimary" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                app:strokeWidth="1dp"/>
         </LinearLayout>
     </ScrollView>
 
