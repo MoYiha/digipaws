@@ -47,7 +47,41 @@ class OnboardingFragment : Fragment() {
         }
         val pagerAdapter = OnboardingPagerAdapter(this)
         binding.viewPager.adapter = pagerAdapter
-        binding.viewPager.isUserInputEnabled = false // disable swipe, MUST click buttons
+        binding.viewPager.isUserInputEnabled = false 
+        binding.viewPager.setPageTransformer(InteractivePageTransformer())
+
+        binding.viewPager.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                // Smooth background fade between steps
+                val totalProgress = position + positionOffset
+                val alpha = (totalProgress % 1.0f) * 0.2f
+                binding.bgOverlay.alpha = alpha
+            }
+        })
+    }
+
+    private class InteractivePageTransformer : androidx.viewpager2.widget.ViewPager2.PageTransformer {
+        override fun transformPage(page: View, position: Float) {
+            val absPos = Math.abs(position)
+            page.apply {
+                alpha = 1f - absPos
+                translationX = -position * width / 1.5f
+                val scale = 0.85f + (1f - absPos) * 0.15f
+                scaleX = scale
+                scaleY = scale
+
+                if (this is ViewGroup) {
+                    val content = getChildAt(0) as? ViewGroup
+                    if (content != null) {
+                        for (i in 0 until content.childCount) {
+                            val child = content.getChildAt(i)
+                            child.translationX = position * (i + 1) * 200f
+                            child.alpha = 1f - absPos * 2f // Faster fade for children
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun goToNextPage() {
