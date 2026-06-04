@@ -9,6 +9,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import neth.iecal.curbox.databinding.FragmentOnboardingBinding
 import neth.iecal.curbox.ui.fragments.installation.onboarding.screens.EmpathyFragment
 import neth.iecal.curbox.ui.fragments.installation.onboarding.screens.ScreenTimeEstimateFragment
@@ -75,19 +76,63 @@ class OnboardingFragment : Fragment() {
                     if (content != null) {
                         for (i in 0 until content.childCount) {
                             val child = content.getChildAt(i)
-                            child.translationX = position * (i + 1) * 200f
-                            child.alpha = 1f - absPos * 2f // Faster fade for children
+                            child.translationX = position * (i + 1) * 1200f
+                            child.alpha = 1f - absPos
                         }
                     }
                 }
             }
         }
     }
-
     fun goToNextPage() {
         val currentItem = binding.viewPager.currentItem
-        if (currentItem < (binding.viewPager.adapter?.itemCount ?: 0) - 1) {
-            binding.viewPager.currentItem = currentItem + 1
+        val itemCount = binding.viewPager.adapter?.itemCount ?: 0
+        if (currentItem < itemCount - 1) {
+            val nextItem = currentItem + 1
+
+            // Custom smooth scroll animation to slow down the transition
+            val viewPager = binding.viewPager
+            val width = viewPager.width
+            val animator = android.animation.ValueAnimator.ofInt(0, width)
+
+            animator.addUpdateListener { valueAnimator ->
+                val value = valueAnimator.animatedValue as Int
+                if (!viewPager.isFakeDragging) {
+                    viewPager.beginFakeDrag()
+                }
+                viewPager.fakeDragBy(-value.toFloat() * (1f / width.toFloat()) * width)
+            }
+
+            animator.addListener(object : android.animation.AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: android.animation.Animator) {
+                    if (viewPager.isFakeDragging) viewPager.endFakeDrag()
+                }
+            })
+
+            // Use a duration of 800ms (default is approx 250-300ms)
+            val duration = 800L
+
+            // Fallback to default if width is not measured, else use custom animation
+            if (width > 0) {
+                val pxToDrag = width.toFloat()
+                val animator = android.animation.ValueAnimator.ofFloat(0f, pxToDrag)
+                var previousValue = 0f
+                animator.addUpdateListener { valueAnimator ->
+                    val currentValue = valueAnimator.animatedValue as Float
+                    val delta = currentValue - previousValue
+                    viewPager.fakeDragBy(-delta)
+                    previousValue = currentValue
+                }
+                animator.addListener(object : android.animation.AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: android.animation.Animator) { viewPager.beginFakeDrag() }
+                    override fun onAnimationEnd(animation: android.animation.Animator) { viewPager.endFakeDrag() }
+                })
+                animator.duration = duration
+                animator.interpolator = android.view.animation.AccelerateDecelerateInterpolator()
+                animator.start()
+            } else {
+                viewPager.currentItem = nextItem
+            }
         }
     }
 

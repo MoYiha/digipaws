@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
@@ -12,7 +13,6 @@
         android:overScrollMode="never"
         android:padding="24dp"
         android:scrollbars="none"
-        app:layout_constraintBottom_toTopOf="@+id/bottomContainer"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
@@ -60,6 +60,7 @@
                     app:cardElevation="0dp"
                     app:strokeColor="?attr/colorOutline"
                     app:strokeWidth="1dp">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -79,6 +80,7 @@
                     app:cardElevation="0dp"
                     app:strokeColor="?attr/colorOutline"
                     app:strokeWidth="1dp">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -98,6 +100,7 @@
                     app:cardElevation="0dp"
                     app:strokeColor="?attr/colorOutline"
                     app:strokeWidth="1dp">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -117,6 +120,7 @@
                     app:cardElevation="0dp"
                     app:strokeColor="?attr/colorOutline"
                     app:strokeWidth="1dp">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -124,7 +128,7 @@
                         android:text="@string/reddit"
                         android:textAppearance="?attr/textAppearanceBodyLarge" />
                 </com.google.android.material.card.MaterialCardView>
-                
+
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_other"
                     android:layout_width="match_parent"
@@ -136,6 +140,7 @@
                     app:cardElevation="0dp"
                     app:strokeColor="?attr/colorOutline"
                     app:strokeWidth="1dp">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -193,29 +198,16 @@
                     android:text="@string/val_2_hours" />
 
             </com.google.android.material.chip.ChipGroup>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_action"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="100dp"
+                android:enabled="false"
+                android:text="@string/add_friction_to_this_app" />
         </LinearLayout>
     </ScrollView>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/bottomContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="8dp"
-        android:padding="24dp"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_action"
-            style="@style/Widget.Material3.Button"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:enabled="false"
-            android:text="@string/add_friction_to_this_app"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
