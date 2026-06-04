@@ -4,7 +4,6 @@ import android.accessibilityservice.AccessibilityService
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import neth.iecal.curbox.utils.DataStoreManager
-import neth.iecal.curbox.anti_stimulants.MindfulMessageTracker
 import kotlin.lazy
 
 open class BaseBlockingService : AccessibilityService() {

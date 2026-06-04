@@ -25,6 +25,7 @@ import neth.iecal.curbox.data.models.AppBlockingType
 import neth.iecal.curbox.data.models.AppGroup
 import neth.iecal.curbox.data.models.AppUsageConfig
 import neth.iecal.curbox.services.AppBlockerService
+import neth.iecal.curbox.services.UsageTrackingService
 import neth.iecal.curbox.ui.activity.FragmentActivity
 import neth.iecal.curbox.ui.fragments.installation.onboarding.OnboardingViewModel
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerSettingViewModel
@@ -190,6 +191,17 @@ class OnboardingPermissionsFragment : Fragment() {
             }
         }
 
+        binding.trackerAccPermRoot.setOnClickListener {
+            if (neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), UsageTrackingService::class.java)) return@setOnClickListener
+            showExplanationDialog(
+                title = "Usage Tracker (Accessibility API)",
+                rationale = "Curbox uses the Android AccessibilityService API to track the number of reels/tiktoks you consume and show mindful nudges. This is crucial for usage tracking to function.",
+                openSourceExplanation = "\uD83D\uDEE1\uFE0F Transparency for Deep Access: This is a powerful permission, which is why being open source is so critical. You don't have to just trust our word that we only track usage—the global community has reviewed our public code to guarantee it."
+            ) {
+                PermissionUtils.openAccessibilityServiceScreen(requireContext(),UsageTrackingService::class.java)
+            }
+        }
+
 
         binding.btnShizukuGrantAll.setOnClickListener {
             if (!neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()) {
@@ -248,6 +260,7 @@ class OnboardingPermissionsFragment : Fragment() {
 
         val pkg = requireContext().packageName
         val svc1 = "$pkg/${AppBlockerService::class.java.name}"
+        val svc2 = "$pkg/${UsageTrackingService::class.java.name}"
 
         val command = """
             appops set $pkg SYSTEM_ALERT_WINDOW allow
@@ -257,12 +270,16 @@ class OnboardingPermissionsFragment : Fragment() {
             
             CURRENT_ACC_SVCS=${'$'}(settings get secure enabled_accessibility_services)
             if [ "${'$'}CURRENT_ACC_SVCS" = "null" ] || [ -z "${'$'}CURRENT_ACC_SVCS" ]; then
-                settings put secure enabled_accessibility_services "$svc1"
+                settings put secure enabled_accessibility_services "$svc1:$svc2"
             else
                 NEW_SVCS="${'$'}CURRENT_ACC_SVCS"
                 case "${'$'}CURRENT_ACC_SVCS" in
                     *"$svc1"*) ;;
                     *) NEW_SVCS="${'$'}NEW_SVCS:$svc1" ;;
+                esac
+                case "${'$'}NEW_SVCS" in
+                    *"$svc2"*) ;;
+                    *) NEW_SVCS="${'$'}NEW_SVCS:$svc2" ;;
                 esac
                 settings put secure enabled_accessibility_services "${'$'}NEW_SVCS"
             fi
@@ -296,7 +313,7 @@ class OnboardingPermissionsFragment : Fragment() {
         val hasNotif = neth.iecal.curbox.utils.PermissionUtils.isNotificationPermissionGiven(requireContext())
         val hasDnd = (requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager).isNotificationPolicyAccessGranted
         val hasBlocker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), AppBlockerService::class.java)
-        val hasTracker = hasBlocker
+        val hasTracker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), UsageTrackingService::class.java)
         val hasShizuku = neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()
         
         if (neth.iecal.curbox.utils.PermissionUtils.isShizukuAvailable()) {
@@ -310,6 +327,7 @@ class OnboardingPermissionsFragment : Fragment() {
         setPermissionIcon(hasNotif, binding.notifPermIcon)
         setPermissionIcon(hasDnd, binding.dndPermIcon)
         setPermissionIcon(hasBlocker, binding.blockerAccPermIcon)
+        setPermissionIcon(hasTracker, binding.trackerAccPermIcon)
 
         // Enforce Sequence
         binding.overlayPermRoot.isEnabled = !hasOverlay
@@ -330,6 +348,10 @@ class OnboardingPermissionsFragment : Fragment() {
         val canDoBlocker = canDoDnd && hasDnd
         binding.blockerAccPermRoot.isEnabled = canDoBlocker && !hasBlocker
         binding.blockerAccPermRoot.alpha = if (canDoBlocker) (if (hasBlocker) 0.5f else 1.0f) else 0.3f
+
+        val canDoTracker = canDoBlocker && hasBlocker
+        binding.trackerAccPermRoot.isEnabled = canDoTracker && !hasTracker
+        binding.trackerAccPermRoot.alpha = if (canDoTracker) (if (hasTracker) 0.5f else 1.0f) else 0.3f
 
         val allGranted = hasOverlay && hasUsageStats && hasNotif && hasDnd && hasBlocker && hasTracker
         binding.btnAction.isEnabled = allGranted
