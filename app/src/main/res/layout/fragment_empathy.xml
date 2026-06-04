@@ -6,6 +6,30 @@
     android:layout_height="match_parent">
 
 
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/ascii_art"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.5"
+            android:breakStrategy="simple"
+            android:ellipsize="none"
+            android:fontFamily="monospace"
+            android:inputType="textMultiLine"
+
+            android:lineSpacingMultiplier="0.85"
+            android:singleLine="false"
+            android:text="@string/ascii_brain"
+            android:textSize="11sp" />
+    </HorizontalScrollView>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
