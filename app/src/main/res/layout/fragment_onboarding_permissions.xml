@@ -6,6 +6,30 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/ascii_art"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.5"
+            android:breakStrategy="simple"
+            android:ellipsize="none"
+            android:fontFamily="monospace"
+            android:inputType="textMultiLine"
+
+            android:lineSpacingMultiplier="0.85"
+            android:singleLine="false"
+            android:text="@string/ascii_key"
+            android:textSize="11sp" />
+    </HorizontalScrollView>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -18,6 +42,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -25,7 +50,7 @@
                 style="@style/TextAppearance.Material3.HeadlineMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="44dp"
                 android:text="@string/give_us_the_keys"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />

@@ -21,6 +21,7 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autofocus.Creat
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.reelBlocker.ReelBlockerFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.KeywordBlockerFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
+import androidx.core.view.isVisible
 
 class FragmentActivity : AppCompatActivity() {
 
@@ -36,14 +37,24 @@ class FragmentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_fragment)
+
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, maxOf(systemBars.bottom, ime.bottom))
+
+            // If bottom navigation is visible, it handles the bottom system bar inset itself.
+            // We only apply the bottom padding from system bars if the bottom nav is hidden.
+            val bottomPadding = if (bottomNav.isVisible) {
+                ime.bottom // Only pad for keyboard if nav is visible
+            } else {
+                maxOf(systemBars.bottom, ime.bottom)
+            }
+
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, bottomPadding)
             insets
         }
-
-        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
 
         when (selectedFragment) {
             OnboardingFragment.FRAGMENT_ID,
