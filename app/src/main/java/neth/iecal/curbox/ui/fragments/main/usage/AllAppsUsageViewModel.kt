@@ -77,10 +77,6 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
     private val _totalTime = MutableLiveData<Long>(0L)
     val totalTime: LiveData<Long> = _totalTime
 
-    // Comparison text
-    private val _comparisonText = MutableLiveData<String>()
-    val comparisonText: LiveData<String> = _comparisonText
-
     // Date sublabel ("TOTAL TODAY" or "TOTAL · Mar 15")
     private val _dateSublabel = MutableLiveData("TOTAL TODAY")
     val dateSublabel: LiveData<String> = _dateSublabel
@@ -126,7 +122,6 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             val weekStart = getWeekStart(_weekOffset.value ?: 0)
             val selectedDate = weekStart.plusDays(index.toLong())
             loadDayStats(selectedDate)
-            computeComparison(selectedDate)
             withContext(Dispatchers.Main) { _isLoading.value = false }
         }
     }
@@ -190,8 +185,7 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
         val selectedDate = weekStart.plusDays(defaultSelected.toLong())
         loadDayStats(selectedDate)
 
-        // Compute comparison text
-        computeComparison(selectedDate)
+        withContext(Dispatchers.Main) { _isLoading.value = false }
     }
 
     private suspend fun loadDayStats(date: LocalDate) {
@@ -215,42 +209,6 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             _selectedDayWebsiteStats.value = websiteStats
             _totalTime.value = total
             _dateSublabel.value = sublabel
-        }
-    }
-
-    private suspend fun computeComparison(selectedDate: LocalDate) {
-        val today = LocalDate.now()
-        val isToday = selectedDate == today
-
-        val previousDay = selectedDate.minusDays(1)
-        val previousDayStats = getFilteredStatsForDay(previousDay)
-        val previousDayTotal = previousDayStats.sumOf { it.totalTime }
-
-        val selectedStats = getFilteredStatsForDay(selectedDate)
-        val selectedTotal = selectedStats.sumOf { it.totalTime }
-
-        val comparisonLabel = if (isToday) "yesterday" else "the previous day"
-
-        val text = if (previousDayTotal > 0 && selectedTotal > 0) {
-            val diff = ((selectedTotal - previousDayTotal).toDouble() / previousDayTotal * 100).toInt()
-            if (diff < 0) {
-                "\"You spent ${-diff}% less time on your device\ncompared to $comparisonLabel.\""
-            } else if (diff > 0) {
-                "\"You spent ${diff}% more time on your device\ncompared to $comparisonLabel.\""
-            } else {
-                "\"You spent the same amount of time on your\ndevice as $comparisonLabel.\""
-            }
-        } else if (previousDayTotal == 0L && selectedTotal > 0) {
-            "\"No usage data available for $comparisonLabel.\""
-        } else if (selectedTotal == 0L) {
-            "\"No usage data recorded for this day.\""
-        } else {
-            ""
-        }
-
-        withContext(Dispatchers.Main) {
-            _comparisonText.value = text
-            _isLoading.value = false
         }
     }
 

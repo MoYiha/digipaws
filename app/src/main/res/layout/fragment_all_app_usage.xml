@@ -21,112 +21,48 @@
         tools:context=".ui.activity.AppUsageActivity">
 
         <!-- Top action row -->
-        <LinearLayout
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="horizontal">
+            android:layout_marginTop="100dp"
+            android:visibility="visible">
+
             <Button
                 android:id="@+id/open_menu"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                app:icon="@drawable/outline_more_vert_24"
-                app:iconTint="?attr/colorOnSurfaceVariant" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp">
+                android:layout_alignParentEnd="true"
+                android:layout_gravity="end"
+                app:icon="@drawable/outline_more_vert_24" />
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:orientation="vertical"
-                android:paddingHorizontal="24dp"
-                android:paddingTop="28dp"
-                android:paddingBottom="24dp">
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical">
 
-                <!-- ACTIVITY label -->
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/date_sublabel"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:letterSpacing="0.2"
-                    android:text="@string/activity_powered_by"
-                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
+                    android:text="@string/total_today"
+                    android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
 
-                <!-- Your Digital Well-being -->
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/total_usage"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="@string/your_digital_wellbeing"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-                    android:textColor="?attr/colorOnSurface" />
-
-                <!-- Pebble bubble visualization with center text overlay -->
-                <FrameLayout
-                    android:layout_width="250dp"
-                    android:layout_height="250dp"
-                    android:layout_marginTop="15dp">
-
-                    <neth.iecal.curbox.ui.views.PebbleBubbleView
-                        android:id="@+id/pebble_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/total_usage"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textStyle="bold"
-                            android:textSize="50sp"
-                            android:shadowColor="#7F000000"
-                            android:shadowDx="2"
-                            android:shadowDy="2"
-                            android:shadowRadius="3"
-                            tools:text="4h 12m" />
-
-                        <TextView
-                            android:id="@+id/date_sublabel"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:textStyle="bold"
-                            android:text="@string/total_today"
-                            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
-                            android:shadowColor="#7F000000"
-                            android:shadowDx="2"
-                            android:shadowDy="2"
-                            android:shadowRadius="3"
-                            />
-
-                    </LinearLayout>
-                </FrameLayout>
-
-                <!-- Pebble legend (compact: dot + name) -->
-                <LinearLayout
-                    android:id="@+id/pebble_legend"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:orientation="horizontal" />
-
+                    android:fontFamily="@font/coolvetica_rg"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="55sp"
+                    android:textStyle="bold"
+                    tools:text="4h 12m" />
 
             </LinearLayout>
-        </LinearLayout>
+        </RelativeLayout>
 
         <!-- Weekly activity section (outside card, more breathing room) -->
         <neth.iecal.curbox.ui.views.WeeklyBarGraphView
@@ -134,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:paddingHorizontal="4dp" />
+            android:padding="0dp" />
 
         <!-- Week navigation -->
         <LinearLayout
@@ -176,54 +112,20 @@
                 app:tint="?attr/colorOnSurfaceVariant" />
         </LinearLayout>
 
-        <!-- Hidden select_date button (used programmatically) -->
-        <Button
-            android:id="@+id/select_date"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:visibility="gone"
-            android:text="" />
-
         <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginHorizontal="8dp"
-            android:background="?attr/colorOutlineVariant" />
 
         <!-- MOST USED section header -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:letterSpacing="0.1"
-            android:text="@string/most_used"
-            android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-            android:textColor="?attr/colorOnSurfaceVariant" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/app_usage_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="32dp"
             android:clipToPadding="false"
             android:nestedScrollingEnabled="false"
             android:paddingBottom="16dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/app_usage_item" />
-
-        <TextView
-            android:id="@+id/comparison_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:gravity="center"
-            android:visibility="gone"
-            android:lineSpacingExtra="2dp"
-            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            tools:text="&quot;You've spent 15% less time on your device\ncompared to yesterday.&quot;" />
 
         <Space
             android:layout_width="1dp"
@@ -236,26 +138,25 @@
         android:id="@+id/loading_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:elevation="10dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:background="?attr/colorSurface"
-        android:visibility="gone"
-        tools:visibility="visible"
-        android:elevation="10dp">
-        
+        android:visibility="gone">
+
         <neth.iecal.curbox.ui.views.WalkingPawsLoadingView
             android:layout_width="160dp"
             android:layout_height="80dp" />
-            
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:letterSpacing="0.1"
             android:text="@string/crunching_numbers"
             android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:letterSpacing="0.1" />
-            
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
     </LinearLayout>
 
 </FrameLayout>

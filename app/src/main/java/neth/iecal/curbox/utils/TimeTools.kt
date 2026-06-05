@@ -89,7 +89,7 @@ class TimeTools {
             val minutes = (timeInMillis % (1000 * 60 * 60)) / (1000 * 60)
 
             return buildString {
-                if (hours > 0) append("${hours}h")
+                if (hours > 0) append("${hours}h ")
                 if (minutes > 0L) append("${minutes}m")
                 if (hours == 0L && minutes == 0L) append("<1m") // Handle case for less than 1 minute
             }.trim()

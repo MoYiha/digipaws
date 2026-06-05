@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -46,7 +45,6 @@ import neth.iecal.curbox.data.db.WebsiteStatsEntity
 import neth.iecal.curbox.databinding.AppUsageItemBinding
 
 import neth.iecal.curbox.databinding.FragmentAllAppUsageBinding
-import neth.iecal.curbox.ui.views.PebbleBubbleView
 import neth.iecal.curbox.ui.activity.FragmentActivity
 import neth.iecal.curbox.ui.activity.SelectAppsActivity
 import neth.iecal.curbox.ui.fragments.installation.onboarding.OnboardingFragment
@@ -278,7 +276,6 @@ class AllAppsUsageFragment : Fragment() {
 
         viewModel.selectedDayStats.observe(viewLifecycleOwner) { stats ->
             adapter.updateData(stats, viewModel.selectedDayWebsiteStats.value ?: emptyList())
-            updatePebbles(stats)
         }
 
         viewModel.selectedDayWebsiteStats.observe(viewLifecycleOwner) { websiteStats ->
@@ -287,11 +284,6 @@ class AllAppsUsageFragment : Fragment() {
 
         viewModel.totalTime.observe(viewLifecycleOwner) { totalMs ->
             binding.totalUsage.text = TimeTools.formatTimeForWidget(totalMs)
-        }
-
-        viewModel.comparisonText.observe(viewLifecycleOwner) { text ->
-            binding.comparisonText.text = text
-            binding.comparisonText.visibility = if (text.isNullOrEmpty()) View.GONE else View.VISIBLE
         }
 
         viewModel.weekRangeLabel.observe(viewLifecycleOwner) { label ->
@@ -348,104 +340,6 @@ class AllAppsUsageFragment : Fragment() {
         super.onResume()
         if (::viewModel.isInitialized) {
             viewModel.reload()
-        }
-    }
-
-    private fun updatePebbles(statsList: List<Stat>) {
-        binding.pebbleLegend.removeAllViews()
-
-        if (statsList.isEmpty()) {
-            binding.pebbleView.setData(emptyList())
-            return
-        }
-
-        val sortedStats = statsList.sortedByDescending { it.totalTime }
-        val topApps = sortedStats.take(3)
-        val maxTime = topApps.first().totalTime.toFloat()
-
-        val colorPrimary = MaterialColors.getColor(
-            requireView(),
-            com.google.android.material.R.attr.colorPrimary
-        )
-        val colorSecondary = MaterialColors.getColor(
-            requireView(),
-            com.google.android.material.R.attr.colorSecondary
-        )
-        val colorTertiary = MaterialColors.getColor(
-            requireView(),
-            com.google.android.material.R.attr.colorTertiary
-        )
-        val colorSurface = MaterialColors.getColor(
-            requireView(),
-            com.google.android.material.R.attr.colorSurfaceContainerHigh
-        )
-        val colorOnSurface = Color.WHITE
-        val colorSurfaceVariant = MaterialColors.getColor(
-            requireView(),
-            com.google.android.material.R.attr.colorSurfaceVariant
-        )
-        val fallbackColors = listOf(colorPrimary, colorSecondary, colorTertiary)
-
-        val pebbleDataList = mutableListOf<PebbleBubbleView.PebbleData>()
-        val legendColors = mutableListOf<Int>()
-
-        topApps.forEachIndexed { index, stat ->
-            val weight = if (maxTime > 0) stat.totalTime.toFloat() / maxTime else 0.5f
-
-            val metadata = viewModel.getAppMetadata(stat.packageName)
-            val blendedColor = metadata.icon?.let { icon ->
-                val dominantColor = ColorUtils.getDominantColor(icon)
-                MaterialColors.layer(colorOnSurface, dominantColor, 0.45f)
-            } ?: fallbackColors.getOrElse(index) { colorSurfaceVariant }
-
-            val label = metadata.label.toString()
-
-            pebbleDataList.add(PebbleBubbleView.PebbleData(blendedColor, weight, label))
-            legendColors.add(blendedColor)
-        }
-
-        binding.pebbleView.setData(pebbleDataList)
-
-        // Build legend: colored dot + app name
-        val density = resources.displayMetrics.density
-
-        topApps.forEachIndexed { index, stat ->
-            val itemLayout = LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
-                setPadding((8 * density).toInt(), 0, (8 * density).toInt(), 0)
-            }
-
-            // Colored dot
-            val dot = View(requireContext()).apply {
-                val size = (7 * density).toInt()
-                layoutParams = LinearLayout.LayoutParams(size, size)
-                val drawable = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(legendColors.getOrElse(index) { colorSurfaceVariant })
-                }
-                background = drawable
-            }
-            itemLayout.addView(dot)
-
-            // App name
-            val metadata = viewModel.getAppMetadata(stat.packageName)
-            val nameView = TextView(requireContext()).apply {
-                text = metadata.label
-                setTextColor(MaterialColors.getColor(requireView(), com.google.android.material.R.attr.colorOnSurfaceVariant))
-                textSize = 11f
-                maxLines = 1
-                ellipsize = TextUtils.TruncateAt.END
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    marginStart = (5 * density).toInt()
-                }
-            }
-            itemLayout.addView(nameView)
-
-            binding.pebbleLegend.addView(itemLayout)
         }
     }
 
