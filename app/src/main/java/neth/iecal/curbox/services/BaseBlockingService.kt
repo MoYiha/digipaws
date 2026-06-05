@@ -1,11 +1,19 @@
 package neth.iecal.curbox.services
 
 import android.accessibilityservice.AccessibilityService
+import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
+import androidx.core.app.NotificationCompat
+import neth.iecal.curbox.R
 import neth.iecal.curbox.utils.DataStoreManager
 import kotlin.lazy
 
+@SuppressLint("AccessibilityPolicy")
 open class BaseBlockingService : AccessibilityService() {
 
     val dataStoreManager  by lazy {
@@ -18,6 +26,40 @@ open class BaseBlockingService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        startForegroundService()
+    }
+
+    private fun startForegroundService() {
+        val channelId = "blocking_service_channel"
+        val channelName = "Blocking Service"
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        val channel = NotificationChannel(
+            channelId,
+            channelName,
+            NotificationManager.IMPORTANCE_LOW
+        ).apply {
+            description = "Running in the background to protect you"
+        }
+        notificationManager.createNotificationChannel(channel)
+
+        val className = this::class.simpleName
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Curbox $className is active")
+            .setContentText("Protecting your digital wellbeing")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOngoing(true)
+            .build()
+
+        val notificationId = this.javaClass.simpleName.hashCode()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(notificationId, notification)
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {

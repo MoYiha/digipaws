@@ -34,6 +34,7 @@ class UsageTrackingService : BaseBlockingService() {
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onServiceConnected() {
+        super.onServiceConnected()
         serviceInfo = AccessibilityServiceInfo().apply {
             eventTypes =
                 AccessibilityEvent.TYPE_VIEW_SCROLLED or AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
