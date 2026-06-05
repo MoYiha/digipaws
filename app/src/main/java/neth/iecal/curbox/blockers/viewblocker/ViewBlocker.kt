@@ -49,19 +49,19 @@ class ViewBlocker : BaseBlocker() {
          * [requirePresent] / [requireAbsent] use [NodeMatcher] syntax: `"type:value;type2:value2"`.
          */
         val DEFAULT_RULES : List<ViewBlockerRule> = listOf(
-            // Instagram
-            ViewBlockerRule("ig_stories_tray", "com.instagram.android", "Hide Stories",
-                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.LinearLayout[0]",
-                requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
-            ViewBlockerRule("ig_search_suggestions", "com.instagram.android", "Hide Explore Grid",
-                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[3]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.FrameLayout[*]"),
-            ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide main feed",
-                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
-            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab",
-                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]",
-                requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
-            ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons (like, share, comment) in the reels tab",
-                viewId = "com.instagram.android:id/clips_ufi_component"),
+//            // Instagram
+//            ViewBlockerRule("ig_stories_tray", "com.instagram.android", "Hide Stories",
+//                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.LinearLayout[0]",
+//                requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
+//            ViewBlockerRule("ig_search_suggestions", "com.instagram.android", "Hide Explore Grid",
+//                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[3]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.FrameLayout[*]"),
+//            ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide main feed",
+//                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
+//            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab",
+//                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]",
+//                requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
+//            ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons (like, share, comment) in the reels tab",
+//                viewId = "com.instagram.android:id/clips_ufi_component"),
 
             // YouTube
             ViewBlockerRule("yt_video_thingies", "com.google.android.youtube", "Hide everything (recommendations, comments, description etc) except the video",
