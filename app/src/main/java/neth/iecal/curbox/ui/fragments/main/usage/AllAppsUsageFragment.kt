@@ -136,6 +136,19 @@ class AllAppsUsageFragment : Fragment() {
         viewModel = ViewModelProvider(this)[AllAppsUsageViewModel::class.java]
         usageStatsHelper = UsageStatsHelper(requireContext().applicationContext)
 
+        // Randomize ASCII art
+        val asciiArts = listOf(
+            R.string.ascii_brain,
+            R.string.ascii_aim,
+            R.string.ascii_star1,
+            R.string.ascii_star2,
+            R.string.ascii_kitty,
+            R.string.ascii_star3,
+            R.string.ascii_star4,
+            R.string.ascii_star5,
+        )
+        binding.asciiArt.text = getString(asciiArts.random())
+
         if (!PermissionUtils.hasAllRequiredPermissions(requireContext())) {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
                 putExtra("fragment", OnboardingFragment.FRAGMENT_ID)
