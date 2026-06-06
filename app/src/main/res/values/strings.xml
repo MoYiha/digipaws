@@ -91,7 +91,7 @@
     <string name="system_diagnostics">System Diagnostics</string>
     <string name="view_and_share_application_crash_logs">View and share application crash logs to help improve Curbox.</string>
     <string name="view_crash_logs">View Crash Logs</string>
-    <string name="group_name">Group Name</string>
+    <string name="group_name">Name</string>
     <string name="val_10_apps_usage_based">10 Apps • Usage Based</string>
     <string name="no_app_groups_yet_create_one">No App Groups yet. Create one!</string>
     <string name="create_group">Create Group</string>
@@ -100,7 +100,7 @@
     <string name="blocking_configuration">BLOCKING CONFIGURATION</string>
     <string name="usage_based">Usage Based</string>
     <string name="time_based">Time Based</string>
-    <string name="configure_settings">Configure Settings</string>
+    <string name="configure_settings">Configure Schedule</string>
     <string name="configure_warning_screen_1">Configure Warning Screen</string>
     <string name="done">Done</string>
     <string name="set_limits_for_each_day">Set limits for each day</string>

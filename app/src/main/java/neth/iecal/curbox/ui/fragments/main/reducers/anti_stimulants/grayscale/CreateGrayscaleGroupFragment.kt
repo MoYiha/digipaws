@@ -84,6 +84,13 @@ class CreateGrayscaleGroupFragment : Fragment() {
                         selectedApps = ArrayList(group.packages.toList())
                         binding.btnSelectApps.text = "Select Apps (${selectedApps.size})"
 
+                        binding.btnDeleteGroup.visibility = View.VISIBLE
+                        binding.btnDeleteGroup.setOnClickListener {
+                            viewModel.removeGroup(group)
+                            Toast.makeText(requireContext(), "Group deleted", Toast.LENGTH_SHORT).show()
+                            requireActivity().finish()
+                        }
+
                         viewModel.currentDailyIntervals = group.dailyIntervals.toMutableMap()
                     }
                 }

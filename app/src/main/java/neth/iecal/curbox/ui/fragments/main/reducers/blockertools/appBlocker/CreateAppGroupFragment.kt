@@ -23,7 +23,6 @@ import neth.iecal.curbox.ui.activity.SelectAppsActivity
 import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.AppUsageConfig
 import java.util.UUID
-import kotlin.jvm.java
 
 class CreateAppGroupFragment : Fragment() {
 
@@ -66,10 +65,6 @@ class CreateAppGroupFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.toolbar.setNavigationOnClickListener {
-            requireActivity().finish()
-        }
-
         var isEditing = false
         var existingGroup: AppGroup? = null
         val groupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
@@ -88,10 +83,18 @@ class CreateAppGroupFragment : Fragment() {
                     if (group != null && !isEditing) {
                         isEditing = true
                         existingGroup = group
-                        binding.toolbar.title = "Edit App Group"
+                        binding.textView2.text = "Edit App Group"
                         binding.etGroupName.setText(group.name)
                         selectedApps = ArrayList(group.selectedPackages)
                         binding.btnSelectApps.text = "Select Apps (${selectedApps.size})"
+
+                        binding.btnDeleteGroup.visibility = View.VISIBLE
+                        binding.btnDeleteGroup.setOnClickListener {
+                            isDeleting = true
+                            viewModel.deleteGroup(group.id)
+                            Toast.makeText(requireContext(), getString(R.string.group_deleted), Toast.LENGTH_SHORT).show()
+                            requireActivity().finish()
+                        }
 
                         if (group.blockingType == AppBlockingType.Usage) {
                             binding.rgBlockingType.check(R.id.rb_usage_based)
@@ -102,6 +105,7 @@ class CreateAppGroupFragment : Fragment() {
                         }
                         viewModel.warningScrnConfig = group.warningScreenConfig
 
+                        /* 
                         binding.toolbar.menu.clear()
                         val deleteItem = binding.toolbar.menu.add(0, 1001, 0, "Delete")
                         deleteItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
@@ -116,6 +120,7 @@ class CreateAppGroupFragment : Fragment() {
                                 false
                             }
                         }
+                        */
                     }
                 }
             }
