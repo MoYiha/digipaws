@@ -59,10 +59,6 @@ class CreateAutoFocusGroupFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.toolbar.setNavigationOnClickListener {
-            requireActivity().finish()
-        }
-
         var isEditing = false
         var existingGroup: AutoFocusGroup? = null
         val groupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
@@ -85,7 +81,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
                     if (group != null && !isEditing) {
                         isEditing = true
                         existingGroup = group
-                        binding.toolbar.title = "Edit AutoFocus Group"
+                        binding.textView.text = "Edit AutoFocus Group"
                         binding.etGroupName.setText(group.groupName)
                         selectedApps = ArrayList(group.packages.toList())
                         binding.btnSelectApps.text = "Select Apps (${selectedApps.size})"
@@ -100,20 +96,6 @@ class CreateAutoFocusGroupFragment : Fragment() {
                         
                         binding.switchExitable.isChecked = group.exitable
                         binding.switchDnd.isChecked = group.autoTurnOnDnd
-
-                        binding.toolbar.menu.clear()
-                        val deleteItem = binding.toolbar.menu.add(0, 1001, 0, "Delete")
-                        deleteItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-                        binding.toolbar.setOnMenuItemClickListener { item ->
-                            if (item.itemId == 1001) {
-                                viewModel.removeGroup(group)
-                                Toast.makeText(requireContext(), getString(R.string.group_deleted), Toast.LENGTH_SHORT).show()
-                                requireActivity().finish()
-                                true
-                            } else {
-                                false
-                            }
-                        }
                     }
                 }
             }

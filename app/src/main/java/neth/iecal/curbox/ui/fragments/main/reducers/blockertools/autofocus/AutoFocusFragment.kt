@@ -36,10 +36,6 @@ class AutoFocusFragment : Fragment() {
     ): View {
         _binding = FragmentAutofocusBinding.inflate(inflater, container, false)
         
-        binding.toolbar.setNavigationOnClickListener {
-            requireActivity().finish()
-        }
-
         binding.fabAddGroup.setOnClickListener {
             val intent = Intent(requireContext(), neth.iecal.curbox.ui.activity.FragmentActivity::class.java).apply {
                 putExtra("fragment", CreateAutoFocusGroupFragment.FRAGMENT_ID)

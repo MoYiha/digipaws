@@ -38,10 +38,6 @@ class GrayscaleFragment : Fragment() {
     ): View {
         _binding = FragmentGrayscaleBinding.inflate(inflater, container, false)
         
-        binding.toolbar.setNavigationOnClickListener {
-            requireActivity().finish()
-        }
-
         binding.fabAddGroup.setOnClickListener {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
                 putExtra("fragment", CreateGrayscaleGroupFragment.FRAGMENT_ID)

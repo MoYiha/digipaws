@@ -32,7 +32,6 @@ class AppBlockerGroupsFragment : Fragment() {
     private lateinit var rvGroups: RecyclerView
     private lateinit var tvEmptyState: TextView
     private lateinit var fabAddGroup: FloatingActionButton
-    private lateinit var toolbar: MaterialToolbar
 
     private val viewModel: AppBlockerSettingViewModel by activityViewModels()
 
@@ -45,11 +44,7 @@ class AppBlockerGroupsFragment : Fragment() {
         rvGroups = view.findViewById(R.id.rv_app_groups)
         tvEmptyState = view.findViewById(R.id.tv_empty_state)
         fabAddGroup = view.findViewById(R.id.fab_add_group)
-        toolbar = view.findViewById(R.id.toolbar)
 
-        toolbar.setNavigationOnClickListener {
-            requireActivity().finish()
-        }
 
         fabAddGroup.setOnClickListener {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {

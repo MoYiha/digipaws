@@ -67,7 +67,7 @@
     <string name="val_100">+100%</string>
     <string name="blocker_tools">Focus Boundaries</string>
     <string name="app_blocker">Apps</string>
-    <string name="restrict_access_to_distracting_apps">Temporarily mute apps to protect your deep work and focus.</string>
+    <string name="restrict_access_to_distracting_apps">Temporarily mute apps</string>
     <string name="reels_blocker">Short-Form Video Content</string>
     <string name="disable_shortform_video_feeds">Hide short-form videos to help maintain your attention span.</string>
     <string name="auto_focus">Auto Focus</string>
