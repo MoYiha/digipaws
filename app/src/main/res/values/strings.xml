@@ -66,18 +66,18 @@
     <string name="val_13k">1.3k</string>
     <string name="val_100">+100%</string>
     <string name="blocker_tools">Focus Boundaries</string>
-    <string name="app_blocker">App Pause</string>
+    <string name="app_blocker">Apps</string>
     <string name="restrict_access_to_distracting_apps">Temporarily mute apps to protect your deep work and focus.</string>
-    <string name="reels_blocker">Reels Pause</string>
+    <string name="reels_blocker">Short-Form Video Content</string>
     <string name="disable_shortform_video_feeds">Hide short-form videos to help maintain your attention span.</string>
     <string name="auto_focus">Auto Focus</string>
     <string name="turn_on_focus_mode_between_set">Automatically secure distraction-free windows in your daily schedule.</string>
-    <string name="blocked_keywords">Blocked Keywords</string>
+    <string name="blocked_keywords">Keywords And Websites</string>
     <string name="filter_specific_words_across_apps">Keep your digital space peaceful by filtering out specific topics.</string>
     <string name="stimulation_reducers">Mindful Nudges</string>
     <string name="on_screen_reminder">Gentle Prompts</string>
     <string name="put_in_messages_and_counters_floating">Subtle on-screen cues to help you stay anchored in the present.</string>
-    <string name="reel_counter">Reel Counter</string>
+    <string name="reel_counter">Short-Form Video Counter</string>
     <string name="track_the_number_of_reels_consumed">Track and analyze the number of short-form content consumed</string>
     <string name="grayscale_filter">Grayscale Filter</string>
     <string name="reduce_visual_stimulation">Reduce visual stimulation</string>
@@ -264,7 +264,7 @@
     <string name="position_center">Center</string>
     <string name="position_bottom">Bottom</string>
 
-    <string name="view_blocking">View Blocking</string>
+    <string name="view_blocking">Hide UI Elements</string>
     <string name="hide_distracting_ui_elements_in_apps">Hide distracting UI elements in apps</string>
     <string name="enable_view_blocker">Enable View Blocker</string>
     <string name="default_rules">Default Rules</string>

@@ -43,7 +43,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                    app:cardBackgroundColor="?attr/colorTertiaryContainer"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
@@ -53,7 +53,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_app_blocker_aesthetic"
-                        app:tint="?attr/colorPrimary" />
+                        app:tint="?attr/colorTertiary" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <LinearLayout
@@ -76,7 +76,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/restrict_access_to_distracting_apps"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <ImageView
@@ -108,7 +109,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
+                    app:cardBackgroundColor="?attr/colorTertiaryContainer"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
@@ -118,7 +119,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_block_aesthetic"
-                        app:tint="?attr/colorOnSurface" />
+                        app:tint="?attr/colorTertiary" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <LinearLayout
@@ -141,7 +142,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/disable_shortform_video_feeds"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <ImageView
@@ -201,12 +203,6 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/turn_on_focus_mode_between_set"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <ImageView
@@ -239,7 +235,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    app:cardBackgroundColor="?attr/colorSecondaryContainer"
+                    app:cardBackgroundColor="?attr/colorTertiaryContainer"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
@@ -249,7 +245,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_keywords_aesthetic"
-                        app:tint="?attr/colorSecondary" />
+                        app:tint="?attr/colorTertiary" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <LinearLayout
@@ -272,7 +268,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/filter_specific_words_across_apps"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <ImageView
@@ -338,7 +335,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/hide_distracting_ui_elements_in_apps"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <ImageView
@@ -424,7 +422,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/put_in_messages_and_counters_floating"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <ImageView
@@ -456,7 +455,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                    app:cardBackgroundColor="?attr/colorSecondaryContainer"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
@@ -466,7 +465,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_chart_aesthetic"
-                        app:tint="?attr/colorPrimary" />
+                        app:tint="?attr/colorSecondary" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <LinearLayout
@@ -489,7 +488,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/track_the_number_of_reels_consumed"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <ImageView
@@ -521,7 +521,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
+                    app:cardBackgroundColor="?attr/colorSecondaryContainer"
                     app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp">
@@ -531,7 +531,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_grayscale_aesthetic"
-                        app:tint="?attr/colorOnSurface" />
+                        app:tint="?attr/colorSecondary" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <LinearLayout
@@ -554,7 +554,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/reduce_visual_stimulation"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
                 <ImageView
@@ -573,13 +574,15 @@
             android:letterSpacing="0.1"
             android:text="Reducer Analytics"
             android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
-            android:textColor="?attr/colorOnSurfaceVariant" />
-            
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_logged_intents"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="40dp"
+            android:visibility="gone"
             app:cardBackgroundColor="?attr/colorSurfaceContainer"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
