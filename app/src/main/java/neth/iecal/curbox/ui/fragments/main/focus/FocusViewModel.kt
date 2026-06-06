@@ -143,7 +143,7 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
 
                 _currentRunningTimer.value = remaining
 
-                delay(1000L)
+                delay(100L)
             }
 
             // Timer Finished
