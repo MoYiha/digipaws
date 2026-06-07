@@ -23,6 +23,11 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.CreateKeywordGroupFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
 import androidx.core.view.isVisible
+import android.animation.ValueAnimator
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.os.Build
+import androidx.fragment.app.Fragment
 
 class FragmentActivity : AppCompatActivity() {
 
@@ -111,6 +116,8 @@ class FragmentActivity : AppCompatActivity() {
                 }
                 
                 bottomNav.setOnItemSelectedListener { item ->
+                    if (item.itemId == bottomNav.selectedItemId) return@setOnItemSelectedListener false
+
                     val fragment = when (item.itemId) {
                         R.id.nav_usage -> AllAppsUsageFragment()
                         R.id.nav_focus -> FocusFragment()
@@ -119,14 +126,57 @@ class FragmentActivity : AppCompatActivity() {
                         else -> AllAppsUsageFragment()
                     }
                     
-                    supportFragmentManager.beginTransaction()
-                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                        .replace(R.id.fragment_holder, fragment)
-                        .commit()
-                    
+                    switchFragment(fragment)
                     true
                 }
             }
+        }
+    }
+
+    private fun switchFragment(fragment: Fragment) {
+        val container = findViewById<android.view.View>(R.id.fragment_holder)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val animator = ValueAnimator.ofFloat(0f, 1f)
+            animator.duration = 500 // Slightly longer for a more "premium" feel
+
+            var fragmentReplaced = false
+
+            animator.addUpdateListener { animation ->
+                val fraction = animation.animatedFraction
+                
+                // Animate blur: 0 -> 40 -> 0
+                val blurRadius = if (fraction < 0.5f) fraction * 2 * 40f else (1f - fraction) * 2 * 40f
+                
+                // Animate alpha: 1.0 -> 0.0 -> 1.0 (Full dip to 0 to hide the swap)
+                val alphaValue = if (fraction < 0.5f) 1f - (fraction * 2f) else (fraction - 0.5f) * 2f
+
+                container.alpha = alphaValue
+                
+                if (blurRadius > 0.1f) {
+                    container.setRenderEffect(
+                        RenderEffect.createBlurEffect(
+                            blurRadius, blurRadius, Shader.TileMode.CLAMP
+                        )
+                    )
+                } else {
+                    container.setRenderEffect(null)
+                }
+
+                if (fraction >= 0.5f && !fragmentReplaced) {
+                    fragmentReplaced = true
+                    // Remove the built-in fade animation here to avoid conflict with our manual alpha animation
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_holder, fragment)
+                        .commitNow()
+                }
+            }
+            animator.start()
+        } else {
+            supportFragmentManager.beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.fragment_holder, fragment)
+                .commit()
         }
     }
 }
