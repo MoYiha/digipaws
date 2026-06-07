@@ -279,59 +279,70 @@ class AllAppsUsageFragment : Fragment() {
 
     private fun observeViewModel(adapter: AppUsageAdapter) {
         viewModel.weeklyData.observe(viewLifecycleOwner) { data ->
+            val b = _binding ?: return@observe
             val selectedIdx = viewModel.selectedDayIndex.value ?: 6
-            binding.weeklyBarGraph.setData(data, selectedIdx)
+            b.weeklyBarGraph.setData(data, selectedIdx)
         }
 
         viewModel.selectedDayIndex.observe(viewLifecycleOwner) { index ->
-            binding.weeklyBarGraph.setSelectedIndex(index)
+            val b = _binding ?: return@observe
+            b.weeklyBarGraph.setSelectedIndex(index)
         }
 
         viewModel.selectedDayStats.observe(viewLifecycleOwner) { stats ->
+            if (_binding == null) return@observe
             adapter.updateData(stats, viewModel.selectedDayWebsiteStats.value ?: emptyList())
         }
 
         viewModel.selectedDayWebsiteStats.observe(viewLifecycleOwner) { websiteStats ->
+            if (_binding == null) return@observe
             adapter.updateData(viewModel.selectedDayStats.value ?: emptyList(), websiteStats)
         }
 
         viewModel.totalTime.observe(viewLifecycleOwner) { totalMs ->
-            binding.totalUsage.text = TimeTools.formatTimeForWidget(totalMs)
+            val b = _binding ?: return@observe
+            b.totalUsage.text = TimeTools.formatTimeForWidget(totalMs)
         }
 
         viewModel.weekRangeLabel.observe(viewLifecycleOwner) { label ->
-            binding.tvWeekRange.text = label
+            val b = _binding ?: return@observe
+            b.tvWeekRange.text = label
         }
 
         viewModel.canGoNext.observe(viewLifecycleOwner) { canGo ->
-            binding.btnNextWeek.alpha = if (canGo) 1f else 0.3f
-            binding.btnNextWeek.isEnabled = canGo
+            val b = _binding ?: return@observe
+            b.btnNextWeek.alpha = if (canGo) 1f else 0.3f
+            b.btnNextWeek.isEnabled = canGo
         }
 
         viewModel.dateSublabel.observe(viewLifecycleOwner) { label ->
-            binding.dateSublabel.text = label
+            val b = _binding ?: return@observe
+            b.dateSublabel.text = label
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            val b = _binding ?: return@observe
+            
+            b.loadingOverlay.animate().cancel()
+            b.main.animate().cancel()
+
             if (isLoading) {
-                binding.loadingOverlay.animate().cancel()
-                binding.main.animate().cancel()
-                
-                binding.loadingOverlay.animate().alpha(1f).setDuration(250).withStartAction {
-                    binding.loadingOverlay.visibility = View.VISIBLE
+                b.loadingOverlay.animate().alpha(1f).setDuration(250).withStartAction {
+                    val bInner = _binding ?: return@withStartAction
+                    bInner.loadingOverlay.visibility = View.VISIBLE
                 }
-                binding.main.animate().alpha(0f).setDuration(250).withEndAction {
-                    binding.main.visibility = View.INVISIBLE
+                b.main.animate().alpha(0f).setDuration(250).withEndAction {
+                    val bInner = _binding ?: return@withEndAction
+                    bInner.main.visibility = View.INVISIBLE
                 }
             } else {
-                binding.loadingOverlay.animate().cancel()
-                binding.main.animate().cancel()
-                
-                binding.loadingOverlay.animate().alpha(0f).setDuration(350).withEndAction {
-                    binding.loadingOverlay.visibility = View.GONE
+                b.loadingOverlay.animate().alpha(0f).setDuration(350).withEndAction {
+                    val bInner = _binding ?: return@withEndAction
+                    bInner.loadingOverlay.visibility = View.GONE
                 }
-                binding.main.animate().alpha(1f).setDuration(350).withStartAction {
-                    binding.main.visibility = View.VISIBLE
+                b.main.animate().alpha(1f).setDuration(350).withStartAction {
+                    val bInner = _binding ?: return@withStartAction
+                    bInner.main.visibility = View.VISIBLE
                 }
             }
         }
@@ -471,7 +482,7 @@ class AllAppsUsageFragment : Fragment() {
 
         fun bind(stats: Stat, websiteStats: List<WebsiteStatsEntity>) {
             val metadata = viewModel.getAppMetadata(stats.packageName)
-            binding.appIcon.setImageDrawable(metadata.icon ?: ContextCompat.getDrawable(requireContext(), R.drawable.baseline_warning_24))
+            binding.appIcon.setImageDrawable(metadata.icon ?: ContextCompat.getDrawable(binding.root.context, R.drawable.baseline_warning_24))
             binding.root.setOnClickListener {
                 activity?.supportFragmentManager?.beginTransaction()
                     ?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
@@ -481,20 +492,22 @@ class AllAppsUsageFragment : Fragment() {
             }
             binding.root.setOnLongClickListener {
 
-                MaterialAlertDialogBuilder(requireContext())
+                MaterialAlertDialogBuilder(binding.root.context)
                     .setTitle("Add to ignored packages?")
                     .setMessage("This action will cause the tracker to not display any stats from this app.")
                     .setCancelable(true)
                     .setPositiveButton("Okay") { _, _ ->
                         lifecycleScope.launch(Dispatchers.IO) {
-                            val dataStore = DataStoreManager(requireContext())
+                            val dataStore = DataStoreManager(binding.root.context)
                             val ignoredAppsSP = dataStore.settings.first().usageTrackerIgnoredApps.toMutableList()
                             if (!ignoredAppsSP.contains(stats.packageName)) {
                                 ignoredAppsSP.add(stats.packageName)
                                 dataStore.updateUsageTrackerIgnoredApps(ignoredAppsSP)
                                 withContext(Dispatchers.Main) {
-                                    viewModel.ignoredPackages.addAll(ignoredAppsSP)
-                                    viewModel.reload()
+                                    if (_binding != null) {
+                                        viewModel.ignoredPackages.addAll(ignoredAppsSP)
+                                        viewModel.reload()
+                                    }
                                 }
                             }
                         }
