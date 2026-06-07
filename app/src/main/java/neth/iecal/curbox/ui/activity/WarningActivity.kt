@@ -20,6 +20,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import neth.iecal.curbox.Constants
 import neth.iecal.curbox.R
 import neth.iecal.curbox.blockers.AppBlocker
+import neth.iecal.curbox.blockers.KeywordBlocker
 import neth.iecal.curbox.blockers.ReelBlocker
 import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
 import neth.iecal.curbox.databinding.DialogWarningOverlayBinding
@@ -192,7 +193,7 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
         binding.minsPicker.setValue(warningScreenConfig.timeInterval / 60000)
 
         binding.btnCancel.setOnClickListener {
-            if (mode == Constants.WARNING_SCREEN_MODE_APP_BLOCKER || isHomePressRequested) {
+            if (mode == Constants.WARNING_SCREEN_MODE_APP_BLOCKER || mode == Constants.WARNING_SCREEN_MODE_KEYWORD_BLOCKER || isHomePressRequested) {
                 val intent = Intent(Intent.ACTION_MAIN)
                 intent.addCategory(Intent.CATEGORY_HOME)
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -282,6 +283,22 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
                         if (intent != null) {
                             startActivity(intent)
                         }
+                    }
+            }
+
+            if (mode == Constants.WARNING_SCREEN_MODE_KEYWORD_BLOCKER) {
+                intent.getStringExtra("result_id")
+                    ?.let { it1 ->
+                        val finalTime = if (warningScreenConfig.isQrUnlockRequirementEnabled && scannedValidDuration != -1L) {
+                            (scannedValidDuration / 60000).toInt()
+                        } else {
+                            binding.minsPicker.getValue()
+                        }
+                        sendRefreshRequest(
+                            it1,
+                            KeywordBlocker.INTENT_ACTION_REFRESH_KEYWORD_BLOCKER_COOLDOWN,
+                            finalTime
+                        )
                     }
             }
 

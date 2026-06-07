@@ -20,6 +20,7 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autofocus.AutoF
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autofocus.CreateAutoFocusGroupFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.reelBlocker.ReelBlockerFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.KeywordBlockerFragment
+import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.CreateKeywordGroupFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
 import androidx.core.view.isVisible
 
@@ -70,7 +71,8 @@ class FragmentActivity : AppCompatActivity() {
                 ViewBlockerFragment.FRAGMENT_ID,
                 IntentsLogFragment.FRAGMENT_ID,
             neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID,
-            KeywordBlockerFragment.FRAGMENT_ID -> {
+            KeywordBlockerFragment.FRAGMENT_ID,
+            CreateKeywordGroupFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
                 bottomNav.visibility = android.view.View.GONE
                 
@@ -80,6 +82,7 @@ class FragmentActivity : AppCompatActivity() {
                     CreateAppGroupFragment.FRAGMENT_ID -> CreateAppGroupFragment()
                     ReelBlockerFragment.FRAGMENT_ID -> ReelBlockerFragment()
                     KeywordBlockerFragment.FRAGMENT_ID -> KeywordBlockerFragment()
+                    CreateKeywordGroupFragment.FRAGMENT_ID -> CreateKeywordGroupFragment()
                     ViewBlockerFragment.FRAGMENT_ID -> ViewBlockerFragment()
                     AutoFocusFragment.FRAGMENT_ID -> AutoFocusFragment()
                     CreateAutoFocusGroupFragment.FRAGMENT_ID -> CreateAutoFocusGroupFragment()
