@@ -152,7 +152,7 @@
     <string name="save_limits">Save Limits</string>
     <string name="keyword_blocker">Keyword Blocker</string>
     <string name="enable_keyword_blocker">Enable Keyword Blocker</string>
-    <string name="enter_a_keyword">Enter a keyword...</string>
+    <string name="enter_a_keyword">Enter a keyword or website</string>
     <string name="redirection">Redirection</string>
     <string name="redirection_url">Redirection URL</string>
     <string name="configuration">Configuration</string>
