@@ -68,6 +68,7 @@ class KeywordBlocker : BaseBlocker() {
     private lateinit var browserBlocker : BrowserBlocker
 
     lateinit var blockedKeyword: HashSet<String>
+    private var wildcardRegexes: List<Regex> = emptyList()
     lateinit var redirectUrl: String
     var isSearchAllTextFields = false
     var recursionResultNodes: MutableList<AccessibilityNodeInfo> = mutableListOf()
@@ -93,7 +94,19 @@ class KeywordBlocker : BaseBlocker() {
         }
         Log.d("checking ", url)
 
-        // If not in cache, process it
+        val urlLower = url.lowercase(Locale.ROOT)
+
+        // 1. Check wildcard patterns against the full input first
+        // This handles cases like "blog.youtube/*"
+        for (regex in wildcardRegexes) {
+            if (regex.containsMatchIn(urlLower)) {
+                Log.d("KeywordBlocker", "Wildcard match found: ${regex.pattern} for $urlLower")
+                detectionCache.put(url, regex.pattern)
+                return regex.pattern
+            }
+        }
+
+        // 2. Check exact matches using existing word splitting logic
         val keywords = parseTextForKeywords(url)
         for (word in keywords) {
             if (blockedKeyword.contains(word)) { // word is already lowercased in parseTextForKeywords
@@ -331,12 +344,31 @@ class KeywordBlocker : BaseBlocker() {
         Log.d("Keyword Blocker","Setting up kw blocker")
         CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->
-                blockedKeyword =  settings.keywordBlockerConfig.blockedKeywords.toHashSet()
+                val (wildcards, literals) = settings.keywordBlockerConfig.blockedKeywords.partition { it.contains("*") }
+                
+                blockedKeyword = literals.map { it.lowercase(Locale.ROOT) }.toHashSet()
+                // Bug 3 fix — in setupBlocker(), only add the URL prefix for domain-style patterns:
+                wildcardRegexes = wildcards.map { pattern ->
+                    val lowerPattern = pattern.lowercase(Locale.ROOT)
+                    // Only prepend scheme/www prefix if pattern looks like a domain root, not a path wildcard
+                    val looksLikeDomain = !lowerPattern.startsWith("http") &&
+                            !lowerPattern.startsWith("*") &&
+                            !lowerPattern.startsWith("/")
+                    val prefix = if (looksLikeDomain) "(?:https?://)?(?:www\\.)?" else ""
+                    val escaped = lowerPattern
+                        .replace(Regex("[.\\+^${'$'}()|\\[\\]\\\\{}]"), "\\\\$0")
+                        .replace("*", ".*")
+                    Regex(prefix + escaped)
+                }
+
                 isSearchAllTextFields = settings.keywordBlockerConfig.searchRecursively
                 redirectUrl = settings.keywordBlockerConfig.redirectUrl
                 isUnsupportedBrowserBlockingOn = settings.keywordBlockerConfig.blockAllExceptSupported
                 isTurnedOn = settings.keywordBlockerConfig.isActive
                 ignoredApps = settings.keywordBlockerConfig.ignoredApps.toHashSet()
+                
+                // Clear cache when config changes
+                detectionCache.evictAll()
             }
         }
 
