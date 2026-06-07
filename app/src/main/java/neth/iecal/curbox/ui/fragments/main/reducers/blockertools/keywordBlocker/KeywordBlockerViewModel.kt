@@ -38,47 +38,56 @@ class KeywordBlockerViewModel(application: Application) : AndroidViewModel(appli
         val intent = Intent(neth.iecal.curbox.blockers.KeywordBlocker.INTENT_ACTION_REFRESH_CONFIG)
         getApplication<Application>().sendBroadcast(intent)
     }
-    private fun updateConfig(newConfig: KeywordBlocker) {
+    private fun updateConfig(transform: (neth.iecal.curbox.data.models.KeywordBlocker) -> neth.iecal.curbox.data.models.KeywordBlocker) {
         viewModelScope.launch {
-            dataStoreManager.updateKeywordBlockerConfig(newConfig)
+            dataStoreManager.updateKeywordBlockerConfig(transform)
             requestKeywordBlockerRefresh()
         }
     }
 
     fun setIsActive(isActive: Boolean) {
-        updateConfig(_keywordBlockerConfig.value.copy(isActive = isActive))
+        updateConfig { it.copy(isActive = isActive) }
     }
 
     fun setBlockAllExceptSupported(enabled: Boolean) {
-        updateConfig(_keywordBlockerConfig.value.copy(blockAllExceptSupported = enabled))
+        updateConfig { it.copy(blockAllExceptSupported = enabled) }
     }
 
     fun addGroup(group: KeywordGroup) {
-        val groups = _keywordBlockerConfig.value.keywordGroups.toMutableList()
-        groups.add(group)
-        updateConfig(_keywordBlockerConfig.value.copy(keywordGroups = groups))
+        updateConfig { config ->
+            val groups = config.keywordGroups.toMutableList()
+            groups.add(group)
+            config.copy(keywordGroups = groups)
+        }
     }
 
     fun updateGroupById(group: KeywordGroup) {
-        val groups = _keywordBlockerConfig.value.keywordGroups.toMutableList()
-        val index = groups.indexOfFirst { it.id == group.id }
-        if (index != -1) {
-            groups[index] = group
-            updateConfig(_keywordBlockerConfig.value.copy(keywordGroups = groups))
+        updateConfig { config ->
+            val groups = config.keywordGroups.toMutableList()
+            val index = groups.indexOfFirst { it.id == group.id }
+            if (index != -1) {
+                groups[index] = group
+            }
+            config.copy(keywordGroups = groups)
         }
     }
 
     fun deleteGroup(groupId: String) {
-        val groups = _keywordBlockerConfig.value.keywordGroups.toMutableList()
-        groups.removeAll { it.id == groupId }
-        updateConfig(_keywordBlockerConfig.value.copy(keywordGroups = groups))
+        updateConfig { config ->
+            val groups = config.keywordGroups.toMutableList()
+            groups.removeAll { it.id == groupId }
+            config.copy(keywordGroups = groups)
+        }
     }
 
-    fun updateGroupActiveState(position: Int, isActive: Boolean) {
-        val groups = _keywordBlockerConfig.value.keywordGroups.toMutableList()
-        if (position in groups.indices) {
-            groups[position] = groups[position].copy(isActive = isActive)
-            updateConfig(_keywordBlockerConfig.value.copy(keywordGroups = groups))
+    fun updateGroupActiveState(groupId: String, isActive: Boolean) {
+        updateConfig { config ->
+            val groups = config.keywordGroups.toMutableList()
+            val index = groups.indexOfFirst { it.id == groupId }
+            if (index != -1) {
+                groups[index] = groups[index].copy(isActive = isActive)
+            }
+            config.copy(keywordGroups = groups)
         }
     }
 }

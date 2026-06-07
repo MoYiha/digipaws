@@ -128,7 +128,7 @@ class KeywordBlockerFragment : Fragment() {
             holder.switchActive.setOnCheckedChangeListener(null)
             holder.switchActive.isChecked = group.isActive
             holder.switchActive.setOnCheckedChangeListener { _, isChecked ->
-                viewModel.updateGroupActiveState(position, isChecked)
+                viewModel.updateGroupActiveState(group.id, isChecked)
             }
             
             holder.itemView.setOnClickListener {

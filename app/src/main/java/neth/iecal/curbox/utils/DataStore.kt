@@ -85,8 +85,8 @@ class DataStoreManager(private val context: Context) {
         settingsDataStore.updateData { it.copy(reelBlockerConfig = config) }
     }
 
-    suspend fun updateKeywordBlockerConfig(config: neth.iecal.curbox.data.models.KeywordBlocker) {
-        settingsDataStore.updateData { it.copy(keywordBlockerConfig = config) }
+    suspend fun updateKeywordBlockerConfig(transform: (neth.iecal.curbox.data.models.KeywordBlocker) -> neth.iecal.curbox.data.models.KeywordBlocker) {
+        settingsDataStore.updateData { it.copy(keywordBlockerConfig = transform(it.keywordBlockerConfig)) }
     }
 
     suspend fun updateReelCounterState(isActive: Boolean) {
