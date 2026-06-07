@@ -49,7 +49,7 @@ class OnboardingFragment : Fragment() {
         val pagerAdapter = OnboardingPagerAdapter(this)
         binding.viewPager.adapter = pagerAdapter
         binding.viewPager.isUserInputEnabled = false 
-        binding.viewPager.setPageTransformer(InteractivePageTransformer())
+        binding.viewPager.setPageTransformer(BlurFadePageTransformer())
 
         binding.viewPager.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
@@ -61,26 +61,38 @@ class OnboardingFragment : Fragment() {
         })
     }
 
-    private class InteractivePageTransformer : androidx.viewpager2.widget.ViewPager2.PageTransformer {
+    private class BlurFadePageTransformer : ViewPager2.PageTransformer {
         override fun transformPage(page: View, position: Float) {
             val absPos = Math.abs(position)
+
             page.apply {
+                // Keep pages overlapping by counteracting the default slide
+                translationX = -position * width
+
+                // Fade out as it moves from center
                 alpha = 1f - absPos
-                translationX = -position * width / 1.5f
-                val scale = 0.85f + (1f - absPos) * 0.15f
+
+                // Gaussian blur effect (API 31+)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    if (absPos > 0f && absPos < 1f) {
+                        val blurRadius = absPos * 40f
+                        setRenderEffect(
+                            android.graphics.RenderEffect.createBlurEffect(
+                                blurRadius, blurRadius, android.graphics.Shader.TileMode.CLAMP
+                            )
+                        )
+                    } else {
+                        setRenderEffect(null)
+                    }
+                }
+
+                // Subtle scale effect
+                val scale = 0.95f + (1f - absPos) * 0.05f
                 scaleX = scale
                 scaleY = scale
 
-                if (this is ViewGroup) {
-                    val content = getChildAt(0) as? ViewGroup
-                    if (content != null) {
-                        for (i in 0 until content.childCount) {
-                            val child = content.getChildAt(i)
-                            child.translationX = position * (i + 1) * 1200f
-                            child.alpha = 1f - absPos
-                        }
-                    }
-                }
+                // Ensure the more visible page is on top
+                translationZ = if (absPos < 1f) 1f else 0f
             }
         }
     }
@@ -89,43 +101,24 @@ class OnboardingFragment : Fragment() {
         val itemCount = binding.viewPager.adapter?.itemCount ?: 0
         if (currentItem < itemCount - 1) {
             val nextItem = currentItem + 1
-
-            // Custom smooth scroll animation to slow down the transition
             val viewPager = binding.viewPager
             val width = viewPager.width
-            val animator = android.animation.ValueAnimator.ofInt(0, width)
+            val duration = 750L
 
-            animator.addUpdateListener { valueAnimator ->
-                val value = valueAnimator.animatedValue as Int
-                if (!viewPager.isFakeDragging) {
-                    viewPager.beginFakeDrag()
-                }
-                viewPager.fakeDragBy(-value.toFloat() * (1f / width.toFloat()) * width)
-            }
-
-            animator.addListener(object : android.animation.AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) {
-                    if (viewPager.isFakeDragging) viewPager.endFakeDrag()
-                }
-            })
-
-            // Use a duration of 800ms (default is approx 250-300ms)
-            val duration = 800L
-
-            // Fallback to default if width is not measured, else use custom animation
             if (width > 0) {
-                val pxToDrag = width.toFloat()
-                val animator = android.animation.ValueAnimator.ofFloat(0f, pxToDrag)
+                val animator = android.animation.ValueAnimator.ofFloat(0f, width.toFloat())
                 var previousValue = 0f
                 animator.addUpdateListener { valueAnimator ->
                     val currentValue = valueAnimator.animatedValue as Float
                     val delta = currentValue - previousValue
+                    if (!viewPager.isFakeDragging) viewPager.beginFakeDrag()
                     viewPager.fakeDragBy(-delta)
                     previousValue = currentValue
                 }
                 animator.addListener(object : android.animation.AnimatorListenerAdapter() {
-                    override fun onAnimationStart(animation: android.animation.Animator) { viewPager.beginFakeDrag() }
-                    override fun onAnimationEnd(animation: android.animation.Animator) { viewPager.endFakeDrag() }
+                    override fun onAnimationEnd(animation: android.animation.Animator) {
+                        if (viewPager.isFakeDragging) viewPager.endFakeDrag()
+                    }
                 })
                 animator.duration = duration
                 animator.interpolator = android.view.animation.AccelerateDecelerateInterpolator()

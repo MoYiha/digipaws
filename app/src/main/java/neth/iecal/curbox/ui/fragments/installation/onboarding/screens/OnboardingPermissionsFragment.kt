@@ -356,9 +356,9 @@ class OnboardingPermissionsFragment : Fragment() {
         val allGranted = hasOverlay && hasUsageStats && hasNotif && hasDnd && hasBlocker && hasTracker
         binding.btnAction.isEnabled = allGranted
         if (allGranted) {
-            binding.btnAction.text = "Finish Onboarding"
+            binding.btnAction.text = "Curb me!"
         } else {
-            binding.btnAction.text = "Enable Permissions"
+            binding.btnAction.text = "I still need more permissions"
         }
     }
 
