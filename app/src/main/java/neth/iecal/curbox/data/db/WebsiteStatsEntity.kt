@@ -8,5 +8,6 @@ data class WebsiteStatsEntity(
     val packageName: String,
     val urlIdentifier: String, // e.g., "youtube.com/shorts"
     val domain: String,        // e.g., "youtube.com" (for grouping in UI)
-    val totalTime: Long = 0L
+    val totalTime: Long = 0L,
+    val lastVisited: Long = 0L
 )

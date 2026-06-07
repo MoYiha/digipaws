@@ -120,7 +120,8 @@ class WebsiteUsageTracker {
                                 packageName = packageName,
                                 urlIdentifier = identifier,
                                 domain = domain,
-                                totalTime = totalTime
+                                totalTime = totalTime,
+                                lastVisited = System.currentTimeMillis()
                             )
                         )
                     } catch (e: Exception) {

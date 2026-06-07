@@ -510,16 +510,20 @@ class AllAppsUsageFragment : Fragment() {
 
             binding.threadContainer.removeAllViews()
             val browserWebsites = websiteStats.filter { it.packageName == stats.packageName }
-                .sortedByDescending { it.totalTime }
-                
+                .groupBy { it.domain }
+                .map { (domain, stats) ->
+                    domain to stats.sumOf { it.totalTime }
+                }
+                .sortedByDescending { it.second }
+
             if (browserWebsites.isNotEmpty()) {
-                Log.d("website", browserWebsites.toString())
                 binding.threadContainer.visibility = View.VISIBLE
-                for (i in browserWebsites.indices) {
-                    val website = browserWebsites[i]
-                    val prefix = if (i == browserWebsites.size - 1) "└" else "├"
+                val top5 = browserWebsites.take(5)
+                for (i in top5.indices) {
+                    val (domain, time) = top5[i]
+                    val prefix = if (i == top5.size - 1 && browserWebsites.size <= 5) "└" else "├"
                     val tv = TextView(binding.root.context).apply {
-                        text = "$prefix  ${website.urlIdentifier} • ${TimeTools.formatTimeForWidget(website.totalTime)}"
+                        text = "$prefix  $domain • ${TimeTools.formatTimeForWidget(time)}"
                         textSize = 12f
                         setTextColor(MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorOnSurfaceVariant))
                         setPadding(0, 4, 0, 4)
@@ -527,6 +531,23 @@ class AllAppsUsageFragment : Fragment() {
                         ellipsize = TextUtils.TruncateAt.END
                     }
                     binding.threadContainer.addView(tv)
+                }
+
+                if (browserWebsites.size > 5) {
+                    val seeMoreTv = TextView(binding.root.context).apply {
+                        text = "└  See more websites..."
+                        textSize = 12f
+                        setTextColor(MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorPrimary))
+                        setPadding(0, 4, 0, 12)
+                        setOnClickListener {
+                            activity?.supportFragmentManager?.beginTransaction()
+                                ?.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+                                ?.replace(R.id.fragment_holder, WebsiteUsageFragment.newInstance(stats.packageName))
+                                ?.addToBackStack(null)
+                                ?.commit()
+                        }
+                    }
+                    binding.threadContainer.addView(seeMoreTv)
                 }
             } else {
                 binding.threadContainer.visibility = View.GONE
