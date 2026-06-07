@@ -70,8 +70,8 @@ class DataStoreManager(private val context: Context) {
         settingsDataStore.updateData { it.copy(manualFocusGroups = newGroup) }
     }
 
-    suspend fun updateAutoFocusGroups(newGroups: List<neth.iecal.curbox.data.models.AutoFocusGroup>) {
-        settingsDataStore.updateData { it.copy(autoFocusGroups = newGroups) }
+    suspend fun updateAutoDndGroups(newGroups: List<neth.iecal.curbox.data.models.AutoDndGroup>) {
+        settingsDataStore.updateData { it.copy(autoDndGroups = newGroups) }
     }
     
     suspend fun setManualFocusStateToActive(focusGroupId:String, durationInMs: Long){

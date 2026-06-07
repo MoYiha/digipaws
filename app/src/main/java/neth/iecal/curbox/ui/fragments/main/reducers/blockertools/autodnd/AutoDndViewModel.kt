@@ -1,9 +1,8 @@
-package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autofocus
+package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autodnd
 
 import android.app.Application
 import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,48 +11,47 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.blockers.FocusModeBlocker
 import neth.iecal.curbox.data.models.AppTimeConfig
-import neth.iecal.curbox.data.models.AutoFocusGroup
+import neth.iecal.curbox.data.models.AutoDndGroup
 import neth.iecal.curbox.utils.DataStoreManager
 
-class AutoFocusViewModel(application: Application) : AndroidViewModel(application) {
+class AutoDndViewModel(application: Application) : AndroidViewModel(application) {
     private val dataStoreManager = DataStoreManager(application)
     
-    private val _groups = MutableStateFlow<List<AutoFocusGroup>>(emptyList())
-    val groups: StateFlow<List<AutoFocusGroup>> = _groups
+    private val _groups = MutableStateFlow<List<AutoDndGroup>>(emptyList())
+    val groups: StateFlow<List<AutoDndGroup>> = _groups
 
     var currentTimeConfig: AppTimeConfig = AppTimeConfig()
 
     init {
         viewModelScope.launch {
             dataStoreManager.settings.collectLatest { settings ->
-                _groups.value = settings.autoFocusGroups
+                _groups.value = settings.autoDndGroups
             }
         }
     }
 
-    fun addGroup(group: AutoFocusGroup) {
+    fun addGroup(group: AutoDndGroup) {
         viewModelScope.launch {
             val currentSettings = dataStoreManager.settings.first()
-            val currentGroups = currentSettings.autoFocusGroups.toMutableList()
+            val currentGroups = currentSettings.autoDndGroups.toMutableList()
             currentGroups.add(group)
             updateGroups(currentGroups)
         }
     }
 
-    fun removeGroup(group: AutoFocusGroup) {
+    fun removeGroup(group: AutoDndGroup) {
         viewModelScope.launch {
             val currentSettings = dataStoreManager.settings.first()
-            val currentGroups = currentSettings.autoFocusGroups.toMutableList()
-            // We use removeIf to ensure it matches by id in case of object reference mismatch
+            val currentGroups = currentSettings.autoDndGroups.toMutableList()
             currentGroups.removeIf { it.groupId == group.groupId }
             updateGroups(currentGroups)
         }
     }
 
-    fun updateGroup(group: AutoFocusGroup) {
+    fun updateGroup(group: AutoDndGroup) {
         viewModelScope.launch {
             val currentSettings = dataStoreManager.settings.first()
-            val currentGroups = currentSettings.autoFocusGroups.toMutableList()
+            val currentGroups = currentSettings.autoDndGroups.toMutableList()
             val index = currentGroups.indexOfFirst { it.groupId == group.groupId }
             if (index != -1) {
                 currentGroups[index] = group
@@ -62,15 +60,15 @@ class AutoFocusViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    private fun updateGroups(newGroups: List<AutoFocusGroup>) {
+    private fun updateGroups(newGroups: List<AutoDndGroup>) {
         viewModelScope.launch {
-            dataStoreManager.updateAutoFocusGroups(newGroups)
+            dataStoreManager.updateAutoDndGroups(newGroups)
             requestFocusBlockerRefresh()
         }
     }
 
     private fun requestFocusBlockerRefresh() {
         val intent = Intent(FocusModeBlocker.INTENT_ACTION_REFRESH_FOCUS_MODE)
-        application.sendBroadcast(intent)
+        getApplication<Application>().sendBroadcast(intent)
     }
 }

@@ -30,6 +30,7 @@ class AppBlockerService : BaseBlockingService() {
 
     private val appBlocker: AppBlocker = AppBlocker()
     private val focusModeBlocker = FocusModeBlocker()
+    private val autoDndEnabler = neth.iecal.curbox.blockers.AutoDndEnabler()
     private val reelBlocker = ReelBlocker()
     private var keywordBlocker = KeywordBlocker()
     private val viewBlocker = ViewBlocker()
@@ -66,6 +67,12 @@ class AppBlockerService : BaseBlockingService() {
     }
 
     private lateinit var crashLogger: CrashLogger
+
+    fun syncDndState() {
+        val autoDndActive = autoDndEnabler.isDndRequested()
+        val manualFocusDndActive = focusModeBlocker.isDndRequested()
+        neth.iecal.curbox.utils.DndHelper.applyDndState(this, autoDndActive || manualFocusDndActive)
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -127,6 +134,7 @@ class AppBlockerService : BaseBlockingService() {
         super.onServiceConnected()
         appBlocker.setupAppBlocker(this)
         focusModeBlocker.setupFocusMode(this)
+        autoDndEnabler.setup(this)
         reelBlocker.setupBlocker(this)
         keywordBlocker.setupBlocker(this)
         viewBlocker.setupBlocker(this)
@@ -160,6 +168,7 @@ class AppBlockerService : BaseBlockingService() {
         try {
 
             focusModeBlocker.removeReceivers()
+            autoDndEnabler.stop()
             reelBlocker.removeReceivers()
             appBlocker.onDestroy()
             keywordBlocker.removeReceivers()

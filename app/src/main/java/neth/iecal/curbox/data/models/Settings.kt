@@ -3,7 +3,7 @@ package neth.iecal.curbox.data.models
 data class Settings(
     val blockedAppGroups: List<AppGroup> = listOf(),
     val manualFocusGroups: List<ManualFocusGroup> = listOf(),
-    val autoFocusGroups: List<AutoFocusGroup> = listOf(),
+    val autoDndGroups: List<AutoDndGroup> = listOf(),
     /**
      * Stores info about active manual focus mode.
      * Format Pair<GroupId?, system ms when it ends>.

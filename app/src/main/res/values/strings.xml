@@ -71,8 +71,8 @@
     <string name="restrict_access_to_distracting_apps">Temporarily mute apps</string>
     <string name="reels_blocker">Short-Form Video Content</string>
     <string name="disable_shortform_video_feeds">Hide short-form videos to help maintain your attention span.</string>
-    <string name="auto_focus">Auto Focus</string>
-    <string name="turn_on_focus_mode_between_set">Automatically secure distraction-free windows in your daily schedule.</string>
+    <string name="auto_dnd">Auto DND</string>
+    <string name="turn_on_focus_mode_between_set">Automatically turn on Do Not Disturb in your daily schedule.</string>
     <string name="blocked_keywords">Keywords And Websites</string>
     <string name="filter_specific_words_across_apps">Keep your digital space peaceful by filtering out specific topics.</string>
     <string name="stimulation_reducers">Mindful Nudges</string>
@@ -165,9 +165,9 @@
     <string name="total_today">TOTAL TODAY</string>
     <string name="most_used">MOST USED</string>
     <string name="crunching_numbers">Crunching numbers...</string>
-    <string name="no_auto_focus_groups_yet_create">No Auto Focus Groups yet. Create one!</string>
+    <string name="no_auto_dnd_groups_yet_create">No Auto DND Groups yet. Create one!</string>
     <string name="val_10_apps_included">10 Apps • Included</string>
-    <string name="create_autofocus_group">Create AutoFocus Group</string>
+    <string name="create_autodnd_group">Create Auto DND Group</string>
     <string name="apps_to_blockallow">APPS TO BLOCK/ALLOW</string>
     <string name="blocking_mode">BLOCKING MODE</string>
     <string name="configure_schedule">Configure Schedule</string>

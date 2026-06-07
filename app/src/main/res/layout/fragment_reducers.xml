@@ -154,9 +154,9 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Auto Focus -->
+        <!-- Auto DND -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_autofocus"
+            android:id="@+id/card_autodnd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
@@ -198,7 +198,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/auto_focus"
+                        android:text="@string/auto_dnd"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp"
                         android:textStyle="bold" />

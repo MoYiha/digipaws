@@ -84,7 +84,6 @@ class SelectAppsActivity : AppCompatActivity() {
                 allGroups = buildList {
                     settings.blockedAppGroups.forEach { add(it.name to it.selectedPackages.toSet()) }
                     settings.manualFocusGroups.forEach { add(it.groupName to it.packages) }
-                    settings.autoFocusGroups.forEach { add(it.groupName to it.packages) }
                     settings.grayscaleGroups.forEach { add(it.groupName to it.packages) }
                 }
 

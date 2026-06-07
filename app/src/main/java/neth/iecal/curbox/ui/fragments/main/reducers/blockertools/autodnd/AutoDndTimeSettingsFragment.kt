@@ -1,4 +1,4 @@
-package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autofocus
+package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autodnd
 
 import android.content.DialogInterface
 import android.os.Bundle
@@ -15,20 +15,20 @@ import com.google.android.material.timepicker.TimeFormat
 import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.TimeInterval
 import neth.iecal.curbox.data.models.fixOvernightInterval
-import neth.iecal.curbox.databinding.FragmentAutofocusTimeSettingsBinding
+import neth.iecal.curbox.databinding.FragmentAutodndTimeSettingsBinding
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.DayAdapter
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.DayItem
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.TimeIntervalAdapter
 
-class AutoFocusTimeSettingsFragment : BottomSheetDialogFragment() {
+class AutoDndTimeSettingsFragment : BottomSheetDialogFragment() {
 
     companion object {
-        const val FRAGMENT_ID = "autofocus_time_settings"
+        const val FRAGMENT_ID = "autodnd_time_settings"
     }
 
-    private val viewModel: AutoFocusViewModel by activityViewModels()
+    private val viewModel: AutoDndViewModel by activityViewModels()
     
-    private var _binding: FragmentAutofocusTimeSettingsBinding? = null
+    private var _binding: FragmentAutodndTimeSettingsBinding? = null
     private val binding get() = _binding!!
 
     private val daysOfWeek = listOf(
@@ -45,7 +45,7 @@ class AutoFocusTimeSettingsFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentAutofocusTimeSettingsBinding.inflate(inflater, container, false)
+        _binding = FragmentAutodndTimeSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
 

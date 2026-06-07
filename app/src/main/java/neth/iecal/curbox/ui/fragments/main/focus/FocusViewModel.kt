@@ -27,8 +27,8 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
 
     val allSessions = statsDao.getAllSessionsFlow()
 
-    private val _autoFocusGroups = MutableStateFlow<List<neth.iecal.curbox.data.models.AutoFocusGroup>>(emptyList())
-    val autoFocusGroups: StateFlow<List<neth.iecal.curbox.data.models.AutoFocusGroup>> = _autoFocusGroups
+    private val _autoDndGroups = MutableStateFlow<List<neth.iecal.curbox.data.models.AutoDndGroup>>(emptyList())
+    val autoDndGroups: StateFlow<List<neth.iecal.curbox.data.models.AutoDndGroup>> = _autoDndGroups
     
     private val prefs = application.getSharedPreferences("AppPreferences", android.content.Context.MODE_PRIVATE)
     var selectedMins = prefs.getInt("lastFocusDuration", 25)
@@ -48,7 +48,7 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             dataStoreManager.settings.collectLatest { settings ->
                 _groups.value = settings.manualFocusGroups
-                _autoFocusGroups.value = settings.autoFocusGroups
+                _autoDndGroups.value = settings.autoDndGroups
                 _currentRunningFocus.value = settings.activeManualFocusGroupId
 
                 // Auto-select logic
@@ -88,7 +88,7 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
 
     fun forceStopFocus(wasMidwayExit: Boolean = false){
         viewModelScope.launch {
-            val runningSessions = statsDao.getRunningSessions().filter { !it.wasAutoFocus }
+            val runningSessions = statsDao.getRunningSessions()
             val now = System.currentTimeMillis()
             for (session in runningSessions) {
                 if (wasMidwayExit) {
@@ -115,7 +115,6 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val session = neth.iecal.curbox.data.db.FocusStatsEntity(
                 groupId = selectedGroup!!.groupId,
-                wasAutoFocus = false,
                 startTimeInMillis = startTime,
                 estimatedEndTimeInMillis = endTime,
                 actualEndTimeInMillis = 0L,
