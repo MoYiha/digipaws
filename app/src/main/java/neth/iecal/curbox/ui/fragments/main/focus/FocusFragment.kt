@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import java.util.Locale
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.FragmentFocusBinding
@@ -46,17 +47,25 @@ class FocusFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.currentRunningFocus.collect { (groupId, endTime) ->
+                    viewModel.currentRunningFocus.combine(viewModel.groups) { focus, groups ->
+                        focus to groups
+                    }.collect { (focus, groups) ->
+                        val (groupId, endTime) = focus
                         val isRunning = groupId != null
                         binding.tvActiveGroup.visibility = if (isRunning) View.VISIBLE else View.GONE
                         binding.btnGoToStats.visibility = if (isRunning) View.GONE else View.VISIBLE
                         binding.tvSeconds.text = if (isRunning) "" else "mins"
-                        binding.btnStartConfig.text = if (isRunning) getString(R.string.focus_end_session) else getString(R.string.focus_start)
+
+                        if (isRunning) {
+                            binding.btnStartConfig.text = getString(R.string.focus_end_session)
+                        } else {
+                            binding.btnStartConfig.text = if (groups.isEmpty()) getString(R.string.focus_create_group) else getString(R.string.focus_start)
+                        }
 
                         if (isRunning) {
                             binding.rvRuler.stopScroll()
                             snapHelper.attachToRecyclerView(null)
-                            val group = viewModel.groups.value.find { it.groupId == groupId }
+                            val group = groups.find { it.groupId == groupId }
                             binding.tvActiveGroup.text = group?.groupName
                             binding.btnStartConfig.isEnabled = group?.exitable == true
                             viewModel.startTimer(endTime)

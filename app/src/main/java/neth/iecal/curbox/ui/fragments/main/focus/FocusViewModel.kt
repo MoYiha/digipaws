@@ -50,6 +50,19 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
                 _groups.value = settings.manualFocusGroups
                 _autoFocusGroups.value = settings.autoFocusGroups
                 _currentRunningFocus.value = settings.activeManualFocusGroupId
+
+                // Auto-select logic
+                if (selectedGroup == null && settings.manualFocusGroups.isNotEmpty()) {
+                    val lastGroupId = prefs.getString("lastFocusGroupId", null)
+                    val lastUsedGroup = settings.manualFocusGroups.find { it.groupId == lastGroupId }
+
+                    if (lastUsedGroup != null) {
+                        selectedGroup = lastUsedGroup
+                    } else if (settings.manualFocusGroups.size == 1) {
+                        selectedGroup = settings.manualFocusGroups[0]
+                    }
+                }
+
                 if(settings.activeManualFocusGroupId.first != null) {
                     if (settings.activeManualFocusGroupId.second < System.currentTimeMillis()) {
                         forceStopFocus(wasMidwayExit = false)
@@ -91,7 +104,10 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun startFocusing() {
         if(selectedGroup == null) return
-        prefs.edit().putInt("lastFocusDuration", selectedMins).apply()
+        prefs.edit()
+            .putInt("lastFocusDuration", selectedMins)
+            .putString("lastFocusGroupId", selectedGroup?.groupId)
+            .apply()
         
         val durationMs = selectedMins * 60_000L
         val startTime = System.currentTimeMillis()

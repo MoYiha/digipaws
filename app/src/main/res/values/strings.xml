@@ -35,6 +35,7 @@
     <string name="focus_ready">Ready to focus?</string>
     <string name="focus_subtitle_minimal">Select duration, then start.</string>
     <string name="focus_start">Curb Me</string>
+    <string name="focus_create_group">Create Focus Group</string>
     <string name="focus_active">Focus mode is active</string>
     <string name="focus_end_session">End Session</string>
     <string name="focus_group">Focus Group</string>

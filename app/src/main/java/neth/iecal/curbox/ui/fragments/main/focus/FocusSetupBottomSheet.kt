@@ -54,6 +54,18 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
 
         setupGroupSelectionDropdown()
         observeViewModel()
+
+        if (viewModel.groups.value.isEmpty()) {
+            binding.createGroup.visibility = View.VISIBLE
+            binding.selectGrouo.visibility = View.GONE
+        } else {
+            viewModel.selectedGroup?.let { group ->
+                binding.groupDropdown.setText(group.toString(), false)
+                binding.btnEditGroup.visibility = View.VISIBLE
+                binding.btnDeleteGroup.visibility = View.VISIBLE
+            }
+        }
+
         binding.btnCreateGroup.setOnClickListener {
             // clear if creating new
             viewModel.selectedGroup = null
@@ -154,12 +166,12 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
             
             binding.createGroup.visibility = View.GONE
             binding.selectGrouo.visibility = View.VISIBLE
-            
-            // Re-select it if it was edited
-            if (isEditing) {
-                viewModel.selectedGroup = newGroup
-                binding.groupDropdown.setText(newGroup.toString(), false)
-            }
+
+            // Select it after it was created/edited
+            viewModel.selectedGroup = newGroup
+            binding.groupDropdown.setText(newGroup.toString(), false)
+            binding.btnEditGroup.visibility = View.VISIBLE
+            binding.btnDeleteGroup.visibility = View.VISIBLE
         }
         binding.selectedBlockAction.checkedButtonId
     }
