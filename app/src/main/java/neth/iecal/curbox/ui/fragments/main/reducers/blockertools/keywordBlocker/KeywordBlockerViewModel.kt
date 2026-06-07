@@ -60,15 +60,8 @@ class KeywordBlockerViewModel(application: Application) : AndroidViewModel(appli
         }
     }
 
-    fun setIgnoredApps(list:List<String>){
-        updateConfig(_keywordBlockerConfig.value.copy(ignoredApps = list))
-    }
     fun setRedirectUrl(url: String) {
         updateConfig(_keywordBlockerConfig.value.copy(redirectUrl = url))
-    }
-
-    fun setSearchRecursively(enabled: Boolean) {
-        updateConfig(_keywordBlockerConfig.value.copy(searchRecursively = enabled))
     }
 
     fun setBlockAllExceptSupported(enabled: Boolean) {

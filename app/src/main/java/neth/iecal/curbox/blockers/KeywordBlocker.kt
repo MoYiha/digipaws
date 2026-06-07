@@ -70,9 +70,6 @@ class KeywordBlocker : BaseBlocker() {
     lateinit var blockedKeyword: HashSet<String>
     private var wildcardRegexes: List<Regex> = emptyList()
     lateinit var redirectUrl: String
-    var isSearchAllTextFields = false
-    var recursionResultNodes: MutableList<AccessibilityNodeInfo> = mutableListOf()
-
     private val wordSplitRegex = Regex("[^a-zA-Z0-9]+")
 
     // Caches the results of string evaluations. Max 200 items to prevent memory bloat.
@@ -80,7 +77,6 @@ class KeywordBlocker : BaseBlocker() {
     private val detectionCache = LruCache<String, String>(200)
     private var isTurnedOn = false
     private var isUnsupportedBrowserBlockingOn = false
-    private var ignoredApps: HashSet<String> = hashSetOf()
 
     private var lastEventTimeStamp = 0L
     private var refreshCooldown : Int = 2000
@@ -119,14 +115,6 @@ class KeywordBlocker : BaseBlocker() {
         // Cache as safe and return null
         detectionCache.put(url, SAFE_STRING_TOKEN)
         return null
-    }
-    private fun safeRecycle(node: AccessibilityNodeInfo?) {
-        try { node?.recycle() } catch (_: Exception) {}
-    }
-
-    private fun safeRecycle(nodes: MutableList<AccessibilityNodeInfo>) {
-        nodes.forEach { safeRecycle(it) }
-        nodes.clear()
     }
     private fun parseTextForKeywords(input: String): Set<String> {
         fun extractWords(text: String): Set<String> =
@@ -200,57 +188,27 @@ class KeywordBlocker : BaseBlocker() {
         if (!service.isDelayOver(
                 lastEventTimeStamp,
                 refreshCooldown
-            ) || event.packageName == "neth.iecal.curbox" || ignoredApps.contains(
-                event.packageName
-            )
+            ) || event.packageName == "neth.iecal.curbox"
         ) {
             return
         }
 
-        if(isUnsupportedBrowserBlockingOn && browserBlocker!!.isAppBrowser(event)) return pressHome("/ unsupported browser")
+        if(isUnsupportedBrowserBlockingOn && browserBlocker.isAppBrowser(event)) return pressHome("/ unsupported browser")
         val rootNode = service.rootInActiveWindow ?: return
         val displayUrlTextNode: AccessibilityNodeInfo?
-        var detectedAdultKeyword: String? = null
 
-        if (isSearchAllTextFields) {
-            recursionResultNodes.clear()
-            findNodesByClassName(rootNode, "android.widget.TextView", false)
-
-            try {
-                recursionResultNodes.forEach { node ->
-                    val nodeText = node.text?.toString() ?: ""
-                    if (nodeText.isEmpty()) return@forEach
-                    val word = containsBlockedKeyword(nodeText)
-                    if (word != null) {
-                        detectedAdultKeyword = word
-                        return@forEach // breaks from the forEach loop
-                    }
-                }
-            } catch (e: Exception) {
-                Log.d("Keyword Blocker 111", e.toString())
-            }
-        }
-
-        val urlBarInfo = URL_BAR_ID_LIST[event.packageName]
-        if (urlBarInfo == null && detectedAdultKeyword != null) {
-            pressHome(detectedAdultKeyword!!)
-            return
-        }
-
-        if (urlBarInfo == null) return
+        val urlBarInfo = URL_BAR_ID_LIST[event.packageName] ?: return
 
         val idPrefixPart = event.packageName.toString() + ":id/"
         displayUrlTextNode =
             ReelBlocker.findElementById(rootNode, idPrefixPart + urlBarInfo.displayUrlBarId)
 
-        if (detectedAdultKeyword == null) {
-            val webViewKeyword = searchKeywordsInWebViewTitle(rootNode)
-            val displayText = displayUrlTextNode?.text?.toString() ?: ""
+        val webViewKeyword = searchKeywordsInWebViewTitle(rootNode)
+        val displayText = displayUrlTextNode?.text?.toString() ?: ""
 
-            detectedAdultKeyword = webViewKeyword ?: (if (displayText.isNotEmpty())
-                containsBlockedKeyword(displayText)
-            else null) ?: return
-        }
+        val detectedAdultKeyword = webViewKeyword ?: (if (displayText.isNotEmpty())
+            containsBlockedKeyword(displayText)
+        else null) ?: return
 
         performSmallUpwardScroll()
         Thread.sleep(200)
@@ -259,7 +217,7 @@ class KeywordBlocker : BaseBlocker() {
 
         val editUrlBarId = urlBarInfo.editUrlBarId ?: urlBarInfo.displayUrlBarId
         val editUrlBar = ReelBlocker.findElementById(rootNode, idPrefixPart + editUrlBarId)
-            ?: return pressHome(detectedAdultKeyword!!)
+            ?: return pressHome(detectedAdultKeyword)
 
         editUrlBar.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
             putCharSequence(
@@ -283,36 +241,22 @@ class KeywordBlocker : BaseBlocker() {
     }
 
     private fun searchKeywordsInWebViewTitle(rootNode: AccessibilityNodeInfo): String? {
-        recursionResultNodes.clear()
-        try {
-            findNodesByClassName(rootNode, "android.webkit.WebView")
-        } catch (e: Exception) {
-            Log.d("error", e.toString())
-            return null
-        }
-
-        val webView = recursionResultNodes.getOrNull(0) ?: return null
+        val webView = findWebView(rootNode) ?: return null
         val titleText = webView.text?.toString() ?: ""
         if (titleText.isEmpty()) return null
 
         return containsBlockedKeyword(titleText)
     }
 
-    private fun findNodesByClassName(
-        node: AccessibilityNodeInfo?,
-        targetClassName: String,
-        returnOnFirstResult: Boolean = true
-    ) {
-        node ?: return
-
-        if (node.className == targetClassName) {
-            recursionResultNodes.add(node)
-        }
-
+    private fun findWebView(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
+        node ?: return null
+        if (node.className == "android.webkit.WebView") return node
         for (i in 0 until node.childCount) {
-            findNodesByClassName(node.getChild(i), targetClassName)
+            val child = node.getChild(i)
+            val result = findWebView(child)
+            if (result != null) return result
         }
-        if (returnOnFirstResult && recursionResultNodes.isNotEmpty()) return
+        return null
     }
 
     fun performSmallUpwardScroll() {
@@ -361,11 +305,9 @@ class KeywordBlocker : BaseBlocker() {
                     Regex(prefix + escaped)
                 }
 
-                isSearchAllTextFields = settings.keywordBlockerConfig.searchRecursively
                 redirectUrl = settings.keywordBlockerConfig.redirectUrl
                 isUnsupportedBrowserBlockingOn = settings.keywordBlockerConfig.blockAllExceptSupported
                 isTurnedOn = settings.keywordBlockerConfig.isActive
-                ignoredApps = settings.keywordBlockerConfig.ignoredApps.toHashSet()
                 
                 // Clear cache when config changes
                 detectionCache.evictAll()
