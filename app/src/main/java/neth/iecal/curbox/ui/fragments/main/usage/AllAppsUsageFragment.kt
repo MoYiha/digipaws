@@ -519,7 +519,7 @@ class AllAppsUsageFragment : Fragment() {
                     val website = browserWebsites[i]
                     val prefix = if (i == browserWebsites.size - 1) "└" else "├"
                     val tv = TextView(binding.root.context).apply {
-                        text = "$prefix  ${website.domain} • ${TimeTools.formatTimeForWidget(website.totalTime)}"
+                        text = "$prefix  ${website.urlIdentifier} • ${TimeTools.formatTimeForWidget(website.totalTime)}"
                         textSize = 12f
                         setTextColor(MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorOnSurfaceVariant))
                         setPadding(0, 4, 0, 4)

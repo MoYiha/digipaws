@@ -289,26 +289,48 @@ class KeywordBlocker : BaseBlocker() {
             config.dailyLimits[day]
         }) * 60_000L
 
-        if (limit <= 0) return false
-
-        val domain = extractDomain(url)
-        if (domain.isEmpty()) return false
+        if (limit <= 0) return true
 
         val date = TimeTools.getCurrentDate()
         val totalUsage = runBlocking(Dispatchers.IO) {
-            AppDatabase.getInstance(service).websiteStatsDao().getStat(date, packageName, domain)?.totalTime ?: 0L
+            val allStats = AppDatabase.getInstance(service).websiteStatsDao().getStatsForPackage(date, packageName)
+            Log.d("KeywordBlocker", "Stats count for $packageName on $date: ${allStats.size}")
+            
+            // Sum up all identifiers that belong to this specific group
+            allStats.filter { stat ->
+                val matches = matchesGroup(group, stat.urlIdentifier)
+                 Log.d("KeywordBlocker", "Match: ${stat.urlIdentifier} (${stat.totalTime}ms)")
+                matches
+            }.sumOf { it.totalTime }
         }
+
+        Log.d("total usage", "$totalUsage / $limit [Group: ${group.id}]")
 
         return totalUsage >= limit
     }
 
-    private fun extractDomain(urlText: String): String {
-        return try {
-            var url = urlText
-            if (!url.startsWith("http://") && !url.startsWith("https://")) url = "https://$url"
-            val host = java.net.URI(url).host?.lowercase() ?: urlText
-            if (host.startsWith("www.")) host.substring(4) else host
-        } catch (_: Exception) { urlText }
+    private fun matchesGroup(group: KeywordGroup, text: String): Boolean {
+        val lowerText = text.lowercase(Locale.ROOT)
+        
+        // 1. Check Wildcards/Regex
+        val regexes = groupRegexMap[group.id] ?: emptyList()
+        if (regexes.any { it.containsMatchIn(lowerText) }) return true
+
+        // 2. Check Literals
+        val literals = group.selectedKeywords.filter { !it.contains("*") }
+            .map { it.lowercase(Locale.ROOT) }.toSet()
+        if (literals.isNotEmpty()) {
+            if (literals.contains(lowerText)) return true
+            // Also check if text starts with www. but literal doesn't, or vice-versa
+            val noWwwText = lowerText.removePrefix("www.")
+            if (literals.contains(noWwwText)) return true
+            
+            // Fallback to keyword decomposition
+            val keywords = parseTextForKeywords(text)
+            if (keywords.any { literals.contains(it) }) return true
+        }
+        
+        return false
     }
 
     private fun searchKeywordsInWebViewTitle(rootNode: AccessibilityNodeInfo): KeywordGroup? {

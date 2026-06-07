@@ -13,7 +13,6 @@ import neth.iecal.curbox.data.db.WebsiteStatsDao
 import neth.iecal.curbox.data.db.WebsiteStatsEntity
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.utils.TimeTools
-import kotlin.math.log
 
 class WebsiteUsageTracker {
 
@@ -23,6 +22,7 @@ class WebsiteUsageTracker {
 
     private var currentPackage: String? = null
     private var currentDomain: String? = null
+    private var currentUrlIdentifier: String? = null
     private var domainStartTimeMs: Long = 0L
 
     fun setup(service: BaseBlockingService) {
@@ -42,6 +42,7 @@ class WebsiteUsageTracker {
                 saveSession()
                 currentPackage = null
                 currentDomain = null
+                currentUrlIdentifier = null
             }
             return
         }
@@ -62,11 +63,12 @@ class WebsiteUsageTracker {
 
             Log.d("website", text.toString())
             if (!text.isNullOrEmpty()) {
-                val domain = extractDomain(text)
-                if (domain.isNotEmpty()) {
-                    if (domain != currentDomain || packageName != currentPackage) {
+                val siteInfo = extractSiteInfo(text)
+                if (siteInfo.domain.isNotEmpty()) {
+                    if (siteInfo.urlIdentifier != currentUrlIdentifier || packageName != currentPackage) {
                         saveSession()
-                        currentDomain = domain
+                        currentDomain = siteInfo.domain
+                        currentUrlIdentifier = siteInfo.urlIdentifier
                         currentPackage = packageName
                         domainStartTimeMs = SystemClock.uptimeMillis()
                     }
@@ -77,42 +79,46 @@ class WebsiteUsageTracker {
         }
     }
 
-    private fun extractDomain(urlText: String): String {
+    private data class SiteInfo(val domain: String, val urlIdentifier: String)
+
+    private fun extractSiteInfo(urlText: String): SiteInfo {
         return try {
             var url = urlText
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
                 url = "https://$url"
             }
             val uri = java.net.URI(url)
-            val host = uri.host?.lowercase() ?: urlText
-            if (host.startsWith("www.")) {
-                host.substring(4)
-            } else {
-                host
-            }
+            val domain = uri.host?.lowercase() ?: urlText
+            
+            // Extract identifier (domain + path segment)
+            val identifier = if (uri.path.isNullOrEmpty()) domain else "$domain${uri.path}"
+            
+            SiteInfo(domain, identifier)
         } catch (e: Exception) {
-            urlText
+            SiteInfo(urlText, urlText)
         }
     }
 
     private fun saveSession() {
         val domain = currentDomain
+        val identifier = currentUrlIdentifier
         val packageName = currentPackage
         val startTime = domainStartTimeMs
 
-        if (domain != null && packageName != null && startTime > 0) {
+        if (domain != null && identifier != null && packageName != null && startTime > 0) {
             val durationMs = SystemClock.uptimeMillis() - startTime
             if (durationMs > 1000) {
-                Log.d("saved session", durationMs.toString())
+                Log.d("saved session", "$identifier -> $durationMs")
                 val date = TimeTools.getCurrentDate()
                 scope.launch {
                     try {
-                        val stat = websiteStatsDao.getStat(date, packageName, domain)
+                        val stat = websiteStatsDao.getStat(date, packageName, identifier)
                         val totalTime = (stat?.totalTime ?: 0L) + durationMs
                         websiteStatsDao.upsert(
                             WebsiteStatsEntity(
                                 date = date,
                                 packageName = packageName,
+                                urlIdentifier = identifier,
                                 domain = domain,
                                 totalTime = totalTime
                             )
