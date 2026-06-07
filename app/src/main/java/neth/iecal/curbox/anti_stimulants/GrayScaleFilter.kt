@@ -60,7 +60,13 @@ class GrayScaleFilter : BaseBlocker() {
             if (!group.isActive) continue
 
             if (group.packages.contains(currentPackageName)) {
-                val intervals = group.dailyIntervals[currentDay]
+                val config = group.timeConfig
+                val intervals = if (config.isEveryday) {
+                    config.everydayIntervals
+                } else {
+                    config.dailyIntervals[currentDay]
+                }
+
                 if (intervals == null || intervals.isEmpty()) {
                     shouldGrayscale = true
                     break

@@ -6,7 +6,7 @@ data class GrayscaleGroup(
 val groupId: String = UUID.randomUUID().toString(),
 val groupName: String,
 val packages: HashSet<String>,
-var dailyIntervals: MutableMap<Int, MutableList<TimeInterval>> = mutableMapOf(),
+var timeConfig: AppTimeConfig = AppTimeConfig(),
 var isActive: Boolean = true
 ) {
     override fun toString(): String {

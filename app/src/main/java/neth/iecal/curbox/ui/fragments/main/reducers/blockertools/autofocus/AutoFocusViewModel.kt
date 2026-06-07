@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.blockers.FocusModeBlocker
+import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.AutoFocusGroup
 import neth.iecal.curbox.utils.DataStoreManager
 
@@ -20,7 +21,7 @@ class AutoFocusViewModel(application: Application) : AndroidViewModel(applicatio
     private val _groups = MutableStateFlow<List<AutoFocusGroup>>(emptyList())
     val groups: StateFlow<List<AutoFocusGroup>> = _groups
 
-    var currentDailyIntervals: MutableMap<Int, MutableList<neth.iecal.curbox.data.models.TimeInterval>> = mutableMapOf()
+    var currentTimeConfig: AppTimeConfig = AppTimeConfig()
 
     init {
         viewModelScope.launch {

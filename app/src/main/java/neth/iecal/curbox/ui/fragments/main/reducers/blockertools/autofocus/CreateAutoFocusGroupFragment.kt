@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.R
+import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.AutoFocusGroup
 import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.databinding.FragmentCreateAutofocusGroupBinding
@@ -71,7 +72,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
         }
 
         if (groupId == null) {
-            viewModel.currentDailyIntervals = mutableMapOf()
+            viewModel.currentTimeConfig = AppTimeConfig()
         }
 
         if (groupId != null) {
@@ -93,7 +94,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
                             requireActivity().finish()
                         }
 
-                        viewModel.currentDailyIntervals = group.dailyIntervals.toMutableMap()
+                        viewModel.currentTimeConfig = group.timeConfig.copy()
 
                         if (group.blockMode == FocusBlockMode.BLOCK_SELECTED) {
                             binding.rgBlockingType.check(R.id.rb_block_selected)
@@ -157,7 +158,7 @@ class CreateAutoFocusGroupFragment : Fragment() {
                 packages = HashSet(selectedApps),
                 blockMode = blockMode,
                 exitable = exitable,
-                dailyIntervals = viewModel.currentDailyIntervals,
+                timeConfig = viewModel.currentTimeConfig,
                 autoTurnOnDnd = autoTurnOnDnd
             )
 

@@ -8,7 +8,7 @@ data class AutoFocusGroup(
     val packages: HashSet<String>,
     val blockMode: FocusBlockMode,
     val exitable: Boolean = true,
-    var dailyIntervals: MutableMap<Int, MutableList<TimeInterval>> = mutableMapOf(),
+    var timeConfig: AppTimeConfig = AppTimeConfig(),
     val autoTurnOnDnd: Boolean = false
 ) {
     override fun toString(): String {

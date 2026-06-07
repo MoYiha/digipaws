@@ -27,14 +27,12 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <LinearLayout
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/intervals_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:orientation="vertical">
-        <!-- Items added programmatically -->
-    </LinearLayout>
+        android:nestedScrollingEnabled="false" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_add_interval"

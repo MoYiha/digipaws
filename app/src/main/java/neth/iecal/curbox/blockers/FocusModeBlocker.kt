@@ -85,7 +85,8 @@ class FocusModeBlocker : BaseBlocker() {
 
         for (group in autoFocusGroups) {
             if (dismissedAutoFocusGroupIds.contains(group.groupId)) continue
-            val intervals = group.dailyIntervals[currentDay] ?: continue
+            val config = group.timeConfig
+            val intervals = if (config.isEveryday) config.everydayIntervals else config.dailyIntervals[currentDay] ?: continue
             val isInInterval = intervals.any { isWithinInterval(currentMinutes, it) }
                         if (isInInterval) {
                 if (group.autoTurnOnDnd) shouldDndBeOn = true
@@ -189,7 +190,8 @@ class FocusModeBlocker : BaseBlocker() {
 
         for (group in autoFocusGroups) {
             if (dismissedAutoFocusGroupIds.contains(group.groupId)) continue
-            val intervals = group.dailyIntervals[currentDay] ?: continue
+            val config = group.timeConfig
+            val intervals = if (config.isEveryday) config.everydayIntervals else config.dailyIntervals[currentDay] ?: continue
             val isInInterval = intervals.any { isWithinInterval(currentMinutes, it) }
             if (!isInInterval) continue
 

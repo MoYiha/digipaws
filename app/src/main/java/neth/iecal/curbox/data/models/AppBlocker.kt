@@ -17,14 +17,14 @@ enum class AppBlockingType{
 
 data class AppTimeConfig(
     var isEveryday: Boolean = true,
-    var everydayIntervals: MutableList<TimeInterval> = mutableListOf(),
+    var everydayIntervals: MutableList<TimeInterval> = mutableListOf(TimeInterval()),
     var dailyIntervals: MutableMap<Int, MutableList<TimeInterval>> = mutableMapOf()
 )
 
 
 data class AppUsageConfig(
     var isDailyUniform: Boolean = true,
-    var uniformLimit: Long = 0,
+    var uniformLimit: Long = 60,
     val dailyLimits: LongArray = LongArray(7) { 0 } // 0=Sunday
 ) {
     override fun equals(other: Any?): Boolean {

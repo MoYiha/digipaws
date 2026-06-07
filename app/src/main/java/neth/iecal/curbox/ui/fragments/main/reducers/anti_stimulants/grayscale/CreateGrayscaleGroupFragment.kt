@@ -16,7 +16,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.GrayscaleGroup
+import neth.iecal.curbox.data.models.TimeInterval
 import neth.iecal.curbox.databinding.FragmentCreateGrayscaleGroupBinding
 import neth.iecal.curbox.ui.activity.SelectAppsActivity
 import java.util.UUID
@@ -69,7 +71,12 @@ class CreateGrayscaleGroupFragment : Fragment() {
         }
 
         if (groupId == null) {
-            viewModel.currentDailyIntervals = mutableMapOf()
+            viewModel.currentTimeConfig = AppTimeConfig(
+                everydayIntervals = mutableListOf(
+                    TimeInterval(startHour = 20, endHour = 24),
+                    TimeInterval(startHour = 0, endHour = 7)
+                )
+            )
         }
 
         if (groupId != null) {
@@ -91,7 +98,7 @@ class CreateGrayscaleGroupFragment : Fragment() {
                             requireActivity().finish()
                         }
 
-                        viewModel.currentDailyIntervals = group.dailyIntervals.toMutableMap()
+                        viewModel.currentTimeConfig = group.timeConfig.copy()
                     }
                 }
             }
@@ -127,7 +134,7 @@ class CreateGrayscaleGroupFragment : Fragment() {
                 groupId = if (isEditingRecord && targetExistingGroup != null) targetExistingGroup.groupId else UUID.randomUUID().toString(),
                 groupName = name,
                 packages = HashSet(selectedApps),
-                dailyIntervals = viewModel.currentDailyIntervals
+                timeConfig = viewModel.currentTimeConfig
             )
 
             if (isEditingRecord && targetExistingGroup != null) {
