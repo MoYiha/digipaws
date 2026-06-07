@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -38,18 +40,17 @@ class KeywordBlockerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (!viewModel.keywordBlockerConfig.value.isActive) {
+            viewModel.setIsActive(true)
+        }
         binding.rvKeywordGroups.layoutManager = LinearLayoutManager(requireContext())
         setupListeners()
         observeViewModel()
     }
 
     private fun setupListeners() {
-        binding.switchEnableBlocker.setOnCheckedChangeListener { _, isChecked ->
-            if (!isUpdatingUi) viewModel.setIsActive(isChecked)
-        }
-
-        binding.cbBlockUnsupportedBrowsers.setOnCheckedChangeListener { _, isChecked ->
-            if (!isUpdatingUi) viewModel.setBlockAllExceptSupported(isChecked)
+        binding.btnMenu.setOnClickListener { view ->
+            showPopupMenu(view)
         }
 
         binding.fabAddGroup.setOnClickListener {
@@ -60,13 +61,36 @@ class KeywordBlockerFragment : Fragment() {
         }
     }
 
+    private fun showPopupMenu(view: View) {
+        val popup = PopupMenu(requireContext(), view)
+        popup.menuInflater.inflate(R.menu.menu_keyword_blocker, popup.menu)
+
+        val config = viewModel.keywordBlockerConfig.value
+        popup.menu.findItem(R.id.menu_block_unsupported_browsers).isChecked = config.blockAllExceptSupported
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menu_block_unsupported_browsers -> {
+                    val newValue = !item.isChecked
+                    item.isChecked = newValue
+                    viewModel.setBlockAllExceptSupported(newValue)
+                    true
+                }
+                R.id.menu_help -> {
+                    Toast.makeText(requireContext(), "Help coming soon!", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.keywordBlockerConfig.collectLatest { config ->
                 isUpdatingUi = true
-                binding.switchEnableBlocker.isChecked = config.isActive
-                binding.cbBlockUnsupportedBrowsers.isChecked = config.blockAllExceptSupported
-                
+
                 if (config.keywordGroups.isEmpty()) {
                     binding.tvEmptyState.visibility = View.VISIBLE
                     binding.rvKeywordGroups.visibility = View.GONE
