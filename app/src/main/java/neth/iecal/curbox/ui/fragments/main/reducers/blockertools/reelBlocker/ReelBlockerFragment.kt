@@ -107,7 +107,7 @@ class ReelBlockerFragment : Fragment() {
     
     private fun updateConfigureButtonText(type: ReelBlockingType) {
         binding.btnConfigureLimits.text = when (type) {
-            ReelBlockingType.TIMED -> "Configure Time Limits"
+            ReelBlockingType.TIMED -> "Configure Allowed Schedule"
             ReelBlockingType.USAGE -> "Configure Usage Limits"
             ReelBlockingType.REEL_COUNT -> "Configure Reel Count Limit"
         }

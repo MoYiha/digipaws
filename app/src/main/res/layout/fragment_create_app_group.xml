@@ -137,7 +137,7 @@
                 android:id="@+id/btn_configure_settings"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:text="@string/configure_settings"
+                android:text="Configure Allowed Schedule"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 app:backgroundTint="?attr/colorSurfaceContainer"
                 app:cornerRadius="16dp"
