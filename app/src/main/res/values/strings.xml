@@ -132,11 +132,11 @@
     <string name="a_few_final_steps">A few final steps</string>
     <string name="select_what_apps_youd_like_to">Select what apps you\'d like to get blocked</string>
     <string name="create_a_new_group">Create a new group</string>
-    <string name="use_a_focus_group_to_instantly">Use a Focus Group to instantly launch a focus session with your chosen apps.</string>
+    <string name="use_a_focus_group_to_instantly">Use a Focus Group to instantly launch a focus session with your chosen apps and websites.</string>
     <string name="enter_group_name">Enter Group Name</string>
     <string name="select_apps">Select Apps</string>
     <string name="selected_0">Selected: 0</string>
-    <string name="what_action_would_you_like_to">What action would you like to be taken when a user opens a selected app?</string>
+    <string name="what_action_would_you_like_to">Select what happens when you open an app or a website</string>
     <string name="block_selected">Block Selected</string>
     <string name="block_all_except_selected">Block All Except Selected</string>
     <string name="let_me_quit_midsessions">Let me quit mid-sessions</string>

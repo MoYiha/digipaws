@@ -40,8 +40,12 @@ class FocusModeBlocker : BaseBlocker() {
 
     @Volatile private var focusModeData: ManualFocusModeData? = null
     private var lastPackage = ""
+    private var lastBlockTime = 0L
+    private var lastWebsiteCheckTime = 0L
     private lateinit var service: AppBlockerService
     private lateinit var notificationManager: TimerNotification
+    private val keywordBlocker = KeywordBlocker()
+    private var focusKeywordsRegex = listOf<Regex>()
 
     @Volatile private var essentialPackages: Set<String> = emptySet()
 
@@ -103,24 +107,51 @@ class FocusModeBlocker : BaseBlocker() {
     }
 
     fun doFocusModeCheck(event: AccessibilityEvent?) {
-        val packageName = event?.packageName.toString()
-        if (lastPackage == packageName || packageName == service.getPackageName()) return
-        lastPackage = packageName
-
-        fun performBlock() {
-            service.pressHome()
-            lastPackage = ""
-        }
+        if(event?.packageName == null || event.packageName == service.getPackageName()) return
+        val packageName = event.packageName.toString()
 
         if (focusModeData != null) {
-            when (focusModeData!!.focusGroupData.blockMode) {
-                FocusBlockMode.BLOCK_SELECTED -> {
-                    if (focusModeData!!.focusGroupData.packages.contains(packageName)) performBlock()
-                }
-                FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED -> {
-                    if (!focusModeData!!.focusGroupData.packages.contains(packageName)) performBlock()
+            // 1. App Block Check (Instant - only on package change)
+            if (lastPackage != packageName) {
+                lastPackage = packageName
+                when (focusModeData!!.focusGroupData.blockMode) {
+                    FocusBlockMode.BLOCK_SELECTED -> {
+                        if (focusModeData!!.focusGroupData.packages.contains(packageName)) {
+                            service.pressHome()
+
+                            Log.d("focus mode","home pressed $packageName")
+                            return
+                        }
+                    }
+                    FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED -> {
+                        if (!focusModeData!!.focusGroupData.packages.contains(packageName)) {
+                            service.pressHome()
+                            Log.d("focus mode","home pressed $packageName")
+
+                            return
+                        }
+                    }
                 }
             }
+
+            // 2. Website Block Check
+            if (focusModeData!!.focusGroupData.keywords.isNotEmpty() &&
+                KeywordBlocker.URL_BAR_ID_LIST.containsKey(packageName)) {
+
+                val now = System.currentTimeMillis()
+                // Throttle website checks to every 400ms within the same app to preserve performance
+                if (now - lastWebsiteCheckTime > 400) {
+                    lastWebsiteCheckTime = now
+                    if (keywordBlocker.isFocusWebsiteBlocked(packageName, focusModeData!!.focusGroupData.keywords, focusKeywordsRegex, focusModeData!!.focusGroupData.blockMode)) {
+                        if (now - lastBlockTime > 1500) {
+                            service.pressBack()
+                            Log.d("focus mode","back pressed")
+                            lastBlockTime = now
+                        }
+                    }
+                }
+            }
+
             if (focusModeData!!.endTimeInMillis < System.currentTimeMillis()) {
                 turnOffFocusMode()
             }
@@ -147,6 +178,7 @@ class FocusModeBlocker : BaseBlocker() {
     fun setupFocusMode(service: BaseBlockingService) {
         if (service !is AppBlockerService) return
         this.service = service
+        keywordBlocker.setupBlocker(service, watchSettings = false)
         if (!this::notificationManager.isInitialized) {
             notificationManager = TimerNotification(service)
         }
@@ -195,6 +227,7 @@ class FocusModeBlocker : BaseBlocker() {
                     currentFocusingGroup
                 }
                 focusModeData = ManualFocusModeData(effectiveGroup, settings.activeManualFocusGroupId.second)
+                focusKeywordsRegex = keywordBlocker.getRegexList(effectiveGroup.keywords)
                 withContext(Dispatchers.Main) {
                     notificationManager.startTimer(
                         focusModeData!!.endTimeInMillis - System.currentTimeMillis(),

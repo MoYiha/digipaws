@@ -17,6 +17,7 @@ import neth.iecal.curbox.utils.DataStoreManager
 
 class FocusViewModel(application: Application) : AndroidViewModel(application) {
     var newGroupSelectedApps = hashSetOf<String>()
+    var newGroupSelectedKeywords = hashSetOf<String>()
 
     private val dataStoreManager = DataStoreManager(application)
     private val db = neth.iecal.curbox.data.db.AppDatabase.getInstance(application)

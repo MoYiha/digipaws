@@ -30,14 +30,6 @@
                     android:textAppearance="?attr/textAppearanceTitleLarge"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/select_what_apps_youd_like_to"
-                    android:textAppearance="?attr/textAppearanceBodyMedium"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
-
                 <com.google.android.material.textfield.TextInputLayout
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
@@ -132,7 +124,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="16dp">
+                    android:layout_marginTop="24dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/group_name"
@@ -164,6 +156,34 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/selected_0"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_add_websites"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Add Websites" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/selected_website_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Selected: 0"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -217,7 +237,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:checked="false"
-                    android:text="Turn on Do Not Disturb automatically" />
+                    android:text="Turn on do not disturb" />
 
                 <Button
                     android:id="@+id/save_group"

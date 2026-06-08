@@ -34,6 +34,7 @@ import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.data.models.AppBlockingType
 import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.AppUsageConfig
+import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.data.models.KeywordGroup
 import neth.iecal.curbox.data.models.KeywordUnlockBehavior
 import neth.iecal.curbox.services.BaseBlockingService
@@ -91,6 +92,29 @@ class KeywordBlocker : BaseBlocker() {
 
     private val wordSplitRegex = Regex("[^a-zA-Z0-9]+")
 
+    fun findMatchingGroupManual(text: String, groups: List<KeywordGroup>, regexMap: Map<String, List<Regex>>): KeywordGroup? {
+        val lowerText = text.lowercase(Locale.ROOT)
+
+        for (group in groups) {
+            // Check wildcards
+            val regexes = regexMap[group.id] ?: emptyList()
+            if (regexes.any { it.containsMatchIn(lowerText) }) {
+                return group
+            }
+
+            // Check literals
+            val literals = group.selectedKeywords.filter { !it.contains("*") }
+                .map { it.lowercase(Locale.ROOT) }.toSet()
+            if (literals.isNotEmpty()) {
+                val keywords = parseTextForKeywords(text)
+                if (keywords.any { literals.contains(it) }) {
+                    return group
+                }
+            }
+        }
+        return null
+    }
+
     private fun findMatchingGroup(text: String): KeywordGroup? {
         val cachedGroup = detectionCache.get(text)
         if (cachedGroup != null) return if (cachedGroup.id == "SAFE") null else cachedGroup
@@ -124,7 +148,7 @@ class KeywordBlocker : BaseBlocker() {
         return null
     }
 
-    private fun parseTextForKeywords(input: String): Set<String> {
+    fun parseTextForKeywords(input: String): Set<String> {
         fun extractWords(text: String): Set<String> =
             text.split(wordSplitRegex)
                 .filter { it.isNotEmpty() }
@@ -341,7 +365,7 @@ class KeywordBlocker : BaseBlocker() {
         return findMatchingGroup(titleText)
     }
 
-    private fun findWebView(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
+    fun findWebView(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
         node ?: return null
         if (node.className == "android.webkit.WebView") return node
         for (i in 0 until node.childCount) {
@@ -377,11 +401,13 @@ class KeywordBlocker : BaseBlocker() {
 
     private var configJob: kotlinx.coroutines.Job? = null
 
-    fun setupBlocker(service: BaseBlockingService) {
+    fun setupBlocker(service: BaseBlockingService, watchSettings: Boolean = true) {
         this.service = service
         this.browserBlocker = BrowserBlocker(service)
         this.prefs = service.getSharedPreferences("keyword_blocker_prefs", Context.MODE_PRIVATE)
         loadPersistedData()
+
+        if (!watchSettings) return
 
         configJob?.cancel()
         configJob = CoroutineScope(Dispatchers.IO).launch {
@@ -411,6 +437,54 @@ class KeywordBlocker : BaseBlocker() {
                 detectionCache.evictAll()
             }
         }
+    }
+
+    fun getRegexList(keywords: Collection<String>): List<Regex> {
+        val wildcards = keywords.filter { it.contains("*") }
+        return wildcards.map { pattern ->
+            val lowerPattern = pattern.lowercase(Locale.ROOT)
+            val looksLikeDomain = !lowerPattern.startsWith("http") && !lowerPattern.startsWith("*") && !lowerPattern.startsWith("/")
+            val prefix = if (looksLikeDomain) "(?:https?://)?(?:www\\.)?" else ""
+            val escaped = lowerPattern.replace(Regex("[.\\+^${'$'}()|\\[\\]\\\\{}]"), "\\\\$0").replace("*", ".*")
+            Regex(prefix + escaped)
+        }
+    }
+
+    fun isFocusWebsiteBlocked(packageName: String, keywords: Set<String>, regexList: List<Regex>, blockMode: FocusBlockMode): Boolean {
+        val rootNode = service.rootInActiveWindow ?: return false
+        val urlBarInfo = URL_BAR_ID_LIST[packageName] ?: return false
+        val idPrefixPart = packageName + ":id/"
+
+        val displayUrlTextNode = ReelBlocker.findElementById(rootNode, idPrefixPart + urlBarInfo.displayUrlBarId)
+        val displayText = displayUrlTextNode?.text?.toString() ?: ""
+
+        val webView = findWebView(rootNode)
+        val titleText = webView?.text?.toString() ?: ""
+
+        val content = if (displayText.isNotEmpty()) displayText else titleText
+        if (content.isEmpty()) return false
+
+        if (blockMode == FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED) {
+            val lower = content.lowercase(Locale.ROOT)
+            if (lower.startsWith("chrome://") || lower.startsWith("about:") || 
+                lower.contains("newtab") || lower.contains("bookmarks") || lower.contains("history")||
+                lower.startsWith("search" )|| lower.endsWith("url") || lower.contains("Search Google or type URL") || !lower.contains(".") || lower.contains("null")) return false
+        }
+
+        val lowerText = content.lowercase(Locale.ROOT)
+        var matched = false
+
+        if (regexList.any { it.containsMatchIn(lowerText) }) {
+            matched = true
+        } else {
+            val literals = keywords.filter { !it.contains("*") }.map { it.lowercase(Locale.ROOT) }.toSet()
+            if (literals.isNotEmpty()) {
+                val parsedKeywords = parseTextForKeywords(content)
+                if (parsedKeywords.any { literals.contains(it) }) matched = true
+            }
+        }
+
+        return if (blockMode == FocusBlockMode.BLOCK_SELECTED) matched else !matched
     }
 
     private fun loadPersistedData() {

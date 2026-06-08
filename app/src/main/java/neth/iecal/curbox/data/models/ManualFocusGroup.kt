@@ -6,14 +6,18 @@ data class ManualFocusGroup(
     val groupId: String = UUID.randomUUID().toString(),
     val groupName: String,
     val packages: HashSet<String>,
+    val keywords: HashSet<String> = hashSetOf(),
     val blockMode: FocusBlockMode,
     val exitable: Boolean = true,
     val autoTurnOnDnd: Boolean = false
 ){
     override fun toString(): String {
-        return "$groupName (${packages.size} ${
-            if(blockMode == FocusBlockMode.BLOCK_SELECTED) "included" else "excluded"
-        } apps)"
+        val mode = if(blockMode == FocusBlockMode.BLOCK_SELECTED) "included" else "excluded"
+        return if (keywords.isNotEmpty()) {
+            "$groupName (${packages.size} apps, ${keywords.size} websites $mode)"
+        } else {
+            "$groupName (${packages.size} $mode apps)"
+        }
     }
 
 }
