@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.journeyapps.barcodescanner.ScanContract
@@ -33,9 +34,8 @@ class WarningConfigFragment : Fragment() {
     private var pendingQrDuration = -1L
     
     private val behaviorOptions = arrayOf(
-        "Skip warning screen",
-        "User selects unlock time",
-        "Fixed unlock time",
+        "Select how long more i want to use each time therein",
+        "Only let me unlock for a predefined time",
         "Disable unlocking entirely",
         "Unlock requires QR/Barcode scanning",
         "Unlock requires typing a sentence",
@@ -85,13 +85,12 @@ class WarningConfigFragment : Fragment() {
         binding.unlockBehaviorDropdown.setAdapter(adapter)
 
         val initialIndex = when {
-            config.isIntentRequirementEnabled -> 6
-            config.isTypingRequirementEnabled -> 5
-            config.isQrUnlockRequirementEnabled -> 4
-            config.isWarningDialogHidden -> 0
-            config.isProceedDisabled -> 3
-            config.isDynamicIntervalSettingAllowed -> 1
-            else -> 2 // Fixed time
+            config.isIntentRequirementEnabled -> 5
+            config.isTypingRequirementEnabled -> 4
+            config.isQrUnlockRequirementEnabled -> 3
+            config.isProceedDisabled -> 2
+            config.isDynamicIntervalSettingAllowed -> 0
+            else -> 1 // Fixed time
         }
         binding.unlockBehaviorDropdown.setText(behaviorOptions[initialIndex], false)
         updateUiVisibility(initialIndex)
@@ -143,6 +142,13 @@ class WarningConfigFragment : Fragment() {
             binding.proceedWindowTitle.text = "Time window: ${value.toInt()} mins"
         }
 
+        binding.advancedSettingsHeader.setOnClickListener {
+            val isCurrentlyVisible = binding.advancedSettingsContent.isVisible
+            TransitionManager.beginDelayedTransition(binding.mainContentContainer, AutoTransition())
+            binding.advancedSettingsContent.isVisible = !isCurrentlyVisible
+            binding.advancedSettingsArrow.animate().rotation(if (isCurrentlyVisible) 0f else 90f).start()
+        }
+
         binding.btnGenerateQr.setOnClickListener {
             showQrConfigDialog { duration ->
                 val uniqueStr = UUID.randomUUID().toString()
@@ -189,19 +195,18 @@ class WarningConfigFragment : Fragment() {
             val behaviorStr = binding.unlockBehaviorDropdown.text.toString()
             val bIdx = behaviorOptions.indexOf(behaviorStr).coerceAtLeast(0)
 
-            val isWarningDialogHidden = bIdx == 0
-            val isDynamicIntervalSettingAllowed = bIdx == 1
-            val isProceedDisabled = bIdx == 3
-            val isQrUnlockRequirementEnabled = bIdx == 4
-            val isTypingRequirementEnabled = bIdx == 5
-            val isIntentRequirementEnabled = bIdx == 6
+            val isDynamicIntervalSettingAllowed = bIdx == 0
+            val isProceedDisabled = bIdx == 2
+            val isQrUnlockRequirementEnabled = bIdx == 3
+            val isTypingRequirementEnabled = bIdx == 4
+            val isIntentRequirementEnabled = bIdx == 5
 
             val config = AppBlockerWarningScreenConfig(
                 message = binding.warningMsgEdit.text.toString(),
                 timeInterval = (binding.fixedTimeSlider.value.toInt()) * 60_000,
                 isDynamicIntervalSettingAllowed = isDynamicIntervalSettingAllowed,
                 isProceedDisabled = isProceedDisabled,
-                isWarningDialogHidden = isWarningDialogHidden,
+                isWarningDialogHidden = false,
                 isQrUnlockRequirementEnabled = isQrUnlockRequirementEnabled,
                 qrKeys = if (isQrUnlockRequirementEnabled) currentQrMap else mapOf(),
                 isTypingRequirementEnabled = isTypingRequirementEnabled,
@@ -262,11 +267,11 @@ class WarningConfigFragment : Fragment() {
         }
 
         binding.apply {
-            timingContainer.visibility = if (behaviorIndex == 2 || behaviorIndex == 5 || behaviorIndex == 6) View.VISIBLE else View.GONE
-            proceedDelayContainer.visibility = if (behaviorIndex in listOf(1, 2, 4, 5, 6)) View.VISIBLE else View.GONE
-            warningMsgLayout.visibility = if (behaviorIndex != 0) View.VISIBLE else View.GONE
-            qrSetupContainer.visibility = if (behaviorIndex == 4) View.VISIBLE else View.GONE
-            typingSetupContainer.visibility = if (behaviorIndex == 5) View.VISIBLE else View.GONE
+            timingContainer.visibility = if (behaviorIndex == 1 || behaviorIndex == 4 || behaviorIndex == 5) View.VISIBLE else View.GONE
+            proceedDelayContainer.visibility = if (behaviorIndex in listOf(0, 1, 3, 4, 5)) View.VISIBLE else View.GONE
+            warningMsgLayout.visibility = View.VISIBLE
+            qrSetupContainer.visibility = if (behaviorIndex == 3) View.VISIBLE else View.GONE
+            typingSetupContainer.visibility = if (behaviorIndex == 4) View.VISIBLE else View.GONE
         }
     }
     

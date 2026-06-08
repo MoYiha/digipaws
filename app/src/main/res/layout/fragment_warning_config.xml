@@ -23,25 +23,11 @@
             android:textStyle="bold" />
 
         <TextView
+            style="@style/TextAppearance.Material3.BodyMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            style="@style/TextAppearance.Material3.BodyMedium"
-            android:text="Customize how you are warned before unlocking a restricted entity." />
-
-        <!-- Warning Message -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/warning_msg_layout"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:hint="Custom Warning Message">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/warning_msg_edit"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.google.android.material.textfield.TextInputLayout>
+            android:text="Set what happens if you tries to access this outside its schedule." />
 
         <!-- Unlock Behavior -->
         <com.google.android.material.textfield.TextInputLayout
@@ -237,7 +223,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Proceed Limits -->
+        <!-- Advanced Settings -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_width="match_parent"
@@ -247,68 +233,117 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-                
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/proceed_limit_switch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/TextAppearance.Material3.TitleSmall"
-                    android:text="Limit unlock frequency" />
+                android:orientation="vertical">
 
                 <LinearLayout
-                    android:id="@+id/proceed_limit_container"
+                    android:id="@+id/advanced_settings_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/advanced"
+                        style="@style/TextAppearance.Material3.TitleSmall"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/advanced_settings_arrow"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/baseline_arrow_forward_ios_24"
+                        android:contentDescription="@null"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/advanced_settings_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginTop="8dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingBottom="16dp"
                     android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/allowed_proceeds_title"
-                        style="@style/TextAppearance.Material3.BodyMedium"
+                    <!-- Warning Message -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/warning_msg_layout"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Allowed proceeds: 3" />
-                    
-                    <com.google.android.material.slider.Slider
-                        android:id="@+id/allowed_proceeds_slider"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:valueFrom="1.0"
-                        android:valueTo="20.0"
-                        android:stepSize="1.0"
-                        android:value="3.0" />
+                        android:layout_marginBottom="16dp"
+                        android:hint="Custom Warning Message">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/warning_msg_edit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView
-                        android:id="@+id/proceed_window_title"
-                        style="@style/TextAppearance.Material3.BodyMedium"
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/proceed_limit_switch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/TextAppearance.Material3.TitleSmall"
+                        android:text="Limit unlock frequency" />
+
+                    <LinearLayout
+                        android:id="@+id/proceed_limit_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="8dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/allowed_proceeds_title"
+                            style="@style/TextAppearance.Material3.BodyMedium"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Allowed proceeds: 3" />
+
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/allowed_proceeds_slider"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:valueFrom="1.0"
+                            android:valueTo="20.0"
+                            android:stepSize="1.0"
+                            android:value="3.0" />
+
+                        <TextView
+                            android:id="@+id/proceed_window_title"
+                            style="@style/TextAppearance.Material3.BodyMedium"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Time window: 60 mins" />
+
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/proceed_window_slider"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:valueFrom="1.0"
+                            android:valueTo="240.0"
+                            android:stepSize="1.0"
+                            android:value="60.0" />
+                    </LinearLayout>
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_vibrate_brightness"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Time window: 60 mins" />
-                    
-                    <com.google.android.material.slider.Slider
-                        android:id="@+id/proceed_window_slider"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:valueFrom="1.0"
-                        android:valueTo="240.0"
-                        android:stepSize="1.0"
-                        android:value="60.0" />
+                        style="@style/TextAppearance.Material3.TitleSmall"
+                        android:text="Vibrate &amp; max brightness on warning" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switch_vibrate_brightness"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:layout_marginBottom="16dp"
-            style="@style/TextAppearance.Material3.TitleSmall"
-            android:text="Vibrate &amp; max brightness on warning" />
 
         <Button
             android:id="@+id/saveconfigs"
