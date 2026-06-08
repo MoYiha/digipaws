@@ -114,7 +114,11 @@ class CreateKeywordGroupFragment : Fragment() {
         }
 
         binding.btnConfigureWarningScreen.setOnClickListener {
-            val configFragment = neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared.WarningConfigFragment.newInstance(viewModel.warningScrnConfig, "result_warning_config")
+            val configFragment = neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared.WarningConfigFragment.newInstance(
+                viewModel.warningScrnConfig, 
+                "result_warning_config",
+                isNew = existingGroupId == null
+            )
             parentFragmentManager.beginTransaction()
                 .hide(this)
                 .add(R.id.fragment_holder, configFragment)

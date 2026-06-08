@@ -17,9 +17,10 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="24dp"
             android:text="Warning Screen Configuration"
-            style="@style/TextAppearance.Material3.HeadlineSmall"
+            android:textSize="25sp"
             android:textStyle="bold" />
 
         <TextView
@@ -27,17 +28,36 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:text="Set what happens if you tries to access this outside its schedule." />
+            android:text="Set what happens if you try to access this outside its schedule." />
 
-        <!-- Unlock Behavior -->
+        <!-- Unlock Challenge -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Unlock Behavior">
+            android:hint="Unlock Challenge">
+
             <AutoCompleteTextView
-                android:id="@+id/unlock_behavior_dropdown"
+                android:id="@+id/unlock_challenge_dropdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+        <!-- Secondary Behavior -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/secondary_behavior_layout"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Unlock Method"
+            android:visibility="gone">
+            <AutoCompleteTextView
+                android:id="@+id/secondary_behavior_dropdown"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="none" />
@@ -239,26 +259,26 @@
                     android:id="@+id/advanced_settings_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:background="?attr/selectableItemBackground">
+                    android:orientation="horizontal"
+                    android:padding="16dp">
 
                     <TextView
+                        style="@style/TextAppearance.Material3.TitleSmall"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/advanced"
-                        style="@style/TextAppearance.Material3.TitleSmall"
                         android:textStyle="bold" />
 
                     <ImageView
                         android:id="@+id/advanced_settings_arrow"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/baseline_arrow_forward_ios_24"
                         android:contentDescription="@null"
+                        android:src="@drawable/baseline_arrow_forward_ios_24"
                         app:tint="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
 
@@ -279,6 +299,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:hint="Custom Warning Message">
+
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/warning_msg_edit"
                             android:layout_width="match_parent"
@@ -287,17 +308,17 @@
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/proceed_limit_switch"
+                        style="@style/TextAppearance.Material3.TitleSmall"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        style="@style/TextAppearance.Material3.TitleSmall"
                         android:text="Limit unlock frequency" />
 
                     <LinearLayout
                         android:id="@+id/proceed_limit_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
                         android:layout_marginTop="8dp"
+                        android:orientation="vertical"
                         android:visibility="gone">
 
                         <TextView
@@ -311,10 +332,10 @@
                             android:id="@+id/allowed_proceeds_slider"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:valueFrom="1.0"
-                            android:valueTo="20.0"
                             android:stepSize="1.0"
-                            android:value="3.0" />
+                            android:value="3.0"
+                            android:valueFrom="1.0"
+                            android:valueTo="20.0" />
 
                         <TextView
                             android:id="@+id/proceed_window_title"
@@ -328,18 +349,18 @@
                             android:id="@+id/proceed_window_slider"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:valueFrom="1.0"
-                            android:valueTo="240.0"
                             android:stepSize="1.0"
-                            android:value="60.0" />
+                            android:value="60.0"
+                            android:valueFrom="1.0"
+                            android:valueTo="240.0" />
                     </LinearLayout>
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/switch_vibrate_brightness"
+                        style="@style/TextAppearance.Material3.TitleSmall"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        style="@style/TextAppearance.Material3.TitleSmall"
                         android:text="Vibrate &amp; max brightness on warning" />
                 </LinearLayout>
             </LinearLayout>
@@ -348,8 +369,7 @@
         <Button
             android:id="@+id/saveconfigs"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginVertical="16dp"
+            android:layout_height="60dp"
             android:text="@string/save" />
 
         <Space

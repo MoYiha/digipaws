@@ -1,5 +1,6 @@
 package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared
 
+import android.content.Context
 import android.os.Bundle
 import android.transition.AutoTransition
 import android.transition.TransitionManager
@@ -11,7 +12,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -20,6 +20,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.google.zxing.BarcodeFormat
 import com.google.gson.Gson
+import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
 import neth.iecal.curbox.databinding.FragmentWarningConfigBinding
 import java.util.UUID
@@ -32,15 +33,55 @@ class WarningConfigFragment : Fragment() {
     private var initialConfig: AppBlockerWarningScreenConfig? = null
     private var currentQrMap = mutableMapOf<String, Long>()
     private var pendingQrDuration = -1L
-    
-    private val behaviorOptions = arrayOf(
-        "Select how long more i want to use each time therein",
-        "Only let me unlock for a predefined time",
-        "Disable unlocking entirely",
-        "Unlock requires QR/Barcode scanning",
-        "Unlock requires typing a sentence",
-        "Unlock requires stating an intent"
+
+    data class UnlockOption(
+        val title: String,
+        val subtext: String,
+        val isRecommended: Boolean = false
+    ) {
+        override fun toString(): String = title
+    }
+
+    private val challengeOptions = listOf(
+        UnlockOption("Never Unlock", "Total lockdown. No bypassing allowed."),
+        UnlockOption("Require effort to unlock", "In behavioral psychology, adding physical friction breaks the automatic habit loop, giving your brain a necessary pause to reconsider.", true),
+        UnlockOption("Requires no effort to unlock", "Allows immediate access after a short wait.")
     )
+
+    private val effortOptions = listOf(
+        UnlockOption("Unlock requires QR/Barcode scanning", "Scan any code (like a product box) to unlock.", true),
+        UnlockOption("Unlock requires typing a sentence", "Precisely type a long sentence to prove focus."),
+        UnlockOption("Unlock requires stating an intent", "Briefly describe your goal before accessing.")
+    )
+
+    private val noEffortOptions = listOf(
+        UnlockOption("Ask me how much time I need", "You choose the duration during each unlock."),
+        UnlockOption("Only give me a fixed amount of time", "Automatically locks after a set duration.", true)
+    )
+
+    private class UnlockOptionAdapter(context: Context, options: List<UnlockOption>) :
+        ArrayAdapter<UnlockOption>(context, R.layout.item_dropdown_with_subtext, options) {
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_dropdown_with_subtext, parent, false)
+            
+            val optionTitle = view.findViewById<TextView>(R.id.option_title)
+            val optionSubtext = view.findViewById<TextView>(R.id.option_subtext)
+            val recommendedBadge = view.findViewById<View>(R.id.recommended_badge)
+
+            getItem(position)?.let { option ->
+                optionTitle.text = option.title
+                optionSubtext.text = option.subtext
+                recommendedBadge.isVisible = option.isRecommended
+            }
+            
+            return view
+        }
+
+        override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+            return getView(position, convertView, parent)
+        }
+    }
 
     private val barcodeLauncher = registerForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
@@ -77,23 +118,39 @@ class WarningConfigFragment : Fragment() {
 
     private fun setupInitialState() {
         val config = initialConfig ?: AppBlockerWarningScreenConfig()
+        val isNew = arguments?.getBoolean(ARG_IS_NEW) ?: (arguments?.getString(ARG_CONFIG) == null)
         
         currentQrMap = config.qrKeys.toMutableMap()
         updateQrList()
 
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, behaviorOptions)
-        binding.unlockBehaviorDropdown.setAdapter(adapter)
+        val challengeAdapter = UnlockOptionAdapter(requireContext(), challengeOptions)
+        binding.unlockChallengeDropdown.setAdapter(challengeAdapter)
 
-        val initialIndex = when {
-            config.isIntentRequirementEnabled -> 5
-            config.isTypingRequirementEnabled -> 4
-            config.isQrUnlockRequirementEnabled -> 3
-            config.isProceedDisabled -> 2
-            config.isDynamicIntervalSettingAllowed -> 0
-            else -> 1 // Fixed time
+        if (!isNew) {
+            val (challengeIdx, secondaryIdx) = when {
+                config.isProceedDisabled -> 0 to -1
+                config.isQrUnlockRequirementEnabled -> 1 to 0
+                config.isTypingRequirementEnabled -> 1 to 1
+                config.isIntentRequirementEnabled -> 1 to 2
+                config.isDynamicIntervalSettingAllowed -> 2 to 0
+                else -> 2 to 1 // Fixed time
+            }
+
+            binding.unlockChallengeDropdown.setText(challengeOptions[challengeIdx].title, false)
+            updateSecondaryDropdown(challengeIdx)
+            
+            if (secondaryIdx != -1) {
+                val options = if (challengeIdx == 1) effortOptions else noEffortOptions
+                binding.secondaryBehaviorDropdown.setText(options[secondaryIdx].title, false)
+            }
+            updateUiVisibility(challengeIdx, secondaryIdx)
+        } else {
+            binding.secondaryBehaviorLayout.isVisible = false
+            binding.timingContainer.isVisible = false
+            binding.proceedDelayContainer.isVisible = false
+            binding.qrSetupContainer.isVisible = false
+            binding.typingSetupContainer.isVisible = false
         }
-        binding.unlockBehaviorDropdown.setText(behaviorOptions[initialIndex], false)
-        updateUiVisibility(initialIndex)
         
         binding.typingSentenceEdit.setText(config.typingSentence)
 
@@ -117,9 +174,36 @@ class WarningConfigFragment : Fragment() {
         binding.switchVibrateBrightness.isChecked = config.vibrateAndIncBrightness
     }
 
+    private fun updateSecondaryDropdown(challengeIdx: Int) {
+        val options = when (challengeIdx) {
+            1 -> effortOptions
+            2 -> noEffortOptions
+            else -> null
+        }
+
+        if (options != null) {
+            val adapter = UnlockOptionAdapter(requireContext(), options)
+            binding.secondaryBehaviorDropdown.setAdapter(adapter)
+            binding.secondaryBehaviorLayout.visibility = View.VISIBLE
+        } else {
+            binding.secondaryBehaviorLayout.visibility = View.GONE
+        }
+    }
+
     private fun setupListeners() {
-        binding.unlockBehaviorDropdown.setOnItemClickListener { _, _, position, _ ->
-            updateUiVisibility(position, animate = true)
+        binding.unlockChallengeDropdown.setOnItemClickListener { _, _, position, _ ->
+            updateSecondaryDropdown(position)
+            
+            // Clear secondary dropdown when parent changes
+            binding.secondaryBehaviorDropdown.setText("", false)
+            
+            updateUiVisibility(position, -1, animate = true)
+        }
+
+        binding.secondaryBehaviorDropdown.setOnItemClickListener { _, _, position, _ ->
+            val challengeTitle = binding.unlockChallengeDropdown.text.toString()
+            val challengeIdx = challengeOptions.indexOfFirst { it.title == challengeTitle }
+            updateUiVisibility(challengeIdx, position, animate = true)
         }
 
         binding.fixedTimeSlider.addOnChangeListener { _, value, _ ->
@@ -192,14 +276,32 @@ class WarningConfigFragment : Fragment() {
         }
         
         binding.saveconfigs.setOnClickListener {
-            val behaviorStr = binding.unlockBehaviorDropdown.text.toString()
-            val bIdx = behaviorOptions.indexOf(behaviorStr).coerceAtLeast(0)
+            val challengeStr = binding.unlockChallengeDropdown.text.toString()
+            val secondaryStr = binding.secondaryBehaviorDropdown.text.toString()
+            
+            val cIdx = challengeOptions.indexOfFirst { it.title == challengeStr }
+            
+            var isProceedDisabled = false
+            var isQrUnlockRequirementEnabled = false
+            var isTypingRequirementEnabled = false
+            var isIntentRequirementEnabled = false
+            var isDynamicIntervalSettingAllowed = false
 
-            val isDynamicIntervalSettingAllowed = bIdx == 0
-            val isProceedDisabled = bIdx == 2
-            val isQrUnlockRequirementEnabled = bIdx == 3
-            val isTypingRequirementEnabled = bIdx == 4
-            val isIntentRequirementEnabled = bIdx == 5
+            when (cIdx) {
+                0 -> isProceedDisabled = true
+                1 -> {
+                    val sIdx = effortOptions.indexOfFirst { it.title == secondaryStr }
+                    when (sIdx) {
+                        0 -> isQrUnlockRequirementEnabled = true
+                        1 -> isTypingRequirementEnabled = true
+                        2 -> isIntentRequirementEnabled = true
+                    }
+                }
+                2 -> {
+                    val sIdx = noEffortOptions.indexOfFirst { it.title == secondaryStr }
+                    if (sIdx == 0) isDynamicIntervalSettingAllowed = true
+                }
+            }
 
             val config = AppBlockerWarningScreenConfig(
                 message = binding.warningMsgEdit.text.toString(),
@@ -258,7 +360,7 @@ class WarningConfigFragment : Fragment() {
         }
     }
 
-    private fun updateUiVisibility(behaviorIndex: Int, animate: Boolean = false) {
+    private fun updateUiVisibility(challengeIndex: Int, secondaryIndex: Int, animate: Boolean = false) {
         if (animate) {
             TransitionManager.beginDelayedTransition(
                 binding.mainContentContainer,
@@ -267,11 +369,14 @@ class WarningConfigFragment : Fragment() {
         }
 
         binding.apply {
-            timingContainer.visibility = if (behaviorIndex == 1 || behaviorIndex == 4 || behaviorIndex == 5) View.VISIBLE else View.GONE
-            proceedDelayContainer.visibility = if (behaviorIndex in listOf(0, 1, 3, 4, 5)) View.VISIBLE else View.GONE
-            warningMsgLayout.visibility = View.VISIBLE
-            qrSetupContainer.visibility = if (behaviorIndex == 3) View.VISIBLE else View.GONE
-            typingSetupContainer.visibility = if (behaviorIndex == 4) View.VISIBLE else View.GONE
+            // Timing container visible if "Requires no effort" + "Fixed time" OR "Require effort" + (Typing or Intent)
+            timingContainer.visibility = if ((challengeIndex == 2 && secondaryIndex == 1) || (challengeIndex == 1 && secondaryIndex != 0 && secondaryIndex != -1)) View.VISIBLE else View.GONE
+            
+            // Proceed delay visible for anything except "Never Unlock" or when nothing selected
+            proceedDelayContainer.visibility = if (challengeIndex != 0 && challengeIndex != -1) View.VISIBLE else View.GONE
+            
+            qrSetupContainer.visibility = if (challengeIndex == 1 && secondaryIndex == 0) View.VISIBLE else View.GONE
+            typingSetupContainer.visibility = if (challengeIndex == 1 && secondaryIndex == 1) View.VISIBLE else View.GONE
         }
     }
     
@@ -386,14 +491,16 @@ class WarningConfigFragment : Fragment() {
         const val FRAGMENT_ID = "warning_config_fragment"
         const val ARG_CONFIG = "arg_config"
         const val ARG_REQUEST_KEY = "arg_request_key"
+        const val ARG_IS_NEW = "arg_is_new"
         const val RESULT_KEY = "request_key_warning_config"
         const val RESULT_CONFIG = "result_config"
 
-        fun newInstance(config: AppBlockerWarningScreenConfig, requestKey: String = RESULT_KEY): WarningConfigFragment {
+        fun newInstance(config: AppBlockerWarningScreenConfig, requestKey: String = RESULT_KEY, isNew: Boolean = false): WarningConfigFragment {
             return WarningConfigFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_CONFIG, Gson().toJson(config))
                     putString(ARG_REQUEST_KEY, requestKey)
+                    putBoolean(ARG_IS_NEW, isNew)
                 }
             }
         }

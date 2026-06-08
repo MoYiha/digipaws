@@ -142,7 +142,12 @@ class CreateAppGroupFragment : Fragment() {
             }
         }
         binding.configureWarningScreen.setOnClickListener {
-            val configFragment = neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared.WarningConfigFragment.newInstance(viewModel.warningScrnConfig, "result_warning_config")
+            val groupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
+            val configFragment = neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared.WarningConfigFragment.newInstance(
+                viewModel.warningScrnConfig, 
+                "result_warning_config",
+                isNew = groupId == null
+            )
             parentFragmentManager.beginTransaction()
                 .hide(this)
                 .add(R.id.fragment_holder, configFragment)
