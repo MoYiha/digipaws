@@ -22,6 +22,7 @@ import neth.iecal.curbox.databinding.FragmentCreateAppGroupBinding
 import neth.iecal.curbox.ui.activity.SelectAppsActivity
 import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.AppUsageConfig
+import neth.iecal.curbox.utils.ViewUtils
 import java.util.UUID
 
 class CreateAppGroupFragment : Fragment() {
@@ -64,6 +65,7 @@ class CreateAppGroupFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupBlockingTypeSelection()
 
         var isEditing = false
         var existingGroup: AppGroup? = null
@@ -97,10 +99,12 @@ class CreateAppGroupFragment : Fragment() {
                         }
 
                         if (group.blockingType == AppBlockingType.Usage) {
-                            binding.rgBlockingType.check(R.id.rb_usage_based)
+                            binding.rbUsageBased.isChecked = true
+                            binding.rbTimeBased.isChecked = false
                             viewModel.currentUsageConfig = Gson().fromJson(group.setting, AppUsageConfig::class.java)
                         } else {
-                            binding.rgBlockingType.check(R.id.rb_time_based)
+                            binding.rbTimeBased.isChecked = true
+                            binding.rbUsageBased.isChecked = false
                             viewModel.currentTimeConfig = Gson().fromJson(group.setting, AppTimeConfig::class.java)
                         }
                         viewModel.warningScrnConfig = group.warningScreenConfig
@@ -133,7 +137,7 @@ class CreateAppGroupFragment : Fragment() {
         }
 
         binding.btnConfigureSettings.setOnClickListener {
-            val isUsageBased = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
+            val isUsageBased = binding.rbUsageBased.isChecked
 
             if (isUsageBased) {
                 UsageBasedSettingsFragment().show(parentFragmentManager, UsageBasedSettingsFragment.FRAGMENT_ID)
@@ -167,6 +171,25 @@ class CreateAppGroupFragment : Fragment() {
         }
     }
 
+    private fun setupBlockingTypeSelection() {
+        val radioButtons = listOf(binding.rbUsageBased, binding.rbTimeBased)
+        
+        radioButtons.forEach { rb ->
+            rb.setOnClickListener {
+                radioButtons.forEach { it.isChecked = false }
+                rb.isChecked = true
+            }
+        }
+
+        binding.btnHelpUsage.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Set a daily time limit for these apps. Once reached, they will be blocked for the rest of the day.")
+        }
+
+        binding.btnHelpTime.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Allow these apps only during specific time intervals during the day (e.g., during work hours).")
+        }
+    }
+
     private fun saveGroup() {
         if (_binding == null || isDeleting) return
         val name = binding.etGroupName.text.toString().trim()
@@ -180,7 +203,7 @@ class CreateAppGroupFragment : Fragment() {
             return
         }
 
-        val isUsageBased = binding.rgBlockingType.checkedRadioButtonId == R.id.rb_usage_based
+        val isUsageBased = binding.rbUsageBased.isChecked
         val blockingType = if (isUsageBased) AppBlockingType.Usage else AppBlockingType.Timed
 
         val savedGroupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")

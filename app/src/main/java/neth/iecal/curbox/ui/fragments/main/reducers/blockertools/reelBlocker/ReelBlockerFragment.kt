@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.ReelBlockingType
 import neth.iecal.curbox.databinding.ReelBlockerFragmentBinding
+import neth.iecal.curbox.utils.ViewUtils
+import android.widget.RadioButton
 
 class ReelBlockerFragment : Fragment() {
 
@@ -31,27 +33,47 @@ class ReelBlockerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupBlockingTypeSelection()
         setupListeners()
         observeViewModel()
+    }
+
+    private fun setupBlockingTypeSelection() {
+        val radioButtons = listOf(binding.rbTypeTime, binding.rbTypeUsage, binding.rbTypeCount)
+        
+        radioButtons.forEach { rb ->
+            rb.setOnClickListener {
+                if (!isUpdatingUi) {
+                    radioButtons.forEach { it.isChecked = false }
+                    rb.isChecked = true
+                    
+                    val type = when (rb.id) {
+                        R.id.rb_type_time -> ReelBlockingType.TIMED
+                        R.id.rb_type_usage -> ReelBlockingType.USAGE
+                        R.id.rb_type_count -> ReelBlockingType.REEL_COUNT
+                        else -> ReelBlockingType.TIMED
+                    }
+                    viewModel.setBlockingType(type)
+                    updateConfigureButtonText(type)
+                }
+            }
+        }
+
+        binding.btnHelpTime.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Allow short videos during specific time intervals.")
+        }
+        binding.btnHelpUsage.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Set a total time limit for watching short videos across all apps.")
+        }
+        binding.btnHelpCount.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Limit the number of short videos you can scroll through per day.")
+        }
     }
 
     private fun setupListeners() {
         binding.switchEnableBlocker.setOnCheckedChangeListener { _, isChecked ->
             if (!isUpdatingUi) {
                 viewModel.setIsActive(isChecked)
-            }
-        }
-
-        binding.rgBlockingType.setOnCheckedChangeListener { _, checkedId ->
-            if (!isUpdatingUi) {
-                val type = when (checkedId) {
-                    R.id.rb_type_time -> ReelBlockingType.TIMED
-                    R.id.rb_type_usage -> ReelBlockingType.USAGE
-                    R.id.rb_type_count -> ReelBlockingType.REEL_COUNT
-                    else -> ReelBlockingType.TIMED
-                }
-                viewModel.setBlockingType(type)
-                updateConfigureButtonText(type)
             }
         }
 
@@ -95,8 +117,8 @@ class ReelBlockerFragment : Fragment() {
                     ReelBlockingType.REEL_COUNT -> R.id.rb_type_count
                 }
                 
-                if (binding.rgBlockingType.checkedRadioButtonId != checkedId) {
-                    binding.rgBlockingType.check(checkedId)
+                listOf(binding.rbTypeTime, binding.rbTypeUsage, binding.rbTypeCount).forEach {
+                    it.isChecked = it.id == checkedId
                 }
                 
                 updateConfigureButtonText(config.blockingType)

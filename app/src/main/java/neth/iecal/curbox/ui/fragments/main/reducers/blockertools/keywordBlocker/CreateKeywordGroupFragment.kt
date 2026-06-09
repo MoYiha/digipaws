@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.*
 import neth.iecal.curbox.databinding.FragmentCreateKeywordGroupBinding
+import neth.iecal.curbox.utils.ViewUtils
 import java.util.*
 
 class CreateKeywordGroupFragment : Fragment() {
@@ -38,6 +39,7 @@ class CreateKeywordGroupFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupBlockingTypeSelection()
         
         existingGroupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
         
@@ -82,6 +84,25 @@ class CreateKeywordGroupFragment : Fragment() {
                     binding.btnDeleteGroup.visibility = View.VISIBLE
                 }
             }
+        }
+    }
+
+    private fun setupBlockingTypeSelection() {
+        val radioButtons = listOf(binding.rbUsageBased, binding.rbTimeBased)
+
+        radioButtons.forEach { rb ->
+            rb.setOnClickListener {
+                radioButtons.forEach { it.isChecked = false }
+                rb.isChecked = true
+            }
+        }
+
+        binding.btnHelpUsage.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Set a daily time limit for these keywords. Once reached, they will be blocked for the rest of the day.")
+        }
+
+        binding.btnHelpTime.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Block these keywords during specific time intervals during the day.")
         }
     }
 
