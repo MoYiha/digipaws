@@ -202,6 +202,13 @@ class OnboardingPermissionsFragment : Fragment() {
             }
         }
 
+        binding.btnShowRestrictedTutorial.setOnClickListener {
+            val manufacturer = Build.MANUFACTURER
+            val query = Uri.encode("How to enable restricted setting on $manufacturer android 13")
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/results?search_query=$query"))
+            startActivity(intent)
+        }
+
 
         binding.btnShizukuGrantAll.setOnClickListener {
             if (!neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()) {
@@ -315,6 +322,21 @@ class OnboardingPermissionsFragment : Fragment() {
         val hasBlocker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), AppBlockerService::class.java)
         val hasTracker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), UsageTrackingService::class.java)
         val hasShizuku = neth.iecal.curbox.utils.PermissionUtils.hasShizukuPermission()
+
+        val isNonSession = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val info = requireContext().packageManager.getInstallSourceInfo(requireContext().packageName)
+                val initiatingPackage = info.initiatingPackageName
+                initiatingPackage != "com.android.vending" && initiatingPackage != "org.fdroid.fdroid"
+            } catch (e: Exception) {
+                false
+            }
+        } else {
+            false
+        }
+
+        val showRestrictedWarning = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && (!hasBlocker || !hasTracker) && isNonSession
+        binding.restrictedSettingsWarning.visibility = if (showRestrictedWarning) View.VISIBLE else View.GONE
         
         if (neth.iecal.curbox.utils.PermissionUtils.isShizukuAvailable()) {
             binding.btnShizukuGrantAll.visibility = View.VISIBLE

@@ -65,6 +65,51 @@
                 android:text="@string/to_create_friction_and_give_you"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
+            <!-- Restricted Settings Warning -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/restricted_settings_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="?attr/colorErrorContainer"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        style="@style/TextAppearance.Material3.TitleMedium"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Non-session based installation detected"
+                        android:textColor="?attr/colorOnErrorContainer"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        style="@style/TextAppearance.Material3.BodyMedium"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Android 13+ restricts Accessibility services for apps installed outside of app stores (like F-Droid or Play Store). To enable permissions, you'll need to manually allow 'Restricted settings' for Curbox. Alternatively, install via the F-Droid app(not website) to avoid this."
+                        android:textColor="?attr/colorOnErrorContainer" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_show_restricted_tutorial"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="8dp"
+                        android:text="Show tutorial to enable permissions"
+                        android:textColor="?attr/colorOnErrorContainer" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Shizuku Grant All Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_shizuku_grant_all"
