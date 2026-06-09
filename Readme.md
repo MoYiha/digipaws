@@ -12,6 +12,7 @@ Curbox is a powerful open source utility for Android built to help you reclaim y
 
 ### Screenshots
 Click on any image to enlarge it.
+<div align="center">
 <table>
 	<tr>
 		<td><img src='fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg' width='120'></td>
@@ -20,60 +21,49 @@ Click on any image to enlarge it.
 		<td><img src='fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg' width='120'></td>
 	</tr>
 </table>
+</div>
+
 
 ### Why Curbox Stands Out
 
 Most screen time tools are closed source and require internet access. This raises concerns about your private usage data being tracked or sold. Curbox takes a different path.
-* Every screen time apps use a powerful Android feature(Accessibility) that lets them see everything you do, including your private messages. Curbox uses this same feature, but it does not have internet access. This means your personal data can never leave your phone, keeping it completely private and secure.
+* All screen time apps use a powerful Android feature (Accessibility service) that lets them see everything you do, including your private messages. They all connect to internet posing a severe security threat. Curbox uses this same feature, but it does not have internet access (it doesn't declare the permission in manifest). This means your personal data can never leave your phone, keeping it completely private and secure.
 * Open Source Transparency
-The entire codebase is public. Anyone can verify how the app works. This ensures there are no hidden trackers or malicious behaviors. Open source doesn't mean anyone can see how you use the app.
+The entire codebase is public. Anyone can verify how the app works. This ensures there are no hidden trackers or malicious behaviors. Open source doesn't mean anyone can see how you use the app. 
 * Respect for Your Data
-Because there is no cloud connection, you are the sole owner of your statistics.
+Because there is no cloud connection, you are the sole owner of your statistics. There are literally a few companies selling your usage insights for billions so the algorithm can be further strengthened to keep you trapped.
 
 
 ### In Depth Feature Analysis
 
 Curbox goes beyond simple app timers. It targets the specific triggers that lead to mindless scrolling.
+- BLock apps
+- Block Instagram reels, Youtube Shorts
+- Block Websites
+- App usage insights
+- Website usage insights
+- Block parts of UI (eg. Block the entire youtube home feed while allowing searches)
+- Focus Mode (temporarily pause apps/websites to focus on your work)
+- Focus statistics
+- Schedule DND to turn on automatically
+- Set Grayscale filter to only specific apps (eg. put grayscale to instagram while no grayscale to camera)
+- Show a live count of how much short form content you've scrolled while you scroll
+- Show a live timer showing how much time has elapsed ever since you opened the app on the app itself
+- Qr/Barcode based app/website unlocking
+- Automatically redirect to a different website when blocked website accessed
+- Block only specific url paths (eg. block m.youtube.com/shorts/* but allow m.youtube.com)
+- Block entities based on usage (eg. block if i use whatsapp more than 1 hour) or Time (allow whatsapp only between 7 am to 9pm)
+- Home screen widgets
+  
+App/Website unlock mechanisms (specifiy what happens when you try opening the app out of its schedule)
+- Complete blockade with no access
+- Prefix a time (like 5mins) for each subsequent unlocks
+- Dynamic time selection on each subsequent unlocks
+- Qr/Bar code based unlock (use qr code from existing product boxes like books, spread them across your home, physically move to the spot to unlock app each time)
+- Requires physically typing a sentence (eg type "I am giving up on my goals to use this app right now" to unlock)
 
-#### Advanced App Blocking
-Create groups of apps that you want to restrict. You can set specific schedules for when these apps should be inaccessible. This helps you stay away from social media during work hours or before sleep.
-
-#### Granular Content and View Blocking
-Standard blockers only stop you from opening an app. Curbox uses accessibility services to block specific parts of an app. You can block YouTube Shorts while still watching educational videos. You can hide comment sections to avoid toxic arguments. You can even block Reels on Instagram while keeping the messaging features active.
-
-#### Keyword Filtering and Redirection
-Block specific search terms or keywords across your device. If you find yourself searching for distracting topics, Curbox can detect those keywords and redirect you to a productive website or a simple warning screen.
-
-#### Focus Mode
-When you need to get things done, start a focus session. This mode creates a strict environment where distracting apps are completely locked out. You can configure sessions to be unskippable, ensuring you stay committed to your task until the timer ends.
-
-#### Visual Boring Mode
-Dopamine hits often come from bright and vibrant colors. Curbox can turn selected apps into black and white. By desaturating the experience, apps like TikTok or Instagram become less stimulating and easier to put down.
-
-#### Real Time Usage Overlay
-It is easy to lose track of time when inside an app. Curbox can show a small floating timer on your screen that tells you exactly how many minutes you have spent on the current app. This constant awareness helps you make better decisions about when to stop.
-
-#### Scrolling Awareness Tracking
-Curbox can track specific behaviors like how many videos you have scrolled through on short form content platforms. Seeing a high number of scrolls can be a powerful wake up call to help you stop the habit.
-
-#### Anti Uninstall Protection
-During moments of weakness, it is tempting to just delete the blocker. Curbox includes protections to make it much harder to uninstall the app without a deliberate cooling off period.
-
-#### Customizable Interventions
-When an app is blocked, you do not have to see a boring screen. You can customize the warning message to remind yourself of your goals or core values.
-
-#### Automatic Do Not Disturb
-Automatically silence your notifications based on your focus schedule. This prevents pings and buzzes from breaking your concentration.
-
-#### Comprehensive Usage Analytics
-View detailed charts and graphs of your digital life. Understand which apps take up most of your time and identify patterns in your behavior over days or weeks.
-
-#### Home Screen Widgets
-Keep your progress visible. Add widgets to your home screen to see your daily stats at a glance without even opening the Curbox app.
-
-
-
-***
+### How to install
+The app is not yet released. Howsoever you could test the beta versions from either our discord or telegram groups. Beta apps are also available on the github actions page.
 
 ### Contributing
 
@@ -87,7 +77,9 @@ We welcome contributions from the community! If you want to help improve Curbox,
 
 Developing for accessibility services and blockers is complex. It requires understanding how different apps structure their views. We appreciate any help in discovering new ways to block distracting content.
 
-### Credits
+### Special Thanks
+* All my beloved donators and sponsers
+* Digipaws: inspiration for the entire code structure and working mechanism
 * Usage Direct: For help with app usage statistics.
 * Redd Focus: For the foundation of the view blocker system.
 * ShizuTools: For Shizuku runner implementations.
