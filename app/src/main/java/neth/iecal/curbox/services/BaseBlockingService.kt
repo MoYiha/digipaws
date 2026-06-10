@@ -48,7 +48,7 @@ open class BaseBlockingService : AccessibilityService() {
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Curbox $className is active")
             .setContentText("Protecting your digital wellbeing")
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.logo)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(true)
             .build()
