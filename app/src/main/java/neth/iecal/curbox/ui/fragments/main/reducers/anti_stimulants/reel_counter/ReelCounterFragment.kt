@@ -178,8 +178,7 @@ class ReelCounterFragment : Fragment() {
                     alpha = config.textOpacity / 100f
                 }
                 widget.findViewById<TextView>(R.id.time_elapsed_txt).apply {
-                    textSize = config.textSize * 0.21f
-                    alpha = config.textOpacity / 100f
+                    visibility = View.GONE
                 }
             },
             onPositionSaved = { x, y ->

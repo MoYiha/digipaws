@@ -92,9 +92,10 @@ class ReelsCountTracker {
             if (reelData.containsKey(pkg)) {
                 if((event.eventType and reelData[pkg]!!.eventType) == 0) return
                 if (Settings.canDrawOverlays(service)) {
-                    overlayManager.startDisplaying(overlayConfig)
+                    overlayManager.reelsScrolledThisSession = todayCount
+                    overlayManager.startDisplaying(overlayConfig, isOnDisplayCounter)
                 }
-            } else if (overlayManager   .isOverlayVisible) {
+            } else if (overlayManager.isOverlayVisible) {
                 overlayManager.removeOverlay()
                 return
             }

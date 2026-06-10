@@ -23,7 +23,7 @@ class ReelsOverlayManager(private val context: Context) {
     var reelsScrolledThisSession = 0
 
     @SuppressLint("InlinedApi")
-    fun startDisplaying(config: ReelCounterOverlayConfig = ReelCounterOverlayConfig()) {
+    fun startDisplaying(config: ReelCounterOverlayConfig = ReelCounterOverlayConfig(), isVisible: Boolean = true) {
         if (overlayView != null || isOverlayVisible) return
 
         binding = OverlayUsageStatBinding.inflate(LayoutInflater.from(context))
@@ -36,10 +36,13 @@ class ReelsOverlayManager(private val context: Context) {
         val alpha = (config.bgOpacity * 255 / 100)
 
         binding?.root?.setBackgroundColor(Color.argb(alpha, r, g, b))
-        binding?.reelCounter?.textSize = config.textSize
-        binding?.reelCounter?.alpha = config.textOpacity / 100f
-        binding?.timeElapsedTxt?.textSize = config.textSize * 0.21f
-        binding?.timeElapsedTxt?.alpha = config.textOpacity / 100f
+        binding?.reelCounter?.apply {
+            visibility = if (isVisible) View.VISIBLE else View.GONE
+            text = reelsScrolledThisSession.toString()
+            textSize = config.textSize
+            this.alpha = config.textOpacity / 100f
+        }
+        binding?.timeElapsedTxt?.visibility = View.GONE
 
         val dm = context.resources.displayMetrics
         val screenWidth = dm.widthPixels
