@@ -112,4 +112,8 @@ class DataStoreManager(private val context: Context) {
     suspend fun updateReelCounterOverlayConfig(config: neth.iecal.curbox.data.models.ReelCounterOverlayConfig) {
         settingsDataStore.updateData { it.copy(reelCounterOverlayConfig = config) }
     }
+
+    suspend fun updateNextWebsiteRecheckTime(time: Long) {
+        settingsDataStore.updateData { it.copy(nextWebsiteRecheckTime = time) }
+    }
 }

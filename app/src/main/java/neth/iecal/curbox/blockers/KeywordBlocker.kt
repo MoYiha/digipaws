@@ -204,6 +204,92 @@ class KeywordBlocker : BaseBlocker() {
 
         if (isBlocked(matchedGroup, entry.packageName, entry.urlIdentifier)) {
             handleBlocking(matchedGroup, entry.packageName, entry.urlIdentifier)
+        } else {
+            calculateAndSetNextRecheck(matchedGroup, entry.packageName, entry.urlIdentifier)
+        }
+    }
+
+    private fun calculateAndSetNextRecheck(group: KeywordGroup, packageName: String, url: String) {
+        val now = System.currentTimeMillis()
+        var nextRecheck = 0L
+
+        // 1. Check Usage Limit
+        if (group.blockingType == AppBlockingType.Usage) {
+            val config = Gson().fromJson(group.setting, AppUsageConfig::class.java)
+            if (config != null) {
+                val limit = (if (config.isDailyUniform) config.uniformLimit else {
+                    val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1
+                    config.dailyLimits[day]
+                }) * 60_000L
+
+                if (limit > 0) {
+                    val date = TimeTools.getCurrentDate()
+                    val totalUsage = runBlocking(Dispatchers.IO) {
+                        AppDatabase.getInstance(service).websiteStatsDao().getStatsForPackage(date, packageName)
+                            .filter { matchesGroup(group, it.urlIdentifier) }
+                            .sumOf { it.totalTime }
+                    }
+                    val remaining = limit - totalUsage
+                    if (remaining > 0) {
+                        nextRecheck = now + remaining + 1000 // Add a small buffer
+                    }
+                }
+            }
+        }
+
+        // 2. Check Timed Intervals
+        if (group.blockingType == AppBlockingType.Timed) {
+            val config = Gson().fromJson(group.setting, AppTimeConfig::class.java)
+            if (config != null) {
+                val calendar = Calendar.getInstance()
+                val currentMinutes = TimeTools.convertToMinutesFromMidnight(
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE)
+                )
+                val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
+                val intervals = if (config.isEveryday) config.everydayIntervals else config.dailyIntervals[dayOfWeek] ?: emptyList()
+
+                var minMinutesUntilStart = Int.MAX_VALUE
+                for (interval in intervals) {
+                    val start = TimeTools.convertToMinutesFromMidnight(interval.startHour, interval.startMinute)
+                    val end = TimeTools.convertToMinutesFromMidnight(interval.endHour, interval.endMinute)
+                    
+                    if (start <= end) {
+                        if (start > currentMinutes) {
+                            minMinutesUntilStart = minOf(minMinutesUntilStart, start - currentMinutes)
+                        }
+                    } else {
+                        // Interval crosses midnight
+                        if (currentMinutes < end) {
+                            // Already in a crossing interval (should be blocked)
+                        } else if (start > currentMinutes) {
+                            minMinutesUntilStart = minOf(minMinutesUntilStart, start - currentMinutes)
+                        }
+                    }
+                }
+
+                if (minMinutesUntilStart != Int.MAX_VALUE) {
+                    val recheckAt = now + (minMinutesUntilStart * 60_000L) - (calendar.get(Calendar.SECOND) * 1000L) - calendar.get(Calendar.MILLISECOND)
+                    if (nextRecheck == 0L || recheckAt < nextRecheck) {
+                        nextRecheck = recheckAt
+                    }
+                }
+            }
+        }
+
+        // 3. Check Cooldowns
+        val currentCooldown = cooldownGroupsList[group.id]
+        if (currentCooldown != null && currentCooldown > now) {
+            if (nextRecheck == 0L || currentCooldown < nextRecheck) {
+                nextRecheck = currentCooldown + 500 // Recheck right after cooldown expires
+            }
+        }
+
+        if (nextRecheck > now) {
+            CoroutineScope(Dispatchers.IO).launch {
+                service.dataStoreManager.updateNextWebsiteRecheckTime(nextRecheck)
+                Log.d("KeywordBlocker", "Scheduled next recheck in ${(nextRecheck - now) / 1000}s")
+            }
         }
     }
 
@@ -490,6 +576,16 @@ class KeywordBlocker : BaseBlocker() {
         val end = System.currentTimeMillis() + duration
         cooldownGroupsList[groupId] = end
         persistCooldownData()
+
+        // Trigger a re-evaluation to schedule the next recheck
+        val date = TimeTools.getCurrentDate()
+        CoroutineScope(Dispatchers.IO).launch {
+            val stats = AppDatabase.getInstance(service).websiteStatsDao().getStatsForDate(date)
+            val latest = stats.maxByOrNull { it.lastVisited }
+            if (latest != null && latest.lastVisited > (System.currentTimeMillis() - 5000)) {
+                evaluateAndBlock(latest)
+            }
+        }
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")

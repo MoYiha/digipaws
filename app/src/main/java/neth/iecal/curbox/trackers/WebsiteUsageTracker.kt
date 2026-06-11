@@ -6,6 +6,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.blockers.KeywordBlocker
@@ -87,10 +88,36 @@ class WebsiteUsageTracker {
     private var currentUrlIdentifier: String? = null
     private var domainStartTimeMs: Long = 0L
 
+    private var recheckJob: Job? = null
+
     fun setup(service: BaseBlockingService) {
         this.service = service
         val db = AppDatabase.getInstance(service)
         this.websiteStatsDao = db.websiteStatsDao()
+        startObservingRecheckTime()
+    }
+
+    private fun startObservingRecheckTime() {
+        scope.launch {
+            service.dataStoreManager.settings.collect { settings ->
+                val nextRecheck = settings.nextWebsiteRecheckTime
+                if (nextRecheck > System.currentTimeMillis()) {
+                    scheduleRecheck(nextRecheck)
+                }
+            }
+        }
+    }
+
+    private fun scheduleRecheck(recheckTime: Long) {
+        recheckJob?.cancel()
+        recheckJob = scope.launch {
+            val delayMs = recheckTime - System.currentTimeMillis()
+            if (delayMs > 0) {
+                kotlinx.coroutines.delay(delayMs)
+                Log.d("WebsiteUsageTracker", "Executing scheduled recheck")
+                saveSession()
+            }
+        }
     }
 
     fun onEvent(event: AccessibilityEvent?) {
@@ -235,6 +262,7 @@ class WebsiteUsageTracker {
     }
 
     fun onDestroy() {
+        recheckJob?.cancel()
         saveSession()
     }
 }
