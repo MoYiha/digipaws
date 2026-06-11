@@ -23,6 +23,7 @@ import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.data.models.ManualFocusGroup
 import neth.iecal.curbox.databinding.DialogFocusSessionConfigBinding
+import neth.iecal.curbox.trackers.WebsiteUsageTracker.Companion.URL_BAR_ID_LIST
 import neth.iecal.curbox.ui.activity.SelectAppsActivity
 
 class FocusSetupBottomSheet : BottomSheetDialogFragment() {
@@ -157,7 +158,7 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
             val blockMode = if(binding.selectedBlockAction.checkedButtonId == R.id.btn_selected) FocusBlockMode.BLOCK_SELECTED else FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED
             
             if (viewModel.newGroupSelectedKeywords.isNotEmpty()) {
-                val supportedBrowsers = neth.iecal.curbox.blockers.KeywordBlocker.URL_BAR_ID_LIST.keys
+                val supportedBrowsers = URL_BAR_ID_LIST.keys
                 val hasBrowserSelected = viewModel.newGroupSelectedApps.any { it in supportedBrowsers }
                 
                 if (!hasBrowserSelected) {

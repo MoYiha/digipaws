@@ -114,7 +114,7 @@ class AppBlockerService : BaseBlockingService() {
             for (event in eventChannel) {
                 try {
                     reelBlocker.doViewBlockerCheck(event)
-                    keywordBlocker.checkIfUserGettingFreaky(event)
+                    keywordBlocker.checkIfUnsupportedBrowser(event)
                     viewBlocker.doViewBlockerCheck(event)
                 } catch (t: Throwable) {
                     // Don't log normal coroutine cancellations as crashes

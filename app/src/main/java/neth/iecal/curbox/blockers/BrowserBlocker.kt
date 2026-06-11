@@ -10,6 +10,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import neth.iecal.curbox.blockers.BaseBlocker
 import androidx.core.net.toUri
+import neth.iecal.curbox.trackers.WebsiteUsageTracker.Companion.URL_BAR_ID_LIST
 
 class BrowserBlocker(val service: AccessibilityService) : BaseBlocker() {
 
@@ -31,7 +32,7 @@ class BrowserBlocker(val service: AccessibilityService) : BaseBlocker() {
             return false
         }
 
-        val isBrowser = resolveIsBrowser(service, packageName) && !KeywordBlocker.URL_BAR_ID_LIST.containsKey(packageName)
+        val isBrowser = resolveIsBrowser(service, packageName) && !URL_BAR_ID_LIST.containsKey(packageName)
 
         if (isBrowser) {
             cacheBlockedBrowserApps.add(packageName)

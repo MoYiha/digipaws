@@ -21,6 +21,7 @@ import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.data.models.ManualFocusGroup
 import neth.iecal.curbox.services.AppBlockerService
 import neth.iecal.curbox.services.BaseBlockingService
+import neth.iecal.curbox.trackers.WebsiteUsageTracker.Companion.URL_BAR_ID_LIST
 import neth.iecal.curbox.utils.AppSuspendHelper
 import neth.iecal.curbox.utils.TimerNotification
 import neth.iecal.curbox.utils.getCurrentKeyboardPackageName
@@ -136,7 +137,7 @@ class FocusModeBlocker : BaseBlocker() {
 
             // 2. Website Block Check
             if (focusModeData!!.focusGroupData.keywords.isNotEmpty() &&
-                KeywordBlocker.URL_BAR_ID_LIST.containsKey(packageName)) {
+                URL_BAR_ID_LIST.containsKey(packageName)) {
 
                 val now = System.currentTimeMillis()
                 // Throttle website checks to every 400ms within the same app to preserve performance
