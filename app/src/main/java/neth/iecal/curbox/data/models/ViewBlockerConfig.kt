@@ -10,9 +10,9 @@ import android.graphics.Color
  * pipe-separated for multiple matchers: `"m1|m2"`.
  */
 data class ViewBlockerRule(
-    val id: String,
-    val packageName: String,
-    val label: String,
+    val id: String = "",
+    val packageName: String = "",
+    val label: String = "",
     val viewId: String? = null,
     /** Pipe-separated content descriptions, e.g. `"Like|Me gusta"`. */
     val desc: String? = null,

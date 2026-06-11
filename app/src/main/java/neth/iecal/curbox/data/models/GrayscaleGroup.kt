@@ -4,8 +4,8 @@ import java.util.UUID
 
 data class GrayscaleGroup(
 val groupId: String = UUID.randomUUID().toString(),
-val groupName: String,
-val packages: HashSet<String>,
+val groupName: String = "",
+val packages: HashSet<String> = hashSetOf(),
 var timeConfig: AppTimeConfig = AppTimeConfig(),
 var isActive: Boolean = true
 ) {

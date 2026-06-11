@@ -4,10 +4,10 @@ import java.util.UUID
 
 data class ManualFocusGroup(
     val groupId: String = UUID.randomUUID().toString(),
-    val groupName: String,
-    val packages: HashSet<String>,
+    val groupName: String = "",
+    val packages: HashSet<String> = hashSetOf(),
     val keywords: HashSet<String> = hashSetOf(),
-    val blockMode: FocusBlockMode,
+    val blockMode: FocusBlockMode = FocusBlockMode.BLOCK_SELECTED,
     val exitable: Boolean = true,
     val autoTurnOnDnd: Boolean = false
 ){
