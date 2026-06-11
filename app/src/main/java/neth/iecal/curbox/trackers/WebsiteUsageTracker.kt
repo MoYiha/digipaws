@@ -28,6 +28,10 @@ class WebsiteUsageTracker {
                 displayUrlBarId = "com.android.chrome:id/url_bar",
                 browserSugggestionBoxId = "com.android.chrome:id/omnibox_suggestions_dropdown",
             ),
+            "org.cromite.cromite" to BrowserUrlBarInfo(
+                displayUrlBarId = "org.cromite.cromite:id/url_bar",
+                browserSugggestionBoxId = "org.cromite.cromite:id/omnibox_suggestions_dropdown",
+            ),
             "app.vanadium.browser" to BrowserUrlBarInfo(
                 displayUrlBarId = "app.vanadium.browser:id/url_bar",
                 browserSugggestionBoxId = "app.vanadium.browser:id/omnibox_suggestions_dropdown"
@@ -36,13 +40,21 @@ class WebsiteUsageTracker {
                 displayUrlBarId = "com.brave.browser:id/url_bar",
                 browserSugggestionBoxId = "com.brave.browser:id/omnibox_suggestions_dropdown"
             ),
+
+
             "org.mozilla.firefox" to BrowserUrlBarInfo(
                 displayUrlBarId = "ADDRESSBAR_URL_BOX",
                 browserSugggestionBoxId = "sfcnt",
             ),
+            "org.mozilla.fennec_fdroid" to BrowserUrlBarInfo(
+                displayUrlBarId = "ADDRESSBAR_URL_BOX",
+                browserSugggestionBoxId = "sfcnt",
+            ),
+
+
             "com.opera.browser" to BrowserUrlBarInfo(
-                displayUrlBarId = "org.mozilla.firefox:id/url_field",
-                browserSugggestionBoxId = "org.mozilla.firefox:id/right_state_button",
+                displayUrlBarId = "com.opera.browser:id/url_field",
+                browserSugggestionBoxId = "com.opera.browser:id/right_state_button",
                 isSuggestionEqualToGo = true
             ),
         )

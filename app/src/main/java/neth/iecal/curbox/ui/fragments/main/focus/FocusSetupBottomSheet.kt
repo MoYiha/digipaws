@@ -16,6 +16,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
@@ -224,33 +225,23 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
         val view = layoutInflater.inflate(R.layout.dialog_focus_add_websites, null)
         val etWebsite = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_website)
         val btnAdd = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_add)
-        val cgWebsites = view.findViewById<com.google.android.material.chip.ChipGroup>(R.id.cg_websites)
+        val rvWebsites = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rv_websites)
         
-        val tempKeywords = HashSet(viewModel.newGroupSelectedKeywords)
-
-        fun updateDialogChips() {
-            cgWebsites.removeAllViews()
-            tempKeywords.forEach { keyword ->
-                val chip = com.google.android.material.chip.Chip(requireContext())
-                chip.text = keyword
-                chip.isCloseIconVisible = true
-                chip.setOnCloseIconClickListener {
-                    tempKeywords.remove(keyword)
-                    updateDialogChips()
-                }
-                cgWebsites.addView(chip)
-            }
-        }
-
-        updateDialogChips()
+        val tempKeywords = ArrayList(viewModel.newGroupSelectedKeywords)
+        val adapter = KeywordAdapter(tempKeywords)
+        rvWebsites.adapter = adapter
 
         btnAdd.setOnClickListener {
             val text = etWebsite.text.toString().trim()
             if (text.isNotEmpty()) {
                 val parts = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                tempKeywords.addAll(parts)
+                parts.forEach {
+                    if (!tempKeywords.contains(it)) {
+                        tempKeywords.add(it)
+                    }
+                }
                 etWebsite.setText("")
-                updateDialogChips()
+                adapter.notifyDataSetChanged()
             }
         }
 
@@ -263,11 +254,37 @@ class FocusSetupBottomSheet : BottomSheetDialogFragment() {
             .setTitle("Add Websites/Keywords")
             .setView(view)
             .setPositiveButton("Save") { _, _ ->
-                viewModel.newGroupSelectedKeywords = tempKeywords
+                viewModel.newGroupSelectedKeywords = HashSet(tempKeywords)
                 binding.selectedWebsiteCount.text = "Selected: ${tempKeywords.size}"
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    inner class KeywordAdapter(private val items: MutableList<String>) : RecyclerView.Adapter<KeywordAdapter.ViewHolder>() {
+        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val tvKeyword: android.widget.TextView = view.findViewById(R.id.tv_keyword)
+            val btnRemove: android.widget.ImageButton = view.findViewById(R.id.btn_remove)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_keyword, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val keyword = items[position]
+            holder.tvKeyword.text = keyword
+            holder.btnRemove.setOnClickListener {
+                val currentPos = holder.adapterPosition
+                if (currentPos != RecyclerView.NO_POSITION) {
+                    items.removeAt(currentPos)
+                    notifyItemRemoved(currentPos)
+                }
+            }
+        }
+
+        override fun getItemCount() = items.size
     }
 
     private fun setupGroupSelectionDropdown() {

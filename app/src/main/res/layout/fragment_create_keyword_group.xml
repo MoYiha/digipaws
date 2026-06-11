@@ -36,12 +36,11 @@
                     android:textStyle="bold" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_delete_group"
+                    android:id="@+id/btn_more_options"
                     style="@style/Widget.Material3.Button.IconButton"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:visibility="gone"
-                    app:icon="@drawable/baseline_delete_24" />
+                    app:icon="@drawable/outline_more_vert_24" />
             </LinearLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -107,11 +106,16 @@
                     android:text="@string/add" />
             </LinearLayout>
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/cg_keywords"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_keywords"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp" />
+                android:layout_height="300dp"
+                android:layout_marginBottom="24dp"
+                android:background="?attr/colorSurfaceContainerLowest"
+                android:clipToPadding="false"
+                android:padding="4dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_keyword" />
 
             <TextView
                 android:layout_width="wrap_content"
