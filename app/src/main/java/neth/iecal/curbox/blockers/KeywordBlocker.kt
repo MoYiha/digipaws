@@ -249,6 +249,8 @@ class KeywordBlocker : BaseBlocker() {
 
             Thread.sleep(2000)
         } else {
+            service.pressBack()
+            Thread.sleep(1000)
             service.pressHome()
             Handler(Looper.getMainLooper()).postDelayed({
                 val intent = Intent(service, WarningActivity::class.java).apply {

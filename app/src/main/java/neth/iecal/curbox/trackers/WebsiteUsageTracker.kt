@@ -61,26 +61,21 @@ class WebsiteUsageTracker {
         fun filterOutUrlFromPlainText(inputText: String?): String? {
             if (inputText.isNullOrBlank()) return null
 
-            // Avoids matching loose words like "Search", "or", "enter", "address"
-            val urlRegex = "(?:https?://)?(?:[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}\b)(?:[-a-zA-Z0-9@:%_\\+.~#?&/=]*)"
+            val urlRegex = """(?:https?://|www\.)?[a-zA-Z0-9][a-zA-Z0-9\-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}(?:[/\?#][a-zA-Z0-9\-._~:/?#\[\]@!${'$'}&'()*+,;=%]*)?"""
             val pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE)
             val matcher = pattern.matcher(inputText)
 
             if (matcher.find()) {
-                var cleanUrl = matcher.group(0)
+                var cleanUrl = matcher.group(0) ?: return null
 
-                if (cleanUrl != null) {
-                    if (cleanUrl.endsWith(".") || cleanUrl.endsWith(",")) {
-                        cleanUrl = cleanUrl.substring(0, cleanUrl.length - 1)
-                    }
-                }
+                // Strip trailing punctuation unlikely to be part of the URL
+                cleanUrl = cleanUrl.trimEnd('.', ',', ')', ']', '\'', '"', '>')
 
                 return cleanUrl
             }
 
             return null
         }
-
 
     }
     private lateinit var service: BaseBlockingService
@@ -149,6 +144,7 @@ class WebsiteUsageTracker {
                         currentUrlIdentifier = siteInfo.urlIdentifier
                         currentPackage = packageName
                         domainStartTimeMs = SystemClock.uptimeMillis()
+                        saveInitialSession()
                     }
                 }
             }
@@ -177,6 +173,33 @@ class WebsiteUsageTracker {
         }
     }
 
+
+    private fun saveInitialSession() {
+        val domain = currentDomain
+        val identifier = currentUrlIdentifier
+        val packageName = currentPackage
+
+        if (domain != null && identifier != null && packageName != null) {
+            val date = TimeTools.getCurrentDate()
+            scope.launch {
+                try {
+                    val stat = websiteStatsDao.getStat(date, packageName, identifier)
+                    websiteStatsDao.upsert(
+                        WebsiteStatsEntity(
+                            date = date,
+                            packageName = packageName,
+                            urlIdentifier = identifier,
+                            domain = domain,
+                            totalTime = stat?.totalTime ?: 0L,
+                            lastVisited = System.currentTimeMillis()
+                        )
+                    )
+                } catch (e: Exception) {
+                    Log.e("WebsiteUsageTracker", "Failed to save initial website trace", e)
+                }
+            }
+        }
+    }
 
     private fun saveSession() {
         val domain = currentDomain
