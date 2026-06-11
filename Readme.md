@@ -8,7 +8,7 @@
 
 </div>
 
-Curbox is a powerful open source utility for Android built to help you reclaim your time and master your digital habits. It provides a suite of tools designed to break the cycle of screen addiction through granular control and deep insights.
+Curbox(formerly digipaws) is a powerful open source utility for Android built to help you reclaim your time and master your digital habits. It provides a suite of tools designed to break the cycle of screen addiction through granular control and deep insights.
 
 ### Screenshots
 Click on any image to enlarge it.
@@ -31,13 +31,29 @@ Most screen time tools are closed source and require internet access. This raise
 * Open Source Transparency
 The entire codebase is public. Anyone can verify how the app works. This ensures there are no hidden trackers or malicious behaviors. Open source doesn't mean anyone can see how you use the app. 
 * Respect for Your Data
-Because there is no cloud connection, you are the sole owner of your statistics. There are literally a few companies selling your usage insights for billions so the algorithm can be further strengthened to keep you trapped.
+Because there is no cloud connection, you are the sole owner of your statistics. There are literally a few companies selling your usage insights for millions so the algorithm can be further strengthened to keep you trapped.
+
+### Independent Reviews & Endorsements
+
+* **HowToMen (900k followers):** [Top 20 shizuku apps 2025](https://youtu.be/hGsPpd0uIco?t=123&si=I4wFOCA-ePm61XLk)
+* **HowToMen (900k followers):** [Top 15 best android apps may 2025](https://youtu.be/_b-GRZEAENc?t=710&si=3L8m8WlS-qWoVX8C)
+* **HowToMen (900k followers):** [Top 15 best android apps may 2026](https://youtu.be/B59glf2bweo?t=546&si=T2pUw2yZi9Krsv3A)
+* **GadgetGeek (4k followers):** [Awesome Free and open source apps](https://youtu.be/rAQ85K337l8?t=1148&si=U2ZmJe7CALvYAuGE)
+* **Sam Beckman (600k followers):** [Best free and open source apps 2026](https://youtu.be/bR19smAQfUs?t=624&si=DXNLiF-F1pY4neVq)
+* **Sam Beckman (600k followers):** [This app makes your phone less distracting](https://youtu.be/ncc7Ho9cNLw?si=e5BFCPvh4FbFqDFC)
+* **justtechit.english (462k followers):** [Open Source App Hunt Part 2](https://www.instagram.com/reel/DY4dJbVMn4p/)
+* **Sohail TECH (16k followers):** [5 Best & POWERFUL Android Apps in 2025](https://www.youtube.com/watch?v=u8B6TihqlPs)
+* **Anubhav Roy (340k followers):** [Best Free Open Source Android Apps in 2026](https://www.youtube.com/watch?v=M2ufnTybmH4)
+* **El Androide Feliz (50k followers):** [The BEST APPS compatible with SHIZUKU](https://www.youtube.com/watch?v=rps2uw8Cokw)
+* **Techy Marathi (723k followers):** [Instagram Reel](https://www.instagram.com/reel/DJjcOc8yKOR/)
+* **Sillycorns (700k followers):** [Top 10 Coolest Android Apps of 2025!](https://youtu.be/FWn5ZEyqdvQ?t=273&si=hocsC2GTdYPPmNRK)
+  Please open a issue if your review is not included, Thank you so much!)
 
 
 ### In Depth Feature Analysis
 
 Curbox goes beyond simple app timers. It targets the specific triggers that lead to mindless scrolling.
-- BLock apps
+- Block apps
 - Block Instagram reels, Youtube Shorts
 - Block Websites
 - App usage insights
@@ -52,12 +68,14 @@ Curbox goes beyond simple app timers. It targets the specific triggers that lead
 - Qr/Barcode based app/website unlocking
 - Automatically redirect to a different website when blocked website accessed
 - Block only specific url paths (eg. block m.youtube.com/shorts/* but allow m.youtube.com)
-- Block entities based on usage (eg. block if i use whatsapp more than 1 hour) or Time (allow whatsapp only between 7 am to 9pm)
+- Block entities based on usage (eg. block if i use whatsapp more than 1 hour)
+- Blokc on basis of Time (allow whatsapp only between 7 am to 9pm)
 - Home screen widgets
+- Set how many subsequent unlocks you can do every x hours
   
 App/Website unlock mechanisms (specifiy what happens when you try opening the app out of its schedule)
 - Complete blockade with no access
-- Prefix a time (like 5mins) for each subsequent unlocks
+- Predeine a time (like 5mins) for each subsequent unlocks
 - Dynamic time selection on each subsequent unlocks
 - Qr/Bar code based unlock (use qr code from existing product boxes like books, spread them across your home, physically move to the spot to unlock app each time)
 - Requires physically typing a sentence (eg type "I am giving up on my goals to use this app right now" to unlock)
@@ -76,6 +94,7 @@ We welcome contributions from the community! If you want to help improve Curbox,
 5. Create a new Pull Request.
 
 Developing for accessibility services and blockers is complex. It requires understanding how different apps structure their views. We appreciate any help in discovering new ways to block distracting content.
+Please don't open a pr if you vibe code and have no idea what you're doing or the code does. Just preferably open an issue with the feature request.
 
 ### Special Thanks
 * All my beloved donators and sponsers
