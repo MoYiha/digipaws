@@ -56,14 +56,14 @@ class AppBlocker() : BaseBlocker() {
      * stores what blocked apps have been allowed by the user to be used and until when
      * package-name -> end-time-in-real-time-millis
      */
-    private var cooldownAppsList = HashMap<String, Long>()
+    private var cooldownAppsList = ConcurrentHashMap<String, Long>()
 
     /**
      * Stores general simple general list of block apps with their configs
      */
-    var blockedAppsList = HashMap<String, AppUsageConfig>()
-    var timeBlockedAppsList = HashMap<String, AppTimeConfig>()
-    private var appBlockerWarningScrnConfgs = HashMap<String, AppBlockerWarningScreenConfig>()
+    var blockedAppsList = ConcurrentHashMap<String, AppUsageConfig>()
+    var timeBlockedAppsList = ConcurrentHashMap<String, AppTimeConfig>()
+    private var appBlockerWarningScrnConfgs = ConcurrentHashMap<String, AppBlockerWarningScreenConfig>()
 
     private lateinit var usageStats : UsageStatsHelper
     private var lastPackage = ""
@@ -74,7 +74,7 @@ class AppBlocker() : BaseBlocker() {
     // cooldown for an app and later when the cooldown duration is over, trigger a recheck
     private val handler = Handler(Looper.getMainLooper())
 
-    private val activeRunnables = HashMap<String, Runnable>()
+    private val activeRunnables = ConcurrentHashMap<String, Runnable>()
 
     private lateinit var notificationManager: TimerNotification
 

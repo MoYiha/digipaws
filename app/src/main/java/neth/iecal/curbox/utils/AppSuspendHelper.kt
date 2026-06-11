@@ -1,8 +1,10 @@
 package neth.iecal.curbox.utils
 
 import android.content.Context
+import android.content.Intent
 import rikka.shizuku.Shizuku
 import neth.iecal.curbox.data.models.FocusBlockMode
+import android.util.Log
 
 object AppSuspendHelper {
 
@@ -19,10 +21,10 @@ object AppSuspendHelper {
         if (!isShizukuAvailable()) return
         Thread {
             try {
-                val allPackages = context.packageManager.getInstalledPackages(0).map { it.packageName }
+                val allPackages = getInstalledPackagesSafe(context)
                 executePmCommand(allPackages, "unsuspend")
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("AppSuspendHelper", "Failed to unsuspend all apps", e)
             }
         }.start()
     }
@@ -36,8 +38,22 @@ object AppSuspendHelper {
         return if (blockMode == FocusBlockMode.BLOCK_SELECTED) {
             groupPackages.toList()
         } else {
-            val allPackages = context.packageManager.getInstalledPackages(0).map { it.packageName }
+            val allPackages = getInstalledPackagesSafe(context)
             allPackages.filter { it !in groupPackages && it !in essentialPackages }
+        }
+    }
+
+    private fun getInstalledPackagesSafe(context: Context): List<String> {
+        return try {
+            context.packageManager.getInstalledPackages(0).map { it.packageName }
+        } catch (e: Exception) {
+            Log.w("AppSuspendHelper", "getInstalledPackages failed, falling back to queryIntentActivities", e)
+            val intent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+            }
+            context.packageManager.queryIntentActivities(intent, 0)
+                .map { it.activityInfo.packageName }
+                .distinct()
         }
     }
 
