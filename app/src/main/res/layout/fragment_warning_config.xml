@@ -30,7 +30,6 @@
             android:layout_marginBottom="24dp"
             android:text="Set what happens if you try to access this outside its schedule." />
 
-        <!-- Unlock Challenge -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
@@ -45,9 +44,6 @@
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
-
-
-        <!-- Secondary Behavior -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/secondary_behavior_layout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -63,7 +59,6 @@
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Dynamic Timing / Fixed Timing Container -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/timing_container"
             style="@style/Widget.Material3.CardView.Outlined"
@@ -96,7 +91,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Wait / Proceed Delay -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/proceed_delay_container"
             style="@style/Widget.Material3.CardView.Outlined"
@@ -136,7 +130,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- QR SETUP -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/qr_setup_container"
             style="@style/Widget.Material3.CardView.Outlined"
@@ -160,7 +153,6 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:layout_marginTop="16dp"
                     android:weightSum="2">
 
@@ -200,7 +192,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- TYPING SETUP -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/typing_setup_container"
             style="@style/Widget.Material3.CardView.Outlined"
@@ -243,7 +234,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Advanced Settings -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.Material3.CardView.Outlined"
             android:layout_width="match_parent"
@@ -262,7 +252,6 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:orientation="horizontal"
                     android:padding="16dp">
 
                     <TextView
@@ -291,7 +280,6 @@
                     android:paddingBottom="16dp"
                     android:visibility="gone">
 
-                    <!-- Warning Message -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/warning_msg_layout"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"

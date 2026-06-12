@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
@@ -14,7 +13,6 @@
         android:clipToPadding="false"
         android:clipChildren="false">
 
-        <!-- Hero Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_hero"
             style="?attr/materialCardViewElevatedStyle"
@@ -32,7 +30,6 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:layout_marginBottom="16dp">
 
@@ -102,7 +99,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Focus Community Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_discord"
             style="?attr/materialCardViewElevatedStyle"
@@ -150,14 +146,11 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Follow the Journey Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:baselineAligned="false">
 
-            <!-- Card A: Instagram -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_instagram"
                 style="?attr/materialCardViewOutlinedStyle"
@@ -191,7 +184,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card B: TikTok -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_tiktok"
                 style="?attr/materialCardViewOutlinedStyle"
@@ -227,7 +219,6 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <!-- Crash Logs Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_crash_logs"
             style="?attr/materialCardViewOutlinedStyle"
@@ -246,8 +237,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:gravity="center_vertical">
                     
                     <ImageView
                         android:layout_width="24dp"

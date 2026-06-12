@@ -16,7 +16,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Enable Switch -->
             <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/switch_enable_blocker"
                 android:layout_width="match_parent"
@@ -29,9 +28,6 @@
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
-            <!-- Warning Config -->
-
-            <!-- Blocking Type -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -142,9 +138,7 @@
 
                 </LinearLayout>
 
-
             </com.google.android.material.card.MaterialCardView>
-            <!-- Configure Limits -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_configure_limits"
                 style="@style/Widget.Material3.Button"

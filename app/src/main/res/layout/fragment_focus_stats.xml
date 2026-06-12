@@ -32,7 +32,6 @@
             android:paddingTop="16dp"
             android:paddingBottom="32dp">
 
-            <!-- Group Filter -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.Material3.TextInputLayout.FilledBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
@@ -54,11 +53,9 @@
                     android:textAppearance="?attr/textAppearanceBodyMedium" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Stats Row 1: Sessions / Total Time / Streak -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
@@ -166,12 +163,10 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Stats Row 2: Avg Duration / Completion Rate -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
+                android:layout_marginTop="8dp">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
@@ -244,7 +239,6 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Weekly Graph -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -268,7 +262,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Top Tags -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTopTags"
                 android:layout_width="match_parent"

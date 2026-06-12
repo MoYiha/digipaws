@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
-
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -24,7 +22,6 @@
             android:ellipsize="none"
             android:fontFamily="monospace"
             android:inputType="textMultiLine"
-
             android:lineSpacingMultiplier="0.85"
             android:singleLine="false"
             android:text="@string/ascii_key"
@@ -65,7 +62,6 @@
                 android:text="@string/to_create_friction_and_give_you"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <!-- Restricted Settings Warning -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/restricted_settings_warning"
                 android:layout_width="match_parent"
@@ -110,7 +106,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Shizuku Grant All Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_shizuku_grant_all"
                 style="@style/Widget.Material3.Button.TonalButton"
@@ -119,7 +114,6 @@
                 android:layout_marginTop="24dp"
                 android:text="Grant all permissions with Shizuku" />
 
-            <!-- 1. Overlay Perm -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -137,7 +131,6 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:orientation="horizontal"
                     android:padding="20dp">
 
                     <TextView
@@ -158,7 +151,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 2. Usage Stats Perm -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -176,7 +168,6 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:orientation="horizontal"
                     android:padding="20dp">
 
                     <TextView
@@ -197,7 +188,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 3. Notification Perm -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -215,7 +205,6 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:orientation="horizontal"
                     android:padding="20dp">
 
                     <TextView
@@ -236,7 +225,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 4. DND Perm -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -254,7 +242,6 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:orientation="horizontal"
                     android:padding="20dp">
 
                     <TextView
@@ -275,7 +262,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 4. AppBlocker Perm -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -293,7 +279,6 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:orientation="horizontal"
                     android:padding="20dp">
 
                     <TextView
@@ -314,7 +299,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 5. UsageTracker Perm -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -332,7 +316,6 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true"
-                    android:orientation="horizontal"
                     android:padding="20dp">
 
                     <TextView
@@ -352,8 +335,6 @@
                         app:tint="?attr/colorError" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <!-- 6. Shizuku Perm -->
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_action"

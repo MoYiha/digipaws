@@ -17,7 +17,6 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Title -->
             <TextView
                 android:id="@+id/titleText"
                 android:layout_width="match_parent"
@@ -27,7 +26,6 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <!-- Tapped Element Info -->
             <TextView
                 android:id="@+id/selectorInfoText"
                 android:layout_width="match_parent"
@@ -39,7 +37,6 @@
                 android:textSize="12sp"
                 android:fontFamily="monospace" />
 
-            <!-- Editable Rule Input -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -73,7 +70,6 @@
                 android:textSize="13sp"
                 android:fontFamily="monospace" />
 
-            <!-- Quick Access Properties Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -100,11 +96,9 @@
                 <LinearLayout
                     android:id="@+id/propertyChipsContainer"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal" />
+                    android:layout_height="wrap_content" />
             </HorizontalScrollView>
 
-            <!-- Action Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -131,11 +125,9 @@
                 <LinearLayout
                     android:id="@+id/actionChipsContainer"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal" />
+                    android:layout_height="wrap_content" />
             </HorizontalScrollView>
 
-            <!-- Modifier Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -162,11 +154,9 @@
                 <LinearLayout
                     android:id="@+id/modifierChipsContainer"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal" />
+                    android:layout_height="wrap_content" />
             </HorizontalScrollView>
 
-            <!-- Comment Input -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -189,12 +179,10 @@
                 android:textColorHint="#555555"
                 android:textSize="13sp" />
 
-            <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="end"
-                android:orientation="horizontal"
                 android:paddingTop="20dp">
 
                 <Button

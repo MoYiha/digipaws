@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -45,8 +44,7 @@
                         android:fontFamily="@font/coolvetica_rg"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="55sp"
-                        android:textStyle="bold"
-                        tools:text="4h 12m" />
+                        android:textStyle="bold" />
                 </LinearLayout>
             </RelativeLayout>
 
@@ -60,8 +58,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:gravity="center">
 
                 <ImageButton
                     android:id="@+id/btn_prev_week"
@@ -78,8 +75,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
-                    tools:text="Mar 10 – Mar 16" />
+                    android:textAppearance="@style/TextAppearance.Material3.TitleSmall" />
 
                 <ImageButton
                     android:id="@+id/btn_next_week"

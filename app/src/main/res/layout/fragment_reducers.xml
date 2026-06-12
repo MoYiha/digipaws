@@ -11,7 +11,6 @@
         android:padding="20dp"
         android:paddingBottom="80dp">
 
-        <!-- BLOCKER TOOLS -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -22,7 +21,6 @@
             android:layout_marginBottom="20dp"
             android:layout_marginTop="8dp"/>
 
-        <!-- App Blocker -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_app_blocker"
             android:layout_width="match_parent"
@@ -37,7 +35,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="16dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -88,7 +85,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Reels Blocker -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_reels_blocker"
             android:layout_width="match_parent"
@@ -103,7 +99,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="20dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -154,7 +149,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Keyword Blocker -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_keyword_blocker"
             android:layout_width="match_parent"
@@ -169,7 +163,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="20dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -220,7 +213,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- STIMULATION REDUCERS -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -231,7 +223,6 @@
             android:layout_marginBottom="20dp"
             android:layout_marginTop="8dp"/>
 
-        <!-- Auto DND -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_autodnd"
             android:layout_width="match_parent"
@@ -246,7 +237,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="20dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -290,7 +280,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- View Blocker -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_view_blocker"
             android:layout_width="match_parent"
@@ -305,7 +294,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="20dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -356,9 +344,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- On screen timer -->
-
-        <!-- Intents -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_intents"
             android:layout_width="match_parent"
@@ -373,7 +358,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="20dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -424,7 +408,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Reel Counter -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_reel_counter"
             android:layout_width="match_parent"
@@ -439,7 +422,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="20dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -490,7 +472,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Grayscale Filter -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_grayscale"
             android:layout_width="match_parent"
@@ -505,7 +486,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="20dp">
 
                 <com.google.android.material.card.MaterialCardView
@@ -556,7 +536,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- REDUCER ANALYTICS -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -582,7 +561,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
                 android:padding="20dp">
 
                 <com.google.android.material.card.MaterialCardView

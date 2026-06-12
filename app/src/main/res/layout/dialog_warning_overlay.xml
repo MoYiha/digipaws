@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:padding="8dp">
 
@@ -15,8 +14,7 @@
         android:gravity="center"
         android:padding="8dp"
         android:textSize="24sp"
-        android:textStyle="bold"
-        tools:text="TextView" />
+        android:textStyle="bold" />
 
     <neth.iecal.curbox.views.HorizontalNumberPicker
         android:id="@+id/mins_picker"
@@ -80,8 +78,6 @@
             android:minLines="3"
             android:gravity="top" />
     </com.google.android.material.textfield.TextInputLayout>
-
-
 
     <Button
         android:id="@+id/btn_proceed"

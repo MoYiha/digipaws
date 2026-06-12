@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/colorSurface"
@@ -47,8 +46,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="8dp">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_create_group"
@@ -101,8 +99,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:visibility="gone"
-                tools:visibility="visible">
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/textView30"
@@ -136,8 +133,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="8dp">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_select_apps"
@@ -164,8 +160,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="4dp">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_add_websites"
@@ -249,13 +244,5 @@
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
-
-    <!-- Mode Toggle -->
-
-    <!-- App Group Dropdown -->
-
-    <!-- Tag Dropdown -->
-
-    <!-- Start Session Button -->
 
 </LinearLayout>

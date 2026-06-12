@@ -205,7 +205,6 @@
                         android:id="@+id/colorChipsContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="start" />
 
                 </LinearLayout>

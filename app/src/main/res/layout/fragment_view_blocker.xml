@@ -53,7 +53,6 @@
             android:padding="20dp"
             android:paddingBottom="100dp">
 
-            <!-- Main Enable Switch -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -67,7 +66,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal"
                     android:paddingTop="20dp"
                     android:paddingBottom="20dp"
                     android:paddingStart="20dp"
@@ -119,8 +117,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Default Rules Title -->
-
             <LinearLayout
                 android:id="@+id/rules_container"
                 android:layout_width="match_parent"
@@ -128,7 +124,6 @@
                 android:orientation="vertical"
                 android:layout_marginBottom="24dp" />
 
-            <!-- Custom Rules Title -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -146,7 +141,6 @@
                 android:orientation="vertical"
                 android:layout_marginBottom="16dp" />
 
-            <!-- Add custom rule inputs inside a card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -160,7 +154,6 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"

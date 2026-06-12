@@ -18,8 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="horizontal">
+            android:gravity="center">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -64,7 +63,6 @@
             android:text="@string/val_1h_app"
             android:textColor="?android:attr/textColorPrimary" />
 
-
         <TextView
             android:id="@+id/app_2_sm"
             style="@style/TextAppearance.Material3.BodyMedium"
@@ -76,7 +74,6 @@
             android:singleLine="true"
             android:text="@string/val_1h_app"
             android:textColor="?android:attr/textColorPrimary" />
-
 
         <TextView
             android:id="@+id/app_3_sm"
