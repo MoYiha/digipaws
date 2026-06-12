@@ -56,7 +56,7 @@ class AppUsageBreakdown(private val stat: AllAppsUsageFragment.Stat) : Fragment(
         } catch (_: Exception) {}
         
         binding.screentime.text = TimeTools.formatTime(stat.totalTime, false)
-        binding.sessions.text = stat.startTimes.size.toString()
+        binding.sessions.text = stat.sessions.toString()
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.settings.collectLatest { settings ->

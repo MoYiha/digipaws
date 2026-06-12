@@ -218,15 +218,16 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
             .plusWeeks(offset.toLong())
     }
 
-    private fun getStatsForDay(date: LocalDate): List<AllAppsUsageFragment.Stat> {
-        return dayStatsCache.computeIfAbsent(date) {
-            usageStatsHelper.getForegroundStatsByDay(it)
-        }
+    private suspend fun getStatsForDay(date: LocalDate): List<AllAppsUsageFragment.Stat> {
+        dayStatsCache[date]?.let { return it }
+        val stats = usageStatsHelper.getForegroundStatsByDay(date)
+        dayStatsCache[date] = stats
+        return stats
     }
 
-    private fun getFilteredStatsForDay(date: LocalDate): List<AllAppsUsageFragment.Stat> {
+    private suspend fun getFilteredStatsForDay(date: LocalDate): List<AllAppsUsageFragment.Stat> {
         return getStatsForDay(date).filter {
-            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
+            it.totalTime >= 1_000 && it.packageName !in ignoredPackages
         }
     }
 

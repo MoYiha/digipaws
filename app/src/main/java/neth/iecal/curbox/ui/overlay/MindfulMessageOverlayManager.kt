@@ -100,7 +100,7 @@ class MindfulMessageOverlayManager(private val context: Context) {
         updateJob?.cancel()
         updateJob = scope.launch {
             while (isActive) {
-                val todayStats = usageHelper.getForegroundStatsByRelativeDay(0)
+                val todayStats = withContext(Dispatchers.IO) { usageHelper.getForegroundStatsByRelativeDay(0) }
                 val appStat = todayStats.find { it.packageName == pkgName }
 
                 val appUsageToday = TimeTools.formatTime(appStat?.totalTime ?: 0, false)

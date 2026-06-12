@@ -84,8 +84,8 @@ class ScreentimeWidgetProvider : AppWidgetProvider() {
         }
         ignoredPackages.addAll(ignoredApps)
 
-        val list = usageStatsHelper.getForegroundStatsByRelativeDay(0).filter {
-            it.totalTime >= 180_000 && it.packageName !in ignoredPackages
+        val list = runBlocking { usageStatsHelper.getForegroundStatsByRelativeDay(0) }.filter {
+            it.totalTime >= 1_000 && it.packageName !in ignoredPackages
         }
 
         val totalScreentime = list.sumOf { it.totalTime }

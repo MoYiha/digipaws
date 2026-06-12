@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import neth.iecal.curbox.R
 import neth.iecal.curbox.anti_stimulants.MindfulMessageTracker
+import neth.iecal.curbox.trackers.AppUsageTracker
 import neth.iecal.curbox.trackers.ReelsCountTracker
 import neth.iecal.curbox.trackers.WebsiteUsageTracker
 import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
@@ -20,10 +21,12 @@ class UsageTrackingService : BaseBlockingService() {
     private val reelsCountTracker = ReelsCountTracker()
     private val mindfulMessageTracker = MindfulMessageTracker()
     private val websiteUsageTracker = WebsiteUsageTracker()
+    private val appUsageTracker = AppUsageTracker()
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         super.onAccessibilityEvent(event)
         try {
+            appUsageTracker.onEvent(event)
             reelsCountTracker.onEvent(event)
             mindfulMessageTracker.onEvent(event)
             websiteUsageTracker.onEvent(event)
@@ -48,6 +51,7 @@ class UsageTrackingService : BaseBlockingService() {
         reelsCountTracker.setup(this, reelsOverlayManager)
         mindfulMessageTracker.setup(this)
         websiteUsageTracker.setup(this)
+        appUsageTracker.setup(this)
 
         reelsCountTracker.setupReceivers()
 
@@ -78,6 +82,7 @@ class UsageTrackingService : BaseBlockingService() {
             mindfulMessageTracker.onDestroy()
             reelsCountTracker.onDestroy()
             websiteUsageTracker.onDestroy()
+            appUsageTracker.onDestroy()
         } catch (_: Exception) {
         }
     }

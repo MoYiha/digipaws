@@ -10,6 +10,10 @@ import java.util.concurrent.TimeUnit
 
 class TimeTools {
     companion object {
+        private val DAY_KEY_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
+
+        fun dayKey(date: LocalDate): String = date.format(DAY_KEY_FORMATTER)
+
         fun convertToMinutesFromMidnight(hour: Int, minute: Int): Int {
             return (hour * 60) + minute
         }

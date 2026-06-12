@@ -1,7 +1,6 @@
 package neth.iecal.curbox.ui.fragments.main.usage
 
 import android.annotation.SuppressLint
-import android.app.usage.UsageStatsManager
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Intent
@@ -58,7 +57,6 @@ import neth.iecal.curbox.utils.UsageStatsHelper
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.Date
 import java.util.Locale
 
@@ -67,10 +65,6 @@ class AllAppsUsageFragment : Fragment() {
     companion object {
         const val FRAGMENT_ID = "all_app_usage"
     }
-
-    private var selectedDate: Long = System.currentTimeMillis()
-    private var currentDate: Long = selectedDate
-    private var earliestDate: Long = selectedDate
 
     private var _binding: FragmentAllAppUsageBinding? = null
     private val binding get() = _binding!!
@@ -175,7 +169,6 @@ class AllAppsUsageFragment : Fragment() {
         binding.weeklyBarGraph.setOnDaySelectedListener { dayData ->
             val index = viewModel.weeklyData.value?.indexOf(dayData) ?: return@setOnDaySelectedListener
             viewModel.selectDay(index)
-            selectedDate = dayData.dateMillis
         }
 
         // Menu
@@ -269,10 +262,6 @@ class AllAppsUsageFragment : Fragment() {
 
         // Initialize ViewModel data
         viewModel.initialize()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            findDataAvailabilityRange()
-        }
     }
 
 
@@ -348,18 +337,6 @@ class AllAppsUsageFragment : Fragment() {
         }
     }
 
-    fun findDataAvailabilityRange() {
-        val usageStatsManager = requireContext().getSystemService(UsageStatsManager::class.java)
-        val stats = usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            0, System.currentTimeMillis()
-        )
-
-        earliestDate = stats.minOfOrNull { it.firstTimeStamp } ?: System.currentTimeMillis()
-        currentDate = System.currentTimeMillis()
-        selectedDate = currentDate.coerceAtLeast(earliestDate)
-    }
-
     override fun onResume() {
         super.onResume()
         if (::viewModel.isInitialized) {
@@ -375,9 +352,9 @@ class AllAppsUsageFragment : Fragment() {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
             val header =
-                "Date,App Name,Package Name,Category,Duration (ms),Duration (mins),Is System App,Install Date,Last Update,Start Times\n"
+                "Date,App Name,Package Name,Category,Duration (ms),Duration (mins),Is System App,Install Date,Last Update,Sessions\n"
 
-            fun processStatsForRange(start: Long, end: Long, dateLabel: String): String {
+            suspend fun processStatsForRange(start: Long, end: Long, dateLabel: String): String {
                 val rangeSb = StringBuilder()
                 val statsMap = usageStatsHelper.getForegroundStatsByTimestamps(start, end)
 
@@ -399,7 +376,7 @@ class AllAppsUsageFragment : Fragment() {
 
                         val minutes = it.totalTime / 1000 / 60
 
-                        rangeSb.append("$dateLabel,$appName,${it.packageName},$category,${it.totalTime},$minutes,$isSystem,$installDate,$lastUpdate\n,${it.startTimes}\n")
+                        rangeSb.append("$dateLabel,$appName,${it.packageName},$category,${it.totalTime},$minutes,$isSystem,$installDate,$lastUpdate,${it.sessions}\n")
                     }
                 }
                 return rangeSb.toString()
@@ -598,7 +575,7 @@ class AllAppsUsageFragment : Fragment() {
     class Stat(
         val packageName: String,
         val totalTime: Long,
-        val startTimes: List<ZonedDateTime>,
+        val sessions: Int = 0,
         val hourlyUsage: LongArray = LongArray(24)
     )
 

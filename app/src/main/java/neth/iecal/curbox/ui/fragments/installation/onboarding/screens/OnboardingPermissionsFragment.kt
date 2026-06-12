@@ -140,17 +140,6 @@ class OnboardingPermissionsFragment : Fragment() {
             }
         }
 
-        binding.usageStatsPermRoot.setOnClickListener {
-            if (neth.iecal.curbox.utils.PermissionUtils.hasUsageStatsPermission(requireContext())) return@setOnClickListener
-            showExplanationDialog(
-                title = "Usage Access",
-                rationale = "Curbox needs to know which app you are currently using so we can intervene exactly when you open a distracting app.",
-                openSourceExplanation = "\uD83D\uDEE1\uFE0F Verified by the Community: Because our 'kitchen' is open, independent developers and privacy advocates can inspect our work. If we ever tried to track you, the community would find out immediately."
-            ) {
-                startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-            }
-        }
-
         binding.notifPermRoot.setOnClickListener {
             if (neth.iecal.curbox.utils.PermissionUtils.isNotificationPermissionGiven(requireContext())) return@setOnClickListener
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -271,7 +260,6 @@ class OnboardingPermissionsFragment : Fragment() {
 
         val command = """
             appops set $pkg SYSTEM_ALERT_WINDOW allow
-            appops set $pkg GET_USAGE_STATS allow
             pm grant $pkg android.permission.POST_NOTIFICATIONS
             cmd notification allow_dnd $pkg
             
@@ -316,7 +304,6 @@ class OnboardingPermissionsFragment : Fragment() {
 
     private fun updatePermissionsState() {
         val hasOverlay = Settings.canDrawOverlays(requireContext())
-        val hasUsageStats = neth.iecal.curbox.utils.PermissionUtils.hasUsageStatsPermission(requireContext())
         val hasNotif = neth.iecal.curbox.utils.PermissionUtils.isNotificationPermissionGiven(requireContext())
         val hasDnd = (requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager).isNotificationPolicyAccessGranted
         val hasBlocker = neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), AppBlockerService::class.java)
@@ -345,7 +332,6 @@ class OnboardingPermissionsFragment : Fragment() {
         }
 
         setPermissionIcon(hasOverlay, binding.overlayPermIcon)
-        setPermissionIcon(hasUsageStats, binding.usageStatsPermIcon)
         setPermissionIcon(hasNotif, binding.notifPermIcon)
         setPermissionIcon(hasDnd, binding.dndPermIcon)
         setPermissionIcon(hasBlocker, binding.blockerAccPermIcon)
@@ -355,11 +341,7 @@ class OnboardingPermissionsFragment : Fragment() {
         binding.overlayPermRoot.isEnabled = !hasOverlay
         binding.overlayPermRoot.alpha = if (hasOverlay) 0.5f else 1.0f
 
-        val canDoUsage = hasOverlay
-        binding.usageStatsPermRoot.isEnabled = canDoUsage && !hasUsageStats
-        binding.usageStatsPermRoot.alpha = if (canDoUsage) (if (hasUsageStats) 0.5f else 1.0f) else 0.3f
-
-        val canDoNotif = canDoUsage && hasUsageStats
+        val canDoNotif = hasOverlay
         binding.notifPermRoot.isEnabled = canDoNotif && !hasNotif
         binding.notifPermRoot.alpha = if (canDoNotif) (if (hasNotif) 0.5f else 1.0f) else 0.3f
 
@@ -375,7 +357,7 @@ class OnboardingPermissionsFragment : Fragment() {
         binding.trackerAccPermRoot.isEnabled = canDoTracker && !hasTracker
         binding.trackerAccPermRoot.alpha = if (canDoTracker) (if (hasTracker) 0.5f else 1.0f) else 0.3f
 
-        val allGranted = hasOverlay && hasUsageStats && hasNotif && hasDnd && hasBlocker && hasTracker
+        val allGranted = hasOverlay && hasNotif && hasDnd && hasBlocker && hasTracker
         binding.btnAction.isEnabled = allGranted
         if (allGranted) {
             binding.btnAction.text = "Curb me!"

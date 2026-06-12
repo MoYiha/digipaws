@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import neth.iecal.curbox.Constants
 import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
 import neth.iecal.curbox.data.models.AppBlockingType
@@ -126,7 +127,7 @@ class AppBlocker() : BaseBlocker() {
         // Check Usage Blocks
         if (blockedAppsList.contains(packageName)) {
             val config = blockedAppsList[packageName]!!
-            val currentUsage = usageStats.getForegroundStatsByRelativeDay(0)
+            val currentUsage = runBlocking { usageStats.getForegroundStatsByRelativeDay(0) }
                 .firstOrNull { it.packageName == packageName }?.totalTime ?: 0L
             val usageLimitMillis = getUsageLimitForToday(config) * 60_000L
             val remainingUsage = usageLimitMillis - currentUsage
