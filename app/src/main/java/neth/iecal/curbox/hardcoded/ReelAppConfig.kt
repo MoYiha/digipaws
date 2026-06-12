@@ -49,6 +49,21 @@ class ReelAppConfig {
                 },
                 eventType = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
             ),
+            "app.morphe.android.youtube" to ReelAppData(
+                viewId = "app.morphe.android.youtube:id/reel_recycler",
+                requiresPresent = listOf(),
+                dynamicComparator = listOf("app.morphe.android.youtube:id/reel_player_page_content"),
+                comparsionResultCleanser = {
+                    if(it.contains("PostPostPostlike")) return@ReelAppData ""
+                    if(it.length <= 15) return@ReelAppData ""
+                    it.replace("Video Progress","")
+                        .replace("Tap to watch live","")
+                        .replace("Go to channel","")
+                        .replace("soundVideo ProgressSearchMoreHomeHomeShortsShortsCreateSubscriptions","")
+                        .replace("soundSearchMoreHomeHomeShortsShortsCreateSubscriptions","")
+                },
+                eventType = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+            ),
 //            "com.reddit.frontpage" to ReelAppData(
 //                viewId = "path:android.view.ViewGroup[0]>android.view.View[0]>android.view.View[0]>android.widget.ScrollView[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>androidx.compose.ui.viewinterop.ViewFactoryHolder[0]",
 //                requiresPresent = listOf("path:android.view.ViewGroup[0]>android.view.View[0]>android.view.View[0]>android.widget.ScrollView[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[1]>android.view.View[0]>android.view.View[0]>android.view.View[0]"),
