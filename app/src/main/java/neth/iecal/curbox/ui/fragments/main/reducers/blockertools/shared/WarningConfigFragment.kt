@@ -119,6 +119,9 @@ class WarningConfigFragment : Fragment() {
 
     private fun setupInitialState() {
         val config = initialConfig ?: AppBlockerWarningScreenConfig()
+        val isOnOpen = arguments?.getBoolean(ARG_IS_ON_OPEN) == true
+        config.isOnOpenConfig = isOnOpen
+        
         val isNew = arguments?.getBoolean(ARG_IS_NEW) ?: (arguments?.getString(ARG_CONFIG) == null)
         
         currentQrMap = config.qrKeys.toMutableMap()
@@ -128,13 +131,17 @@ class WarningConfigFragment : Fragment() {
         binding.unlockChallengeDropdown.setAdapter(challengeAdapter)
 
         if (!isNew) {
-            val (challengeIdx, secondaryIdx) = when {
+            var (challengeIdx, secondaryIdx) = when {
                 config.isProceedDisabled -> 0 to -1
                 config.isQrUnlockRequirementEnabled -> 1 to 0
                 config.isTypingRequirementEnabled -> 1 to 1
                 config.isIntentRequirementEnabled -> 1 to 2
                 config.isDynamicIntervalSettingAllowed -> 2 to 0
                 else -> 2 to 1 // Fixed time
+            }
+
+            if (isOnOpen && challengeIdx == 2) {
+                secondaryIdx = 1
             }
 
             binding.unlockChallengeDropdown.setText(challengeOptions[challengeIdx].title, false)
@@ -144,7 +151,7 @@ class WarningConfigFragment : Fragment() {
                 val options = if (challengeIdx == 1) effortOptions else noEffortOptions
                 binding.secondaryBehaviorDropdown.setText(options[secondaryIdx].title, false)
             }
-            updateUiVisibility(challengeIdx, secondaryIdx, config.isOnOpenConfig)
+            updateUiVisibility(challengeIdx, secondaryIdx, animate = isOnOpen)
         } else {
             binding.secondaryBehaviorLayout.isVisible = false
             binding.timingContainer.isVisible = false
@@ -173,14 +180,21 @@ class WarningConfigFragment : Fragment() {
 
         binding.warningMsgEdit.setText(config.message)
         binding.switchVibrateBrightness.isChecked = config.vibrateAndIncBrightness
-        config.isOnOpenConfig = arguments?.getBoolean(ARG_IS_ON_OPEN) == true
 
-        if (config.isOnOpenConfig) {
+        if (isOnOpen) {
             binding.timingContainer.visibility = View.GONE
         }
     }
 
     private fun updateSecondaryDropdown(challengeIdx: Int) {
+        val isOnOpen = arguments?.getBoolean(ARG_IS_ON_OPEN) == true
+        
+        if (isOnOpen && challengeIdx == 2) {
+            binding.secondaryBehaviorLayout.visibility = View.GONE
+            binding.secondaryBehaviorDropdown.setText(noEffortOptions[1].title, false)
+            return
+        }
+
         val options = when (challengeIdx) {
             1 -> effortOptions
             2 -> noEffortOptions
@@ -200,10 +214,14 @@ class WarningConfigFragment : Fragment() {
         binding.unlockChallengeDropdown.setOnItemClickListener { _, _, position, _ ->
             updateSecondaryDropdown(position)
             
+            val isOnOpen = arguments?.getBoolean(ARG_IS_ON_OPEN) == true
             // Clear secondary dropdown when parent changes
-            binding.secondaryBehaviorDropdown.setText("", false)
+            if (!(isOnOpen && position == 2)) {
+                binding.secondaryBehaviorDropdown.setText("", false)
+            }
             
-            updateUiVisibility(position, -1, animate = true)
+            val secondaryIdx = if (isOnOpen && position == 2) 1 else -1
+            updateUiVisibility(position, secondaryIdx, animate = true)
         }
 
         binding.secondaryBehaviorDropdown.setOnItemClickListener { _, _, position, _ ->
@@ -324,7 +342,8 @@ class WarningConfigFragment : Fragment() {
                 vibrateAndIncBrightness = binding.switchVibrateBrightness.isChecked,
                 proceedLimitEnabled = binding.proceedLimitSwitch.isChecked,
                 allowedProceeds = binding.allowedProceedsSlider.value.toInt(),
-                proceedsTimeWindowMn = binding.proceedWindowSlider.value.toInt()
+                proceedsTimeWindowMn = binding.proceedWindowSlider.value.toInt(),
+                isOnOpenConfig = arguments?.getBoolean(ARG_IS_ON_OPEN) == true
             )
             
             val requestKey = arguments?.getString(ARG_REQUEST_KEY) ?: RESULT_KEY
@@ -374,7 +393,7 @@ class WarningConfigFragment : Fragment() {
             )
         }
 
-        val isOnOpen = initialConfig?.isOnOpenConfig ?: false
+        val isOnOpen = arguments?.getBoolean(ARG_IS_ON_OPEN) == true
 
         binding.apply {
             // Timing container visible if "Requires no effort" + "Fixed time" OR "Require effort" + (Typing or Intent)
