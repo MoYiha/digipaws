@@ -18,7 +18,7 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.UsageSettingsAd
 
 abstract class BaseUsageSettingsFragment : BottomSheetDialogFragment() {
 
-    private val daysOfWeek = listOf(
+    protected open val daysOfWeek = listOf(
         "Same Limit Everyday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
     )
 
@@ -75,13 +75,8 @@ abstract class BaseUsageSettingsFragment : BottomSheetDialogFragment() {
         dayItems[0].hours = (config.uniformLimit / 60).toInt()
         dayItems[0].minutes = (config.uniformLimit % 60).toInt()
 
-        // dayItems 1-7 = Mon-Sun; dailyLimits indices 1-6 = Mon-Sat, index 0 = Sun
-        setDayItem(1, config.dailyLimits[1])
-        setDayItem(2, config.dailyLimits[2])
-        setDayItem(3, config.dailyLimits[3])
-        setDayItem(4, config.dailyLimits[4])
-        setDayItem(5, config.dailyLimits[5])
-        setDayItem(6, config.dailyLimits[6])
+        // dayItems 1-7 = Mon-Sun; dailyLimits[1-6] = Mon-Sat, dailyLimits[0] = Sun
+        for (i in 1..6) setDayItem(i, config.dailyLimits[i])
         setDayItem(7, config.dailyLimits[0])
 
         handleUniformLimitToggle(config.isDailyUniform)
@@ -91,16 +86,14 @@ abstract class BaseUsageSettingsFragment : BottomSheetDialogFragment() {
     private fun setDayItem(itemIndex: Int, minutesLimit: Long) {
         val item = dayItems[itemIndex]
         item.isEnabled = minutesLimit > 0
-        item.hours = if (minutesLimit > 0) (minutesLimit / 60).toInt() else 0
-        item.minutes = if (minutesLimit > 0) (minutesLimit % 60).toInt() else 0
+        item.hours = (minutesLimit / 60).toInt()
+        item.minutes = (minutesLimit % 60).toInt()
     }
 
     private fun handleUniformLimitToggle(isUniform: Boolean) {
-        for (i in 1 until dayItems.size) {
-            dayItems[i].isInteractionEnabled = !isUniform
-            if (isUniform) dayItems[i].isEnabled = false
-        }
-        adapter.notifyDataSetChanged()
+        dayItems.drop(1).forEach { it.isInteractionEnabled = !isUniform }
+        if (isUniform) dayItems.drop(1).forEach { it.isEnabled = false }
+        adapter.notifyItemRangeChanged(1, dayItems.size - 1)
     }
 
     private fun persistConfig() {
@@ -111,12 +104,7 @@ abstract class BaseUsageSettingsFragment : BottomSheetDialogFragment() {
         )
 
         if (!isDailyUniform) {
-            config.dailyLimits[1] = (dayItems[1].hours * 60 + dayItems[1].minutes).toLong()
-            config.dailyLimits[2] = (dayItems[2].hours * 60 + dayItems[2].minutes).toLong()
-            config.dailyLimits[3] = (dayItems[3].hours * 60 + dayItems[3].minutes).toLong()
-            config.dailyLimits[4] = (dayItems[4].hours * 60 + dayItems[4].minutes).toLong()
-            config.dailyLimits[5] = (dayItems[5].hours * 60 + dayItems[5].minutes).toLong()
-            config.dailyLimits[6] = (dayItems[6].hours * 60 + dayItems[6].minutes).toLong()
+            for (i in 1..6) config.dailyLimits[i] = (dayItems[i].hours * 60 + dayItems[i].minutes).toLong()
             config.dailyLimits[0] = (dayItems[7].hours * 60 + dayItems[7].minutes).toLong()
         }
 

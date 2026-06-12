@@ -62,12 +62,6 @@ abstract class BaseTimeSettingsFragment : BottomSheetDialogFragment() {
             daysAdapter.isInteractionEnabled = !isChecked
         }
 
-        everydayContainer.setOnClickListener {
-            if (!switchEveryDay.isChecked) {
-                Toast.makeText(requireContext(), "Enable everyday to set unified range", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         btnAddEverydayInterval.setOnClickListener {
             everydayIntervals.add(TimeInterval(9, 0, 17, 0))
             everydayAdapter.notifyItemInserted(everydayIntervals.size - 1)
@@ -84,8 +78,8 @@ abstract class BaseTimeSettingsFragment : BottomSheetDialogFragment() {
     private fun setupRecyclerViews() {
         everydayAdapter = TimeIntervalAdapter(
             everydayIntervals,
-            onTimeClick = { interval, isStart, _ ->
-                showTimePicker(interval, isStart, everydayIntervals) { everydayAdapter.notifyDataSetChanged() }
+            onTimeClick = { interval, isStart, position ->
+                showTimePicker(interval, isStart, everydayIntervals) { everydayAdapter.notifyItemChanged(position) }
             },
             onRemove = { position ->
                 everydayIntervals.removeAt(position)
@@ -107,7 +101,7 @@ abstract class BaseTimeSettingsFragment : BottomSheetDialogFragment() {
                 daysAdapter.notifyItemChanged(dayPosition)
             },
             onTimeClick = { interval, isStart, dayPosition, _ ->
-                showTimePicker(interval, isStart, dayItems[dayPosition].intervals) { daysAdapter.notifyDataSetChanged() }
+                showTimePicker(interval, isStart, dayItems[dayPosition].intervals) { daysAdapter.notifyItemChanged(dayPosition) }
             },
             onRemoveInterval = { dayPosition, intervalPosition ->
                 dayItems[dayPosition].intervals.removeAt(intervalPosition)
@@ -154,11 +148,14 @@ abstract class BaseTimeSettingsFragment : BottomSheetDialogFragment() {
 
     private fun showTimePicker(interval: TimeInterval, isStart: Boolean, list: MutableList<TimeInterval>, onComplete: () -> Unit) {
         val clockFormat = if (DateFormat.is24HourFormat(requireContext())) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
+        val hour = if (isStart) interval.startHour else interval.endHour
+        val minute = if (isStart) interval.startMinute else interval.endMinute
+        val title = if (isStart) "Select Start Time" else "Select End Time"
         val picker = MaterialTimePicker.Builder()
             .setTimeFormat(clockFormat)
-            .setHour(if (isStart) interval.startHour else interval.endHour)
-            .setMinute(if (isStart) interval.startMinute else interval.endMinute)
-            .setTitleText(if (isStart) "Select Start Time" else "Select End Time")
+            .setHour(hour)
+            .setMinute(minute)
+            .setTitleText(title)
             .build()
 
         picker.addOnPositiveButtonClickListener {

@@ -61,8 +61,13 @@ class UsageSettingsAdapter(
         binding.hoursInput.setText(if (item.hours > 0) item.hours.toString() else "")
         binding.minutesInput.setText(if (item.minutes > 0) item.minutes.toString() else "")
 
-        binding.timeInputContainer.visibility = if (item.isEnabled) View.VISIBLE else View.GONE
-        binding.timeInputContainer.alpha = if (item.isEnabled) 1.0f else 0.0f
+
+        if (item.isEnabled) {
+            binding.timeInputContainer.visibility = View.VISIBLE
+            binding.timeInputContainer.alpha = 1.0f
+        } else {
+            binding.timeInputContainer.visibility = View.GONE
+        }
 
         binding.daySwitch.setOnCheckedChangeListener { switchView, isChecked ->
             switchView.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
