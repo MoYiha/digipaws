@@ -20,7 +20,6 @@ import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.FragmentFocusBinding
 import androidx.core.view.isNotEmpty
 import kotlin.math.abs
-import kotlin.math.floor
 
 class FocusFragment : Fragment() {
 
@@ -98,23 +97,26 @@ class FocusFragment : Fragment() {
                                 // Dynamically fetch the exact physical width of a rendered item
                                 if (itemWidthPx > 0) {
                                     if (lastTotalMinutesLeft < 0 || abs(lastTotalMinutesLeft - totalMinutesLeft) > 1.0) {
-                                        val actualItemWidth = itemWidthPx
-                                        val padding = (b.rvRuler.width / 2) - (actualItemWidth / 2)
-                                        val integerPart = floor(totalMinutesLeft).toInt()
-                                        val fractionalPart = (totalMinutesLeft - integerPart).toFloat()
-                                        val offset = padding - (fractionalPart * actualItemWidth).toInt()
+                                        // Absolute (re)sync: place the centered tick on the remaining time.
+                                        // scrollToPositionWithOffset places the item's left edge at
+                                        // paddingLeft + offset, and paddingLeft already equals the
+                                        // centering padding, so offset 0 centers integerPart. Shift it
+                                        // left by the fractional part to land between two ticks.
+                                        val fractionalPart = (totalMinutesLeft - totalMinutesLeft.toInt()).toFloat()
+                                        val offset = -(fractionalPart * itemWidthPx).toInt()
 
                                         isProgrammaticScroll = true
                                         (b.rvRuler.layoutManager as LinearLayoutManager)
-                                            .scrollToPositionWithOffset(integerPart, offset)
+                                            .scrollToPositionWithOffset(totalMinutesLeft.toInt(), offset)
                                         isProgrammaticScroll = false // Reset instantly, onScrolled is synchronous
 
                                         floatPixelAccumulator = 0.0
                                     } else {
-                                        // 2. Smoothly scroll the delta to prevent layout thrashing
-                                        val actualItemWidth = itemWidthPx
+                                        // Smoothly scroll the per-tick delta to prevent layout thrashing.
+                                        // Time decreases, so deltaMinutes > 0 and we scroll back (negative
+                                        // dx) toward lower values, keeping the strip in sync with tvMinutes.
                                         val deltaMinutes = lastTotalMinutesLeft - totalMinutesLeft
-                                        floatPixelAccumulator += deltaMinutes * actualItemWidth
+                                        floatPixelAccumulator += deltaMinutes * itemWidthPx
                                         val pixelsToScroll = floatPixelAccumulator.toInt()
 
                                         if (pixelsToScroll != 0) {
@@ -216,9 +218,9 @@ class FocusFragment : Fragment() {
         if (smooth) {
             b.rvRuler.smoothScrollToPosition(targetPos)
         } else {
-            val padding = (b.rvRuler.width / 2) - (itemWidthPx / 2)
+            // paddingLeft already equals the centering padding, so offset 0 centers targetPos.
             (b.rvRuler.layoutManager as LinearLayoutManager)
-                .scrollToPositionWithOffset(targetPos, padding)
+                .scrollToPositionWithOffset(targetPos, 0)
         }
 
         b.rvRuler.postDelayed({ isProgrammaticScroll = false }, 300)
