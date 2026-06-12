@@ -1,9 +1,9 @@
 package neth.iecal.curbox.ui.fragments.main.reducers.blockertools
 
-import android.text.Editable
 import android.text.TextWatcher
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
+import androidx.core.widget.doAfterTextChanged
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -39,7 +39,6 @@ class UsageSettingsAdapter(
         val item = items[position]
         val binding = holder.binding
 
-        // Remove listeners before setting state
         binding.daySwitch.setOnCheckedChangeListener(null)
         holder.hoursWatcher?.let { binding.hoursInput.removeTextChangedListener(it) }
         holder.minutesWatcher?.let { binding.minutesInput.removeTextChangedListener(it) }
@@ -87,27 +86,14 @@ class UsageSettingsAdapter(
             }
         }
 
-        holder.hoursWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                item.hours = s?.toString()?.toIntOrNull() ?: 0
-                if (s?.length == 2) {
-                    binding.minutesInput.requestFocus()
-                }
-            }
-        }
-        
-        holder.minutesWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                item.minutes = s?.toString()?.toIntOrNull() ?: 0
-            }
+        holder.hoursWatcher = binding.hoursInput.doAfterTextChanged { s ->
+            item.hours = s?.toString()?.toIntOrNull() ?: 0
+            if (s?.length == 2) binding.minutesInput.requestFocus()
         }
 
-        binding.hoursInput.addTextChangedListener(holder.hoursWatcher)
-        binding.minutesInput.addTextChangedListener(holder.minutesWatcher)
+        holder.minutesWatcher = binding.minutesInput.doAfterTextChanged { s ->
+            item.minutes = s?.toString()?.toIntOrNull() ?: 0
+        }
     }
 
     override fun getItemCount() = items.size

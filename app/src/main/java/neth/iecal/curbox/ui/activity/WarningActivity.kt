@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import android.widget.Toast
 import androidx.core.content.edit
+import androidx.core.widget.doAfterTextChanged
 import neth.iecal.curbox.anti_stimulants.MindfulMessageTracker
 
 class WarningActivity : AppCompatActivity() {
@@ -77,7 +78,7 @@ class WarningActivity : AppCompatActivity() {
 
         val mode = intent.getIntExtra("mode", 0)
 
-val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
+        val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
             intent.getStringExtra("warning_config"),
             AppBlockerWarningScreenConfig::class.java
         )
@@ -146,13 +147,9 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
                                 button.isEnabled = false
                                 button.setText(R.string.proceed)
 
-                                binding.intentInputEdit.addTextChangedListener(object: android.text.TextWatcher {
-                                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                                    override fun afterTextChanged(s: android.text.Editable?) {
-                                        button.isEnabled = s?.toString()?.trim()?.isNotEmpty() == true
-                                    }
-                                })
+                                binding.intentInputEdit.doAfterTextChanged { s ->
+                                    button.isEnabled = s?.toString()?.trim()?.isNotEmpty() == true
+                                }
                             } else if (warningScreenConfig.isTypingRequirementEnabled) {
                                 binding.typingTargetSentence.visibility = View.VISIBLE
                                 binding.typingTargetSentence.text = "\"${warningScreenConfig.typingSentence}\""
@@ -160,13 +157,9 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
                                 button.isEnabled = false
                                 button.setText(R.string.proceed)
                                 
-                                binding.typingInputEdit.addTextChangedListener(object: android.text.TextWatcher {
-                                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                                    override fun afterTextChanged(s: android.text.Editable?) {
-                                        button.isEnabled = s?.toString() == warningScreenConfig.typingSentence
-                                    }
-                                })
+                                binding.typingInputEdit.doAfterTextChanged { s ->
+                                    button.isEnabled = s?.toString() == warningScreenConfig.typingSentence
+                                }
                             } else if (warningScreenConfig.isQrUnlockRequirementEnabled && !isQrScanned) {
                                 button.text = "Scan QR Code"
                                 button.isEnabled = true
@@ -327,12 +320,8 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
         sendBroadcast(intent)
     }
 
-    /**
-     * Triggers a jagged, unpredictable vibration waveform.
-     * The lack of a steady rhythm prevents habituation and breaks focus.
-     */
+    // Jagged rhythm prevents habituation and breaks the habit loop.
     private fun triggerRandomizedVibration(durationMillis: Long) {
-        // Initialize the class-level vibrator variable
         vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
             vibratorManager.defaultVibrator
@@ -344,7 +333,7 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
         vibrator?.let { currentVibrator ->
             if (currentVibrator.hasVibrator()) {
                 val patternList = mutableListOf<Long>()
-                patternList.add(0L) // Start immediately (0ms initial delay)
+                patternList.add(0L)
 
                 var elapsedTime = 0L
 
@@ -353,14 +342,14 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
                     val pauseDuration = Random.nextLong(40, 150)
 
                     if (elapsedTime + vibrateDuration >= durationMillis) {
-                        patternList.add(durationMillis - elapsedTime) // Cap exactly at duration
+                        patternList.add(durationMillis - elapsedTime)
                         break
                     }
                     patternList.add(vibrateDuration)
                     elapsedTime += vibrateDuration
 
                     if (elapsedTime + pauseDuration >= durationMillis) {
-                        patternList.add(durationMillis - elapsedTime) // Cap exactly at duration
+                        patternList.add(durationMillis - elapsedTime)
                         break
                     }
                     patternList.add(pauseDuration)

@@ -3,7 +3,6 @@ package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.appBlocker
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -32,7 +31,6 @@ class CreateAppGroupFragment : Fragment() {
     }
 
     private var _binding: FragmentCreateAppGroupBinding? = null
-    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
 
     private var selectedApps: ArrayList<String> = arrayListOf()
@@ -115,23 +113,6 @@ class CreateAppGroupFragment : Fragment() {
                             binding.btnConfigureSettings.visibility = View.GONE
                         }
                         viewModel.warningScrnConfig = group.warningScreenConfig
-
-                        /* 
-                        binding.toolbar.menu.clear()
-                        val deleteItem = binding.toolbar.menu.add(0, 1001, 0, "Delete")
-                        deleteItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-                        binding.toolbar.setOnMenuItemClickListener { item ->
-                            if (item.itemId == 1001) {
-                                isDeleting = true
-                                viewModel.deleteGroup(group.id)
-                                Toast.makeText(requireContext(), getString(R.string.group_deleted), Toast.LENGTH_SHORT).show()
-                                requireActivity().finish()
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                        */
                     }
                 }
             }
