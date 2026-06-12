@@ -63,6 +63,7 @@ class AppBlocker() : BaseBlocker() {
      */
     var blockedAppsList = ConcurrentHashMap<String, AppUsageConfig>()
     var timeBlockedAppsList = ConcurrentHashMap<String, AppTimeConfig>()
+    private var onOpenAppsList = ConcurrentHashMap<String, Boolean>()
     private var appBlockerWarningScrnConfgs = ConcurrentHashMap<String, AppBlockerWarningScreenConfig>()
 
     private lateinit var usageStats : UsageStatsHelper
@@ -86,6 +87,11 @@ class AppBlocker() : BaseBlocker() {
 
         if (lastPackage == packageName || packageName == service.packageName || packageName == "com.android.systemui") return
 
+        // Session Reset for OnOpen
+        if (onOpenAppsList.containsKey(lastPackage) && lastPackage != packageName) {
+            removeCooldownFrom(lastPackage)
+        }
+
         lastPackage = packageName
 
         // Check Cooldown
@@ -96,6 +102,13 @@ class AppBlocker() : BaseBlocker() {
                 notificationManager.startTimer(totalMillis = cooldownAppsList[packageName]!! - System.currentTimeMillis(), timerId = packageName, title = "Remaining usage before lockdown")
                 return // Still in cooldown, let them use it
             }
+        }
+
+        // Check OnOpen
+        if (onOpenAppsList.containsKey(packageName)) {
+            notificationManager.stopTimer()
+            showWarningScreen(packageName)
+            return
         }
         // Check Time Blocks
         if (timeBlockedAppsList.contains(packageName)) {
@@ -162,6 +175,7 @@ class AppBlocker() : BaseBlocker() {
                 // Clear existing thread-safe maps and repopulate them
                 blockedAppsList.clear()
                 timeBlockedAppsList.clear()
+                onOpenAppsList.clear()
                 appBlockerWarningScrnConfgs.clear()
 
                 settings.blockedAppGroups.forEach { group ->
@@ -172,10 +186,15 @@ class AppBlocker() : BaseBlocker() {
                             blockedAppsList[it] = appUsageConfig
                             appBlockerWarningScrnConfgs[it] = group.warningScreenConfig
                         }
-                    } else {
+                    } else if (group.blockingType == AppBlockingType.Timed) {
                         val appTimedConfig = Gson().fromJson(group.setting, AppTimeConfig::class.java)
                         group.selectedPackages.forEach {
                             timeBlockedAppsList[it] = appTimedConfig
+                            appBlockerWarningScrnConfgs[it] = group.warningScreenConfig
+                        }
+                    } else {
+                        group.selectedPackages.forEach {
+                            onOpenAppsList[it] = true
                             appBlockerWarningScrnConfgs[it] = group.warningScreenConfig
                         }
                     }

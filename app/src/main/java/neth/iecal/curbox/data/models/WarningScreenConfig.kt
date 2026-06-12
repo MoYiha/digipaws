@@ -17,4 +17,5 @@ data class AppBlockerWarningScreenConfig(
     val isTypingRequirementEnabled: Boolean = false,
     val typingSentence: String = "",
     val isIntentRequirementEnabled: Boolean = false,
+    var isOnOpenConfig: Boolean = false,
 )

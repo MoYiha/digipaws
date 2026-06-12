@@ -12,7 +12,7 @@ data class AppGroup(
 )
 
 enum class AppBlockingType{
-    Usage, Timed
+    Usage, Timed, OnOpen
 }
 
 data class AppTimeConfig(

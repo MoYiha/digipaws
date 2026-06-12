@@ -190,7 +190,11 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
 
         binding.warningMsg.text = warningScreenConfig.message
 
-        binding.minsPicker.setValue(warningScreenConfig.timeInterval / 60000)
+        if (warningScreenConfig.isOnOpenConfig) {
+            binding.minsPicker.visibility = View.GONE
+        } else {
+            binding.minsPicker.setValue(warningScreenConfig.timeInterval / 60000)
+        }
 
         binding.btnCancel.setOnClickListener {
             if (mode == Constants.WARNING_SCREEN_MODE_APP_BLOCKER || mode == Constants.WARNING_SCREEN_MODE_KEYWORD_BLOCKER || isHomePressRequested) {
@@ -269,7 +273,9 @@ val warningScreenConfig = Gson().fromJson<AppBlockerWarningScreenConfig>(
             if (mode == Constants.WARNING_SCREEN_MODE_APP_BLOCKER) {
                 intent.getStringExtra("result_id")
                     ?.let { it1 ->
-                         val finalTime = if (warningScreenConfig.isQrUnlockRequirementEnabled && scannedValidDuration != -1L) {
+                        val finalTime = if (warningScreenConfig.isOnOpenConfig) {
+                            1440
+                        } else if (warningScreenConfig.isQrUnlockRequirementEnabled && scannedValidDuration != -1L) {
                             (scannedValidDuration / 60000).toInt()
                         } else {
                             binding.minsPicker.getValue()

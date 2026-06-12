@@ -22,6 +22,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.gson.Gson
 import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
+import neth.iecal.curbox.data.models.AppBlockingType
 import neth.iecal.curbox.databinding.FragmentWarningConfigBinding
 import java.util.UUID
 
@@ -45,7 +46,7 @@ class WarningConfigFragment : Fragment() {
     private val challengeOptions = listOf(
         UnlockOption("Never Unlock", "Total lockdown. No bypassing allowed."),
         UnlockOption("Require effort to unlock", "In behavioral psychology, adding physical friction breaks the automatic habit loop, giving your brain a necessary pause to reconsider.", true),
-        UnlockOption("Requires no effort to unlock", "Allows immediate access after a short wait.")
+        UnlockOption("Wait to unlock", "Allows immediate access after a short wait.")
     )
 
     private val effortOptions = listOf(
@@ -143,7 +144,7 @@ class WarningConfigFragment : Fragment() {
                 val options = if (challengeIdx == 1) effortOptions else noEffortOptions
                 binding.secondaryBehaviorDropdown.setText(options[secondaryIdx].title, false)
             }
-            updateUiVisibility(challengeIdx, secondaryIdx)
+            updateUiVisibility(challengeIdx, secondaryIdx, config.isOnOpenConfig)
         } else {
             binding.secondaryBehaviorLayout.isVisible = false
             binding.timingContainer.isVisible = false
@@ -172,6 +173,11 @@ class WarningConfigFragment : Fragment() {
 
         binding.warningMsgEdit.setText(config.message)
         binding.switchVibrateBrightness.isChecked = config.vibrateAndIncBrightness
+        config.isOnOpenConfig = arguments?.getBoolean(ARG_IS_ON_OPEN) == true
+
+        if (config.isOnOpenConfig) {
+            binding.timingContainer.visibility = View.GONE
+        }
     }
 
     private fun updateSecondaryDropdown(challengeIdx: Int) {
@@ -368,9 +374,11 @@ class WarningConfigFragment : Fragment() {
             )
         }
 
+        val isOnOpen = initialConfig?.isOnOpenConfig ?: false
+
         binding.apply {
             // Timing container visible if "Requires no effort" + "Fixed time" OR "Require effort" + (Typing or Intent)
-            timingContainer.visibility = if ((challengeIndex == 2 && secondaryIndex == 1) || (challengeIndex == 1 && secondaryIndex != 0 && secondaryIndex != -1)) View.VISIBLE else View.GONE
+            timingContainer.visibility = if (!isOnOpen && ((challengeIndex == 2 && secondaryIndex == 1) || (challengeIndex == 1 && secondaryIndex != 0 && secondaryIndex != -1))) View.VISIBLE else View.GONE
             
             // Proceed delay visible for anything except "Never Unlock" or when nothing selected
             proceedDelayContainer.visibility = if (challengeIndex != 0 && challengeIndex != -1) View.VISIBLE else View.GONE
@@ -381,6 +389,10 @@ class WarningConfigFragment : Fragment() {
     }
     
     private fun showQrConfigDialog(onConfigured: (Long) -> Unit) {
+        if (initialConfig?.isOnOpenConfig == true) {
+            onConfigured(-1L) // Default to dynamic/manual duration, but WarningActivity will override it anyway
+            return
+        }
         val pickerContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(48, 24, 48, 24)
@@ -492,15 +504,19 @@ class WarningConfigFragment : Fragment() {
         const val ARG_CONFIG = "arg_config"
         const val ARG_REQUEST_KEY = "arg_request_key"
         const val ARG_IS_NEW = "arg_is_new"
+        const val ARG_IS_ON_OPEN = "arg_is_on_open"
         const val RESULT_KEY = "request_key_warning_config"
         const val RESULT_CONFIG = "result_config"
 
-        fun newInstance(config: AppBlockerWarningScreenConfig, requestKey: String = RESULT_KEY, isNew: Boolean = false): WarningConfigFragment {
+
+        fun newInstance(config: AppBlockerWarningScreenConfig, requestKey: String = RESULT_KEY, isNew: Boolean = false,isOnOpen: Boolean = false): WarningConfigFragment {
             return WarningConfigFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_CONFIG, Gson().toJson(config))
                     putString(ARG_REQUEST_KEY, requestKey)
                     putBoolean(ARG_IS_NEW, isNew)
+                    putBoolean(ARG_IS_ON_OPEN, isOnOpen)
+
                 }
             }
         }

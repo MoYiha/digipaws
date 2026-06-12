@@ -101,11 +101,18 @@ class CreateAppGroupFragment : Fragment() {
                         if (group.blockingType == AppBlockingType.Usage) {
                             binding.rbUsageBased.isChecked = true
                             binding.rbTimeBased.isChecked = false
+                            binding.rbOnOpen.isChecked = false
                             viewModel.currentUsageConfig = Gson().fromJson(group.setting, AppUsageConfig::class.java)
-                        } else {
+                        } else if (group.blockingType == AppBlockingType.Timed) {
                             binding.rbTimeBased.isChecked = true
                             binding.rbUsageBased.isChecked = false
+                            binding.rbOnOpen.isChecked = false
                             viewModel.currentTimeConfig = Gson().fromJson(group.setting, AppTimeConfig::class.java)
+                        } else {
+                            binding.rbOnOpen.isChecked = true
+                            binding.rbUsageBased.isChecked = false
+                            binding.rbTimeBased.isChecked = false
+                            binding.btnConfigureSettings.visibility = View.GONE
                         }
                         viewModel.warningScrnConfig = group.warningScreenConfig
 
@@ -150,7 +157,8 @@ class CreateAppGroupFragment : Fragment() {
             val configFragment = neth.iecal.curbox.ui.fragments.main.reducers.blockertools.shared.WarningConfigFragment.newInstance(
                 viewModel.warningScrnConfig, 
                 "result_warning_config",
-                isNew = groupId == null
+                isNew = groupId == null,
+                isOnOpen = binding.rbOnOpen.isChecked
             )
             parentFragmentManager.beginTransaction()
                 .hide(this)
@@ -172,12 +180,13 @@ class CreateAppGroupFragment : Fragment() {
     }
 
     private fun setupBlockingTypeSelection() {
-        val radioButtons = listOf(binding.rbUsageBased, binding.rbTimeBased)
+        val radioButtons = listOf(binding.rbUsageBased, binding.rbTimeBased, binding.rbOnOpen)
         
         radioButtons.forEach { rb ->
             rb.setOnClickListener {
                 radioButtons.forEach { it.isChecked = false }
                 rb.isChecked = true
+                binding.btnConfigureSettings.visibility = if (rb != binding.rbOnOpen) View.VISIBLE else View.GONE
             }
         }
 
@@ -187,6 +196,10 @@ class CreateAppGroupFragment : Fragment() {
 
         binding.btnHelpTime.setOnClickListener {
             ViewUtils.showHelpPopup(it, "Allow these apps only during specific time intervals during the day (e.g., during work hours).")
+        }
+
+        binding.btnHelpOnOpen.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Show a warning screen every time you open these apps. Access is only allowed for the current session.")
         }
     }
 
@@ -204,7 +217,12 @@ class CreateAppGroupFragment : Fragment() {
         }
 
         val isUsageBased = binding.rbUsageBased.isChecked
-        val blockingType = if (isUsageBased) AppBlockingType.Usage else AppBlockingType.Timed
+        val isOnOpen = binding.rbOnOpen.isChecked
+        val blockingType = when {
+            isUsageBased -> AppBlockingType.Usage
+            isOnOpen -> AppBlockingType.OnOpen
+            else -> AppBlockingType.Timed
+        }
 
         val savedGroupId = requireActivity().intent.getStringExtra("group_id") ?: arguments?.getString("group_id")
         val isEditingRecord = savedGroupId != null
@@ -220,10 +238,12 @@ class CreateAppGroupFragment : Fragment() {
             isActive = if (isEditingRecord && targetExistingGroup != null) targetExistingGroup.isActive else true,
             setting = if(isUsageBased) {
                 Gson().toJson(viewModel.currentUsageConfig)
+            } else if (isOnOpen) {
+                ""
             } else {
                 Gson().toJson(viewModel.currentTimeConfig)
             },
-            warningScreenConfig = viewModel.warningScrnConfig
+            warningScreenConfig = viewModel.warningScrnConfig.copy(isOnOpenConfig = isOnOpen)
         )
 
         if (isEditingRecord && targetExistingGroup != null) {
