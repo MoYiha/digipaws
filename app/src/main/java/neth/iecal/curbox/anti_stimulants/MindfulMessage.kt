@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import neth.iecal.curbox.data.models.MindfulMessageConfig
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.overlay.MindfulMessageOverlayManager
+import neth.iecal.curbox.utils.getCurrentKeyboardPackageName
 
 class MindfulMessage {
 
@@ -30,7 +31,8 @@ class MindfulMessage {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var config = MindfulMessageConfig()
     private var currentPkg: String? = null
-    
+    private var ignoredpackages = listOf<String>()
+
     private val activeIntents = mutableMapOf<String, Pair<String, Long>>()
     private val intentReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
@@ -60,6 +62,10 @@ class MindfulMessage {
             service.registerReceiver(intentReceiver, filter)
         }
 
+        ignoredpackages = listOf(getCurrentKeyboardPackageName(service) ?: "com.google.android.inputmethod.latin",
+            service.packageName,
+            "com.android.systemui",
+            "com.google.android.apps.wellbeing")
         scope.launch {
             service.dataStoreManager.settings.collectLatest { settings ->
                 config = settings.mindfulMessageConfig
@@ -71,6 +77,8 @@ class MindfulMessage {
         if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0) return
 
         val pkg = event.packageName?.toString() ?: return
+
+        if(ignoredpackages.contains(event.packageName.toString()) || currentPkg == event.packageName.toString()) return
 
         activeIntents.entries.removeIf { System.currentTimeMillis() > it.value.second }
 
@@ -88,7 +96,7 @@ class MindfulMessage {
                 overlayManager.removeOverlay()
                 currentPkg = pkg
             }
-            if (Settings.canDrawOverlays(service)) {
+            if (Settings.canDrawOverlays(service) && !overlayManager.isOverlayVisible) {
                 overlayManager.startDisplaying(pkg, displayConfig)
             }
         } else if (overlayManager.isOverlayVisible) {

@@ -88,6 +88,8 @@ class AppBlockerService : BaseBlockingService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         super.onAccessibilityEvent(event)
+        
+        // Log.v("AppBlockerService", "Event: ${event.packageName}, Type: ${event.eventType}")
 
         try {
             appBlocker.doAppBlockerCheck(event)

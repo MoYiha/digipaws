@@ -72,7 +72,7 @@ class ReelBlocker : BaseBlocker() {
         event: AccessibilityEvent?
     ){
         fun showWarningScreen(viewId: String){
-            if(service.isDelayOver(service.lastBackPressTimeStamp,3000)) {
+            if(service.isDelayOver(3000)) {
                 service.pressBack()
 
                 if (reelBlockerConfig.warningScreenConfig.isWarningDialogHidden) return

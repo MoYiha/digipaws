@@ -21,8 +21,8 @@ class BrowserBlocker(val service: AccessibilityService) : BaseBlocker() {
     private val cacheNotBlockedBrowserApps: HashSet<String> = hashSetOf()
 
     var isTurnedOn = false
-    fun isAppBrowser( event: AccessibilityEvent): Boolean {
-        if(!isTurnedOn) return false
+    fun isAppBrowser(event: AccessibilityEvent?): Boolean {
+        if(!isTurnedOn || event == null) return false
         val packageName = event.packageName?.toString() ?: return false
 
         if (cacheBlockedBrowserApps.contains(packageName)) {

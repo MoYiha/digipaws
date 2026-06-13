@@ -191,10 +191,12 @@ class KeywordBlocker : BaseBlocker() {
     }
 
     fun checkIfUnsupportedBrowser(event: AccessibilityEvent?) {
-        val packageName = event?.packageName?.toString() ?: return
-        if (lastpkg == packageName || (event.eventType and TARGET_EVENTS_MASK) == 0) return
+        val ev = event ?: return
+        val packageName = ev.packageName?.toString() ?: return
+        if (lastpkg == packageName || (ev.eventType and TARGET_EVENTS_MASK) == 0) return
         lastpkg = packageName
-        if (isUnsupportedBrowserBlockingOn && browserBlocker.isAppBrowser(event)) {
+        if (isUnsupportedBrowserBlockingOn && ::browserBlocker.isInitialized && browserBlocker.isAppBrowser(ev)) {
+            if (!service.isDelayOver(1000)) return
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(service, service.getString(R.string.toast_unsupported_browser), Toast.LENGTH_LONG).show()
             }
