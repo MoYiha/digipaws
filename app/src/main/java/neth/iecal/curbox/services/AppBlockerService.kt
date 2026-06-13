@@ -93,7 +93,7 @@ class AppBlockerService : BaseBlockingService() {
             grayScaleFilter.doGrayscaleCheck(event)
             focusModeBlocker.doFocusModeCheck(event)
         } catch (t: Throwable) {
-            Log.e("error",t.message.toString())
+            Log.e("error", t.message ?: "Unknown error")
             crashLogger.logNonFatalError(Exception(t))
         }
 

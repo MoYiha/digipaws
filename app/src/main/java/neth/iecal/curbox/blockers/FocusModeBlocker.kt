@@ -46,7 +46,7 @@ class FocusModeBlocker : BaseBlocker() {
     private lateinit var service: AppBlockerService
     private lateinit var notificationManager: TimerNotification
     private val keywordBlocker = KeywordBlocker()
-    private var focusKeywordsRegex = listOf<Regex>()
+    private var focusKeywordsPatterns = Pair(emptyList<Regex>(), emptyList<String>())
 
     @Volatile private var essentialPackages: Set<String> = emptySet()
 
@@ -108,8 +108,8 @@ class FocusModeBlocker : BaseBlocker() {
     }
 
     fun doFocusModeCheck(event: AccessibilityEvent?) {
-        if(event?.packageName == null || event.packageName == service.getPackageName()) return
-        val packageName = event.packageName.toString()
+        val packageName = event?.packageName?.toString() ?: return
+        if (packageName == service.packageName) return
 
         if (focusModeData != null) {
             // 1. App Block Check (Instant - only on package change)
@@ -143,7 +143,7 @@ class FocusModeBlocker : BaseBlocker() {
                 // Throttle website checks to every 400ms within the same app to preserve performance
                 if (now - lastWebsiteCheckTime > 400) {
                     lastWebsiteCheckTime = now
-                    if (keywordBlocker.isFocusWebsiteBlocked(packageName, focusModeData!!.focusGroupData.keywords, focusKeywordsRegex, focusModeData!!.focusGroupData.blockMode)) {
+                    if (keywordBlocker.isFocusWebsiteBlocked(packageName, focusKeywordsPatterns, focusModeData!!.focusGroupData.blockMode)) {
                         if (now - lastBlockTime > 1500) {
                             service.pressBack()
                             Log.d("focus mode","back pressed")
@@ -228,7 +228,7 @@ class FocusModeBlocker : BaseBlocker() {
                     currentFocusingGroup
                 }
                 focusModeData = ManualFocusModeData(effectiveGroup, settings.activeManualFocusGroupId.second)
-                focusKeywordsRegex = keywordBlocker.getRegexList(effectiveGroup.keywords)
+                focusKeywordsPatterns = keywordBlocker.compileKeywords(effectiveGroup.keywords)
                 withContext(Dispatchers.Main) {
                     notificationManager.startTimer(
                         focusModeData!!.endTimeInMillis - System.currentTimeMillis(),

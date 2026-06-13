@@ -12,12 +12,6 @@ data class KeywordGroup(
     val selectedKeywords: List<String> = listOf(),
     val blockingType: AppBlockingType = AppBlockingType.Usage,
     val isActive: Boolean = false,
-    val setting: String = "", // JSON for AppTimeConfig or AppUsageConfig
-    val unlockBehavior: KeywordUnlockBehavior = KeywordUnlockBehavior.Redirection,
-    val redirectUrl: String = "https://curbox.life",
+    val setting: String = "",
     val warningScreenConfig: AppBlockerWarningScreenConfig = AppBlockerWarningScreenConfig()
 )
-
-enum class KeywordUnlockBehavior {
-    Redirection, WarningScreen
-}

@@ -1,8 +1,5 @@
 package neth.iecal.curbox.blockers
 
-import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_HOME
-import android.accessibilityservice.GestureDescription
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -10,16 +7,11 @@ import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.content.res.Resources
-import android.graphics.Path
 import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.util.LruCache
 import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Toast
 import androidx.core.content.edit
 import androidx.room.InvalidationTracker
@@ -33,7 +25,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import neth.iecal.curbox.Constants
-import neth.iecal.curbox.R
 import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.data.db.WebsiteStatsEntity
 import neth.iecal.curbox.data.models.AppBlockingType
@@ -41,10 +32,7 @@ import neth.iecal.curbox.data.models.AppTimeConfig
 import neth.iecal.curbox.data.models.AppUsageConfig
 import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.data.models.KeywordGroup
-import neth.iecal.curbox.data.models.KeywordUnlockBehavior
 import neth.iecal.curbox.services.BaseBlockingService
-import neth.iecal.curbox.trackers.WebsiteUsageTracker.Companion.URL_BAR_ID_LIST
-import neth.iecal.curbox.trackers.WebsiteUsageTracker.Companion.findElementById
 import neth.iecal.curbox.ui.activity.WarningActivity
 import neth.iecal.curbox.utils.TimeTools
 import java.util.Calendar
@@ -54,7 +42,8 @@ class KeywordBlocker : BaseBlocker() {
     companion object {
         const val INTENT_ACTION_REFRESH_CONFIG = "neth.iecal.curbox.refresh.keywordblocker.config"
         const val INTENT_ACTION_REFRESH_KEYWORD_BLOCKER_COOLDOWN = "neth.iecal.curbox.refresh.keywordblocker.cooldown"
-        private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        private const val TARGET_EVENTS_MASK =
+            AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED or AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
     }
 
     private lateinit var service: BaseBlockingService
@@ -62,104 +51,152 @@ class KeywordBlocker : BaseBlocker() {
     private lateinit var prefs: SharedPreferences
 
     private var activeGroups = listOf<KeywordGroup>()
-    private var groupRegexMap = mutableMapOf<String, List<Regex>>()
-    
+    // Maps group ID → (compiled regexes, lowercase literal keywords)
+    private var groupPatternMap = mutableMapOf<String, Pair<List<Regex>, List<String>>>()
+
     private val detectionCache = LruCache<String, KeywordGroup>(200)
     private var isTurnedOn = false
     private var isUnsupportedBrowserBlockingOn = false
-
     private var lastpkg = ""
-
     private var cooldownGroupsList = HashMap<String, Long>()
-
-    private val wordSplitRegex = Regex("[^a-zA-Z0-9]+")
-
     private var observationJob: Job? = null
 
-    private fun findMatchingGroup(text: String): KeywordGroup? {
-        val cachedGroup = detectionCache.get(text)
-        if (cachedGroup != null) return if (cachedGroup.id == "SAFE") null else cachedGroup
+    /**
+     * Compiles a collection of keyword patterns into pre-built regexes and literals.
+     *
+     * Pattern types:
+     *   r:<expr>   – raw regex (e.g. r:(?:shorts|reels))
+     *   *  / ?     – glob wildcard (* = any chars, ? = one char)
+     *   otherwise  – URL-aware literal (domain, path, or plain word)
+     */
+    fun compileKeywords(keywords: Collection<String>): Pair<List<Regex>, List<String>> {
+        val regexes = mutableListOf<Regex>()
+        val literals = mutableListOf<String>()
+        for (kw in keywords) {
+            val lower = kw.lowercase(Locale.ROOT)
+            when {
+                lower.startsWith("r:") ->
+                    runCatching { Regex(lower.removePrefix("r:")) }.getOrNull()
+                        ?.let { regexes.add(it) }
+                lower.contains('*') || lower.contains('?') ->
+                    regexes.add(wildcardToRegex(lower))
+                else -> literals.add(lower)
+            }
+        }
+        return regexes to literals
+    }
 
-        val lowerText = text.lowercase(Locale.ROOT)
+    private fun wildcardToRegex(pattern: String): Regex {
+        val escaped = pattern
+            .replace(Regex("""[.+^$()|\[\]{}\\]"""), """\\$0""")
+            .replace("?", ".")
+            .replace("*", ".*")
+        // Prepend optional scheme/www only when the pattern looks like a bare domain
+        val prefix = if (!pattern.startsWith("http") && !pattern.startsWith("*") &&
+                        !pattern.startsWith("/") && !pattern.startsWith("?")) {
+            """(?:https?://)?(?:www\.)?"""
+        } else ""
+        return Regex(prefix + escaped)
+    }
+
+    /**
+     * URL-aware literal match. [keyword] must already be lowercase.
+     * [urlIdentifier] is a domain+path string like "youtube.com/shorts".
+     *
+     * Handles:
+     *   - Exact domain match:   "youtube.com"  → "youtube.com"
+     *   - Domain prefix:        "youtube.com"  → "youtube.com/shorts"
+     *   - www normalisation:    "www.x.com"    → "x.com/..." and vice-versa
+     *   - Path segment:         "/shorts"      → "youtube.com/shorts"
+     *   - Domain word:          "youtube"      → "youtube.com", "m.youtube.com"
+     */
+    private fun matchesLiteral(keyword: String, urlIdentifier: String): Boolean {
+        val url = urlIdentifier.lowercase(Locale.ROOT)
+        val urlNoWww = url.removePrefix("www.")
+        val kwNoWww = keyword.removePrefix("www.")
+
+        if (url == keyword || urlNoWww == kwNoWww) return true
+
+        if (url.startsWith("$keyword/") || url.startsWith("$keyword?") ||
+            urlNoWww.startsWith("$kwNoWww/") || urlNoWww.startsWith("$kwNoWww?")) return true
+
+        if (keyword.startsWith("/") && url.contains(keyword)) return true
+
+        if (!keyword.contains('.') && !keyword.contains('/')) {
+            val domain = url.substringBefore('/')
+            if (domain.split('.').any { it == keyword }) return true
+        }
+
+        return false
+    }
+
+    private fun matchesPatterns(patterns: Pair<List<Regex>, List<String>>, urlIdentifier: String): Boolean {
+        val lower = urlIdentifier.lowercase(Locale.ROOT)
+        val (regexes, literals) = patterns
+        return regexes.any { it.containsMatchIn(lower) } ||
+               literals.any { matchesLiteral(it, urlIdentifier) }
+    }
+
+    private fun findMatchingGroup(urlIdentifier: String): KeywordGroup? {
+        val cached = detectionCache.get(urlIdentifier)
+        if (cached != null) return if (cached.id == "SAFE") null else cached
 
         for (group in activeGroups) {
-            // Check wildcards
-            val regexes = groupRegexMap[group.id] ?: emptyList()
-            if (regexes.any { it.containsMatchIn(lowerText) }) {
-                detectionCache.put(text, group)
-                Log.d("found",text)
-
+            val patterns = groupPatternMap[group.id] ?: continue
+            if (matchesPatterns(patterns, urlIdentifier)) {
+                detectionCache.put(urlIdentifier, group)
                 return group
-            }
-
-            // Check literals
-            val literals = group.selectedKeywords.filter { !it.contains("*") }
-                .map { it.lowercase(Locale.ROOT) }.toSet()
-            if (literals.isNotEmpty()) {
-                val keywords = parseTextForKeywords(text)
-                if (keywords.any { literals.contains(it) }) {
-                    detectionCache.put(text, group)
-                    Log.d("found",text)
-                    return group
-                }
             }
         }
 
-        detectionCache.put(text, KeywordGroup(id = "SAFE"))
+        detectionCache.put(urlIdentifier, KeywordGroup(id = "SAFE"))
         return null
     }
 
-    fun parseTextForKeywords(input: String): Set<String> {
-        fun extractWords(text: String): Set<String> =
-            text.split(wordSplitRegex)
-                .filter { it.isNotEmpty() }
-                .map { it.lowercase(Locale.ROOT) }
-                .toSet()
+    private fun matchesGroup(group: KeywordGroup, urlIdentifier: String): Boolean {
+        val patterns = groupPatternMap[group.id] ?: return false
+        return matchesPatterns(patterns, urlIdentifier)
+    }
+    fun isFocusWebsiteBlocked(
+        packageName: String,
+        compiledKeywords: Pair<List<Regex>, List<String>>,
+        blockMode: FocusBlockMode
+    ): Boolean {
+        val date = TimeTools.getCurrentDate()
+        val latest = runBlocking(Dispatchers.IO) {
+            AppDatabase.getInstance(service).websiteStatsDao()
+                .getStatsForPackage(date, packageName)
+                .maxByOrNull { it.lastVisited }
+        } ?: return false
 
-        val words = mutableSetOf<String>()
-        try {
-            val uri = java.net.URI(input)
-            if (uri.host != null) {
-                val host = uri.host.lowercase(Locale.ROOT)
-                words.add(host)
-                val parts = host.split(".")
-                if (parts.size >= 2) words.add(parts[parts.size - 2])
-                uri.path?.let { words.addAll(extractWords(it)) }
-                uri.query?.split("&")?.forEach { param ->
-                    val (key, value) = param.split("=", limit = 2).let {
-                        it[0] to it.getOrNull(1)
-                    }
-                    words.addAll(extractWords(key))
-                    value?.let { words.addAll(extractWords(it)) }
-                }
-                return words
-            }
-        } catch (_: Exception) {}
+        if (latest.lastVisited < System.currentTimeMillis() - 5000) return false
+        val urlIdentifier = latest.urlIdentifier.ifEmpty { return false }
 
-        words.add(input.lowercase(Locale.ROOT))
-        words.addAll(extractWords(input))
-        return words
+        if (blockMode == FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED && isInternalBrowserPage(urlIdentifier)) return false
+
+        val matched = matchesPatterns(compiledKeywords, urlIdentifier)
+        return if (blockMode == FocusBlockMode.BLOCK_SELECTED) matched else !matched
+    }
+
+    private fun isInternalBrowserPage(url: String): Boolean {
+        val lower = url.lowercase(Locale.ROOT)
+        return lower.startsWith("chrome://") || lower.startsWith("about:") ||
+               lower.contains("newtab") || lower.contains("bookmarks") ||
+               lower.contains("history") || lower.startsWith("search") ||
+               lower.endsWith("url") || lower.contains("Search Google or type URL") ||
+               !lower.contains('.') || lower.contains("null")
     }
 
     fun checkIfUnsupportedBrowser(event: AccessibilityEvent?) {
-        fun showMessage() {
+        val packageName = event?.packageName?.toString() ?: return
+        if (lastpkg == packageName || (event.eventType and TARGET_EVENTS_MASK) == 0) return
+        lastpkg = packageName
+        if (isUnsupportedBrowserBlockingOn && browserBlocker.isAppBrowser(event)) {
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(service, "Unsupported Browser", Toast.LENGTH_LONG).show()
             }
-        }
-
-        fun pressHome() {
-            showMessage()
             service.pressHome()
         }
-
-
-        if (event == null || lastpkg == event.packageName || (event.eventType and TARGET_EVENTS_MASK) == 0) return
-        lastpkg = event.packageName.toString()
-        if (isUnsupportedBrowserBlockingOn && browserBlocker.isAppBrowser(event)) {
-            return pressHome()
-        }
-
     }
 
     private fun startObservingDatabase() {
@@ -167,20 +204,15 @@ class KeywordBlocker : BaseBlocker() {
         observationJob = CoroutineScope(Dispatchers.IO).launch {
             val db = AppDatabase.getInstance(service)
             val dao = db.websiteStatsDao()
-
             callbackFlow {
                 val observer = object : InvalidationTracker.Observer("website_stats") {
-                    override fun onInvalidated(tables: Set<String>) {
-                        trySend(Unit)
-                    }
+                    override fun onInvalidated(tables: Set<String>) { trySend(Unit) }
                 }
                 db.invalidationTracker.addObserver(observer)
                 awaitClose { db.invalidationTracker.removeObserver(observer) }
             }.collect {
                 val date = TimeTools.getCurrentDate()
-                val stats = dao.getStatsForDate(date)
-                val latest = stats.maxByOrNull { it.lastVisited }
-
+                val latest = dao.getStatsForDate(date).maxByOrNull { it.lastVisited }
                 if (latest != null && latest.lastVisited > (System.currentTimeMillis() - 2500)) {
                     evaluateAndBlock(latest)
                 }
@@ -189,269 +221,137 @@ class KeywordBlocker : BaseBlocker() {
     }
 
     private fun evaluateAndBlock(entry: WebsiteStatsEntity) {
-        Log.d("website eval", entry.toString())
         val matchedGroup = findMatchingGroup(entry.urlIdentifier) ?: return
 
-
-        // Check cooldown
-        if (cooldownGroupsList.containsKey(matchedGroup.id)) {
-            if (cooldownGroupsList[matchedGroup.id]!! > System.currentTimeMillis()) {
-                return // In cooldown
-            } else {
-                removeCooldownFrom(matchedGroup.id)
-            }
+        val cooldownEnd = cooldownGroupsList[matchedGroup.id]
+        if (cooldownEnd != null) {
+            if (cooldownEnd > System.currentTimeMillis()) return
+            else removeCooldownFrom(matchedGroup.id)
         }
 
-        if (isBlocked(matchedGroup, entry.packageName, entry.urlIdentifier)) {
-            handleBlocking(matchedGroup, entry.packageName, entry.urlIdentifier)
+        if (isBlocked(matchedGroup, entry.packageName)) {
+            handleBlocking(matchedGroup)
         } else {
-            calculateAndSetNextRecheck(matchedGroup, entry.packageName, entry.urlIdentifier)
+            calculateAndSetNextRecheck(matchedGroup, entry.packageName)
         }
     }
 
-    private fun calculateAndSetNextRecheck(group: KeywordGroup, packageName: String, url: String) {
-        val now = System.currentTimeMillis()
-        var nextRecheck = 0L
-
-        // 1. Check Usage Limit
-        if (group.blockingType == AppBlockingType.Usage) {
-            val config = Gson().fromJson(group.setting, AppUsageConfig::class.java)
-            if (config != null) {
-                val limit = (if (config.isDailyUniform) config.uniformLimit else {
-                    val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1
-                    config.dailyLimits[day]
-                }) * 60_000L
-
-                if (limit > 0) {
-                    val date = TimeTools.getCurrentDate()
-                    val totalUsage = runBlocking(Dispatchers.IO) {
-                        AppDatabase.getInstance(service).websiteStatsDao().getStatsForPackage(date, packageName)
-                            .filter { matchesGroup(group, it.urlIdentifier) }
-                            .sumOf { it.totalTime }
-                    }
-                    val remaining = limit - totalUsage
-                    if (remaining > 0) {
-                        nextRecheck = now + remaining + 1000 // Add a small buffer
-                    }
-                }
+    private fun handleBlocking(group: KeywordGroup) {
+        service.pressBack()
+        Thread.sleep(1000)
+        service.pressHome()
+        Handler(Looper.getMainLooper()).postDelayed({
+            val intent = Intent(service, WarningActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("mode", Constants.WARNING_SCREEN_MODE_KEYWORD_BLOCKER)
+                putExtra("result_id", group.id)
+                putExtra("warning_config", Gson().toJson(group.warningScreenConfig))
             }
-        }
-
-        // 2. Check Timed Intervals
-        if (group.blockingType == AppBlockingType.Timed) {
-            val config = Gson().fromJson(group.setting, AppTimeConfig::class.java)
-            if (config != null) {
-                val calendar = Calendar.getInstance()
-                val currentMinutes = TimeTools.convertToMinutesFromMidnight(
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE)
-                )
-                val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
-                val intervals = if (config.isEveryday) config.everydayIntervals else config.dailyIntervals[dayOfWeek] ?: emptyList()
-
-                var minMinutesUntilStart = Int.MAX_VALUE
-                for (interval in intervals) {
-                    val start = TimeTools.convertToMinutesFromMidnight(interval.startHour, interval.startMinute)
-                    val end = TimeTools.convertToMinutesFromMidnight(interval.endHour, interval.endMinute)
-                    
-                    if (start <= end) {
-                        if (start > currentMinutes) {
-                            minMinutesUntilStart = minOf(minMinutesUntilStart, start - currentMinutes)
-                        }
-                    } else {
-                        // Interval crosses midnight
-                        if (currentMinutes < end) {
-                            // Already in a crossing interval (should be blocked)
-                        } else if (start > currentMinutes) {
-                            minMinutesUntilStart = minOf(minMinutesUntilStart, start - currentMinutes)
-                        }
-                    }
-                }
-
-                if (minMinutesUntilStart != Int.MAX_VALUE) {
-                    val recheckAt = now + (minMinutesUntilStart * 60_000L) - (calendar.get(Calendar.SECOND) * 1000L) - calendar.get(Calendar.MILLISECOND)
-                    if (nextRecheck == 0L || recheckAt < nextRecheck) {
-                        nextRecheck = recheckAt
-                    }
-                }
-            }
-        }
-
-        // 3. Check Cooldowns
-        val currentCooldown = cooldownGroupsList[group.id]
-        if (currentCooldown != null && currentCooldown > now) {
-            if (nextRecheck == 0L || currentCooldown < nextRecheck) {
-                nextRecheck = currentCooldown + 500 // Recheck right after cooldown expires
-            }
-        }
-
-        if (nextRecheck > now) {
-            CoroutineScope(Dispatchers.IO).launch {
-                service.dataStoreManager.updateNextWebsiteRecheckTime(nextRecheck)
-                Log.d("KeywordBlocker", "Scheduled next recheck in ${(nextRecheck - now) / 1000}s")
-            }
-        }
+            service.startActivity(intent)
+        }, 300)
     }
 
-    private fun handleBlocking(group: KeywordGroup, packageName: String, url: String) {
-        if (group.unlockBehavior == KeywordUnlockBehavior.Redirection) {
-            val redirectUrl = group.redirectUrl
-            val rootNode = service.rootInActiveWindow ?: return
-            
-            // Ensure we are still on the same browser/app
-            if (rootNode.packageName != packageName) return
-
-            val urlBarInfo = URL_BAR_ID_LIST[packageName] ?: return
-
-            val displayUrlTextNode = findElementById(rootNode, urlBarInfo.displayUrlBarId)
-                ?: return service.pressHome()
-
-            performSmallUpwardScroll()
-            Thread.sleep(200)
-            displayUrlTextNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            Thread.sleep(200)
-
-            val editUrlBarId = urlBarInfo.editUrlBarId ?: urlBarInfo.displayUrlBarId
-            val editUrlBar = findElementById(rootNode, editUrlBarId)
-                ?: return service.pressHome()
-
-            editUrlBar.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
-                putCharSequence(
-                    AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, redirectUrl
-                )
-            })
-            Thread.sleep(300)
-
-            val goBtnNode =
-                findElementById(rootNode, urlBarInfo.browserSugggestionBoxId)
-                    ?: return service.pressHome()
-
-            if (urlBarInfo.isSuggestionEqualToGo) {
-                goBtnNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            } else {
-                goBtnNode.getChild(urlBarInfo.suggestionBoxIndexOfGoBtn)
-                    ?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-            }
-
-            Thread.sleep(2000)
-        } else {
-            service.pressBack()
-            Thread.sleep(1000)
-            service.pressHome()
-            Handler(Looper.getMainLooper()).postDelayed({
-                val intent = Intent(service, WarningActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    putExtra("mode", Constants.WARNING_SCREEN_MODE_KEYWORD_BLOCKER)
-                    putExtra("result_id", group.id)
-                    putExtra("warning_config", Gson().toJson(group.warningScreenConfig))
-                }
-                service.startActivity(intent)
-            }, 300)
-        }
-    }
-
-    private fun isBlocked(group: KeywordGroup, packageName: String, url: String): Boolean {
-        if (group.blockingType == AppBlockingType.Timed) {
-            return isTimedBlockActive(group)
-        } else {
-            return isUsageLimitExceeded(group, packageName, url)
-        }
-    }
+    private fun isBlocked(group: KeywordGroup, packageName: String): Boolean =
+        if (group.blockingType == AppBlockingType.Timed) isTimedBlockActive(group)
+        else isUsageLimitExceeded(group, packageName)
 
     private fun isTimedBlockActive(group: KeywordGroup): Boolean {
         val config = Gson().fromJson(group.setting, AppTimeConfig::class.java) ?: return false
         val calendar = Calendar.getInstance()
         val currentMinutes = TimeTools.convertToMinutesFromMidnight(
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE)
+            calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)
         )
         val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
-        val intervals = if (config.isEveryday) config.everydayIntervals else config.dailyIntervals[dayOfWeek] ?: emptyList()
+        val intervals = if (config.isEveryday) config.everydayIntervals
+                        else config.dailyIntervals[dayOfWeek] ?: emptyList()
 
         for (interval in intervals) {
             val start = TimeTools.convertToMinutesFromMidnight(interval.startHour, interval.startMinute)
             val end = TimeTools.convertToMinutesFromMidnight(interval.endHour, interval.endMinute)
-            if (start <= end) {
-                if (currentMinutes in start until end) return true
-            } else {
-                if (currentMinutes >= start || currentMinutes < end) return true
-            }
+            if (start <= end) { if (currentMinutes in start until end) return true }
+            else { if (currentMinutes >= start || currentMinutes < end) return true }
         }
         return false
     }
 
-    private fun isUsageLimitExceeded(group: KeywordGroup, packageName: String, url: String): Boolean {
+    private fun isUsageLimitExceeded(group: KeywordGroup, packageName: String): Boolean {
         val config = Gson().fromJson(group.setting, AppUsageConfig::class.java) ?: return false
         val limit = (if (config.isDailyUniform) config.uniformLimit else {
-            val day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1
-            config.dailyLimits[day]
+            config.dailyLimits[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]
         }) * 60_000L
 
         if (limit <= 0) return true
 
         val date = TimeTools.getCurrentDate()
         val totalUsage = runBlocking(Dispatchers.IO) {
-            val allStats = AppDatabase.getInstance(service).websiteStatsDao().getStatsForPackage(date, packageName)
-            Log.d("KeywordBlocker", "Stats count for $packageName on $date: ${allStats.size}")
-            
-            // Sum up all identifiers that belong to this specific group
-            allStats.filter { stat ->
-                val matches = matchesGroup(group, stat.urlIdentifier)
-                 Log.d("KeywordBlocker", "Match: ${stat.urlIdentifier} (${stat.totalTime}ms)")
-                matches
-            }.sumOf { it.totalTime }
+            AppDatabase.getInstance(service).websiteStatsDao()
+                .getStatsForPackage(date, packageName)
+                .filter { matchesGroup(group, it.urlIdentifier) }
+                .sumOf { it.totalTime }
         }
-
-        Log.d("total usage", "$totalUsage / $limit [Group: ${group.id}]")
-
         return totalUsage >= limit
     }
 
-    private fun matchesGroup(group: KeywordGroup, text: String): Boolean {
-        val lowerText = text.lowercase(Locale.ROOT)
-        
-        // 1. Check Wildcards/Regex
-        val regexes = groupRegexMap[group.id] ?: emptyList()
-        if (regexes.any { it.containsMatchIn(lowerText) }) return true
+    private fun calculateAndSetNextRecheck(group: KeywordGroup, packageName: String) {
+        val now = System.currentTimeMillis()
+        var nextRecheck = 0L
 
-        // 2. Check Literals
-        val literals = group.selectedKeywords.filter { !it.contains("*") }
-            .map { it.lowercase(Locale.ROOT) }.toSet()
-        if (literals.isNotEmpty()) {
-            if (literals.contains(lowerText)) return true
-            // Also check if text starts with www. but literal doesn't, or vice-versa
-            val noWwwText = lowerText.removePrefix("www.")
-            if (literals.contains(noWwwText)) return true
-            
-            // Fallback to keyword decomposition
-            val keywords = parseTextForKeywords(text)
-            if (keywords.any { literals.contains(it) }) return true
-        }
-        
-        return false
-    }
-
-    fun performSmallUpwardScroll() {
-        val path = Path()
-        val screenHeight = Resources.getSystem().displayMetrics.heightPixels
-        val startY = (screenHeight * 0.75).toFloat()
-        val endY = startY - (screenHeight * 0.1).toFloat()
-        val centerX = Resources.getSystem().displayMetrics.widthPixels / 2f
-
-        path.moveTo(centerX, startY)
-        path.lineTo(centerX, endY)
-
-        val gestureBuilder = GestureDescription.Builder()
-        val gestureStroke = GestureDescription.StrokeDescription(path, 0, 200)
-
-        val gesture = gestureBuilder.addStroke(gestureStroke).build()
-
-        service.dispatchGesture(gesture, object : AccessibilityService.GestureResultCallback() {
-            override fun onCancelled(gestureDescription: GestureDescription?) {
-                super.onCancelled(gestureDescription)
-                service.performGlobalAction(GLOBAL_ACTION_HOME)
+        if (group.blockingType == AppBlockingType.Usage) {
+            val config = Gson().fromJson(group.setting, AppUsageConfig::class.java)
+            if (config != null) {
+                val limit = (if (config.isDailyUniform) config.uniformLimit else {
+                    config.dailyLimits[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]
+                }) * 60_000L
+                if (limit > 0) {
+                    val date = TimeTools.getCurrentDate()
+                    val totalUsage = runBlocking(Dispatchers.IO) {
+                        AppDatabase.getInstance(service).websiteStatsDao()
+                            .getStatsForPackage(date, packageName)
+                            .filter { matchesGroup(group, it.urlIdentifier) }
+                            .sumOf { it.totalTime }
+                    }
+                    val remaining = limit - totalUsage
+                    if (remaining > 0) nextRecheck = now + remaining + 1000
+                }
             }
-        }, null)
+        }
+
+        if (group.blockingType == AppBlockingType.Timed) {
+            val config = Gson().fromJson(group.setting, AppTimeConfig::class.java)
+            if (config != null) {
+                val calendar = Calendar.getInstance()
+                val currentMinutes = TimeTools.convertToMinutesFromMidnight(
+                    calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)
+                )
+                val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1
+                val intervals = if (config.isEveryday) config.everydayIntervals
+                                else config.dailyIntervals[dayOfWeek] ?: emptyList()
+
+                var minMinutesUntilStart = Int.MAX_VALUE
+                for (interval in intervals) {
+                    val start = TimeTools.convertToMinutesFromMidnight(interval.startHour, interval.startMinute)
+                    if (start > currentMinutes) {
+                        minMinutesUntilStart = minOf(minMinutesUntilStart, start - currentMinutes)
+                    }
+                }
+                if (minMinutesUntilStart != Int.MAX_VALUE) {
+                    val recheckAt = now + (minMinutesUntilStart * 60_000L) -
+                        (calendar.get(Calendar.SECOND) * 1000L) - calendar.get(Calendar.MILLISECOND)
+                    if (nextRecheck == 0L || recheckAt < nextRecheck) nextRecheck = recheckAt
+                }
+            }
+        }
+
+        val cooldownEnd = cooldownGroupsList[group.id]
+        if (cooldownEnd != null && cooldownEnd > now) {
+            if (nextRecheck == 0L || cooldownEnd < nextRecheck) nextRecheck = cooldownEnd + 500
+        }
+
+        if (nextRecheck > now) {
+            CoroutineScope(Dispatchers.IO).launch {
+                service.dataStoreManager.updateNextWebsiteRecheckTime(nextRecheck)
+            }
+        }
     }
 
     private var configJob: Job? = null
@@ -470,81 +370,20 @@ class KeywordBlocker : BaseBlocker() {
                 isTurnedOn = settings.keywordBlockerConfig.isActive
                 isUnsupportedBrowserBlockingOn = settings.keywordBlockerConfig.blockAllExceptSupported
                 browserBlocker.isTurnedOn = isTurnedOn
-                
+
                 activeGroups = if (isTurnedOn) {
                     settings.keywordBlockerConfig.keywordGroups.filter { it.isActive }
-                } else {
-                    emptyList()
-                }
-                
-                val newRegexMap = mutableMapOf<String, List<Regex>>()
-                activeGroups.forEach { group ->
-                    val wildcards = group.selectedKeywords.filter { it.contains("*") }
-                    newRegexMap[group.id] = wildcards.map { pattern ->
-                        val lowerPattern = pattern.lowercase(Locale.ROOT)
-                        val looksLikeDomain = !lowerPattern.startsWith("http") && !lowerPattern.startsWith("*") && !lowerPattern.startsWith("/")
-                        val prefix = if (looksLikeDomain) "(?:https?://)?(?:www\\.)?" else ""
-                        val escaped = lowerPattern.replace(Regex("[.\\+^${'$'}()|\\[\\]\\\\{}]"), "\\\\$0").replace("*", ".*")
-                        Regex(prefix + escaped)
-                    }
-                }
-                groupRegexMap = newRegexMap
+                } else emptyList()
+
+                groupPatternMap = activeGroups.associate { group ->
+                    group.id to compileKeywords(group.selectedKeywords)
+                }.toMutableMap()
+
                 detectionCache.evictAll()
 
-                if (isTurnedOn) {
-                    startObservingDatabase()
-                } else {
-                    observationJob?.cancel()
-                }
+                if (isTurnedOn) startObservingDatabase() else observationJob?.cancel()
             }
         }
-    }
-
-    fun getRegexList(keywords: Collection<String>): List<Regex> {
-        val wildcards = keywords.filter { it.contains("*") }
-        return wildcards.map { pattern ->
-            val lowerPattern = pattern.lowercase(Locale.ROOT)
-            val looksLikeDomain = !lowerPattern.startsWith("http") && !lowerPattern.startsWith("*") && !lowerPattern.startsWith("/")
-            val prefix = if (looksLikeDomain) "(?:https?://)?(?:www\\.)?" else ""
-            val escaped = lowerPattern.replace(Regex("[.\\+^${'$'}()|\\[\\]\\\\{}]"), "\\\\$0").replace("*", ".*")
-            Regex(prefix + escaped)
-        }
-    }
-
-    fun isFocusWebsiteBlocked(packageName: String, keywords: Set<String>, regexList: List<Regex>, blockMode: FocusBlockMode): Boolean {
-        val date = TimeTools.getCurrentDate()
-        val latest = runBlocking(Dispatchers.IO) {
-            AppDatabase.getInstance(service).websiteStatsDao().getStatsForPackage(date, packageName)
-                .maxByOrNull { it.lastVisited }
-        } ?: return false
-
-        // Check if the latest visited URL is recent enough (within last 5 seconds)
-        if (latest.lastVisited < System.currentTimeMillis() - 5000) return false
-
-        val content = latest.urlIdentifier
-        if (content.isEmpty()) return false
-
-        if (blockMode == FocusBlockMode.BLOCK_ALL_EXCEPT_SELECTED) {
-            val lower = content.lowercase(Locale.ROOT)
-            if (lower.startsWith("chrome://") || lower.startsWith("about:") || 
-                lower.contains("newtab") || lower.contains("bookmarks") || lower.contains("history")||
-                lower.startsWith("search" )|| lower.endsWith("url") || lower.contains("Search Google or type URL") || !lower.contains(".") || lower.contains("null")) return false
-        }
-
-        val lowerText = content.lowercase(Locale.ROOT)
-        var matched = false
-
-        if (regexList.any { it.containsMatchIn(lowerText) }) {
-            matched = true
-        } else {
-            val literals = keywords.filter { !it.contains("*") }.map { it.lowercase(Locale.ROOT) }.toSet()
-            if (literals.isNotEmpty()) {
-                val parsedKeywords = parseTextForKeywords(content)
-                if (parsedKeywords.any { literals.contains(it) }) matched = true
-            }
-        }
-
-        return if (blockMode == FocusBlockMode.BLOCK_SELECTED) matched else !matched
     }
 
     private fun loadPersistedData() {
@@ -573,15 +412,13 @@ class KeywordBlocker : BaseBlocker() {
     private fun handleCooldownIntent(intent: Intent) {
         val groupId = intent.getStringExtra("result_id") ?: return
         val duration = intent.getIntExtra("selected_time", 120000)
-        val end = System.currentTimeMillis() + duration
-        cooldownGroupsList[groupId] = end
+        cooldownGroupsList[groupId] = System.currentTimeMillis() + duration
         persistCooldownData()
 
-        // Trigger a re-evaluation to schedule the next recheck
         val date = TimeTools.getCurrentDate()
         CoroutineScope(Dispatchers.IO).launch {
-            val stats = AppDatabase.getInstance(service).websiteStatsDao().getStatsForDate(date)
-            val latest = stats.maxByOrNull { it.lastVisited }
+            val latest = AppDatabase.getInstance(service).websiteStatsDao()
+                .getStatsForDate(date).maxByOrNull { it.lastVisited }
             if (latest != null && latest.lastVisited > (System.currentTimeMillis() - 5000)) {
                 evaluateAndBlock(latest)
             }
@@ -615,6 +452,7 @@ class KeywordBlocker : BaseBlocker() {
         }
     }
 
+    // Used by WebsiteUsageTracker to locate URL bar elements in each supported browser.
     data class BrowserUrlBarInfo(
         val displayUrlBarId: String,
         val editUrlBarId: String? = null,

@@ -3,6 +3,7 @@ package neth.iecal.curbox
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import neth.iecal.curbox.ui.activity.CrashLogActivity
 import java.io.File
 import java.io.FileWriter
@@ -18,6 +19,7 @@ class CrashLogger(private val context: Context) : Thread.UncaughtExceptionHandle
 
     override fun uncaughtException(thread: Thread, throwable: Throwable) {
         try {
+            Log.e("Crash", throwable.printStackTrace().toString())
             val timeStamp =
                 SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
             val writer = FileWriter(logFile, true) // Append mode

@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.chip.Chip
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -87,18 +86,7 @@ class CreateKeywordGroupFragment : Fragment() {
                         binding.rbTimeBased.isChecked = true
                         viewModel.currentTimeConfig = Gson().fromJson(group.setting, AppTimeConfig::class.java)
                     }
-                    
-                    if (group.unlockBehavior == KeywordUnlockBehavior.Redirection) {
-                        binding.rbRedirection.isChecked = true
-                        binding.tilRedirectUrl.visibility = View.VISIBLE
-                        binding.etRedirectUrl.setText(group.redirectUrl)
-                        binding.btnConfigureWarningScreen.visibility = View.GONE
-                    } else {
-                        binding.rbWarningScreen.isChecked = true
-                        binding.tilRedirectUrl.visibility = View.GONE
-                        binding.btnConfigureWarningScreen.visibility = View.VISIBLE
-                    }
-                    
+
                     viewModel.warningScrnConfig = group.warningScreenConfig
                 }
             }
@@ -131,16 +119,6 @@ class CreateKeywordGroupFragment : Fragment() {
                 selectedKeywords.add(kw)
                 updateKeywordsList()
                 binding.etKeyword.setText("")
-            }
-        }
-
-        binding.rgUnlockBehavior.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId == R.id.rb_redirection) {
-                binding.tilRedirectUrl.visibility = View.VISIBLE
-                binding.btnConfigureWarningScreen.visibility = View.GONE
-            } else {
-                binding.tilRedirectUrl.visibility = View.GONE
-                binding.btnConfigureWarningScreen.visibility = View.VISIBLE
             }
         }
 
@@ -310,8 +288,6 @@ class CreateKeywordGroupFragment : Fragment() {
         }
 
         val blockingType = if (binding.rbUsageBased.isChecked) AppBlockingType.Usage else AppBlockingType.Timed
-        val unlockBehavior = if (binding.rbRedirection.isChecked) KeywordUnlockBehavior.Redirection else KeywordUnlockBehavior.WarningScreen
-        val redirectUrl = binding.etRedirectUrl.text.toString()
 
         val group = KeywordGroup(
             id = existingGroupId ?: UUID.randomUUID().toString(),
@@ -320,8 +296,6 @@ class CreateKeywordGroupFragment : Fragment() {
             blockingType = blockingType,
             isActive = true,
             setting = if (blockingType == AppBlockingType.Usage) Gson().toJson(viewModel.currentUsageConfig) else Gson().toJson(viewModel.currentTimeConfig),
-            unlockBehavior = unlockBehavior,
-            redirectUrl = redirectUrl,
             warningScreenConfig = viewModel.warningScrnConfig
         )
 
