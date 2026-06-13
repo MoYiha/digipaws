@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
+import android.graphics.Rect
 import android.util.LruCache
 import android.view.View
 import android.view.accessibility.AccessibilityEvent
@@ -57,11 +58,15 @@ class ReelsCountTracker {
     private val seenReelsCache = mutableMapOf<String, LruCache<String, Boolean>>()
     private val viewBlockerHelper = ViewBlocker()
 
+    private var ignored = listOf<String>()
     fun setup(service: BaseBlockingService, overlayManager: ReelsOverlayManager) {
         this.service = service
         this.viewBlockerHelper.service = service
         this.overlayManager = overlayManager
 
+        ignored = listOf("com.android.systemui",
+            service.packageName,
+            "com.google.android.apps.wellbeing")
         val db = AppDatabase.getInstance(service)
         this.reelStatsDao = db.reelStatsDao()
 
@@ -84,26 +89,23 @@ class ReelsCountTracker {
 
     fun onEvent(event: AccessibilityEvent?) {
 
-        if (event == null) return
+        if (event == null || ignored.contains(event.packageName.toString())) return
 
         try {
             val pkg = event.packageName?.toString() ?: return
-            Log.d("event", event?.source.toString() + event?.eventType.toString()  )
 
             if (reelData.containsKey(pkg)) {
                 if((event.eventType and reelData[pkg]!!.eventType) == 0) return
-                if (Settings.canDrawOverlays(service)) {
+                if (Settings.canDrawOverlays(service) && !overlayManager.isOverlayVisible) {
                     overlayManager.reelsScrolledThisSession = todayCount
                     overlayManager.startDisplaying(overlayConfig, isOnDisplayCounter)
                 }
+
+                checkForReelProgression(pkg, reelData[pkg]!!)
             } else if (overlayManager.isOverlayVisible) {
                 overlayManager.removeOverlay()
                 return
             }
-
-            val data = reelData[pkg] ?: return
-
-            checkForReelProgression(pkg, data)
 
 
         } catch (_: Exception) { }
@@ -116,12 +118,14 @@ class ReelsCountTracker {
 
         val viewIdMatcher = NodeMatcher.parse(data.viewId)
         if (viewIdMatcher != null) {
-            if (!viewBlockerHelper.findNodeByMatcher(root, viewIdMatcher, pkg)) {
+            val node = viewBlockerHelper.resolveMatcherToNode(root, viewIdMatcher, pkg)
+            if (node == null || !isViewInBounds(node)) {
                 hideReelCounter()
                 return
             }
         } else {
-            if (AccessibilityHelper.findElementById(root, data.viewId) == null) {
+            val node = AccessibilityHelper.findElementById(root, data.viewId)
+            if (node == null || !isViewInBounds(node)) {
                 hideReelCounter()
                 return
             }
@@ -132,16 +136,15 @@ class ReelsCountTracker {
         for (req in data.requiresPresent) {
             val matcher = NodeMatcher.parse(req)
             Log.d("nodematcher", matcher.toString())
-            if (matcher != null) {
-                if (!viewBlockerHelper.findNodeByMatcher(root, matcher, pkg)) {
-                    hideReelCounter()
-                    return
-                }
+            val node = if (matcher != null) {
+                viewBlockerHelper.resolveMatcherToNode(root, matcher, pkg)
             } else {
-                if (AccessibilityHelper.findElementById(root, req) == null) {
-                    hideReelCounter()
-                    return
-                }
+                AccessibilityHelper.findElementById(root, req)
+            }
+
+            if (node == null || !isViewInBounds(node)) {
+                hideReelCounter()
+                return
             }
         }
 
@@ -150,16 +153,15 @@ class ReelsCountTracker {
         // Check if requires absent views are found
         for (req in data.requiresAbsent) {
             val matcher = NodeMatcher.parse(req)
-            if (matcher != null) {
-                if (viewBlockerHelper.findNodeByMatcher(root, matcher, pkg)) {
-                    hideReelCounter()
-                    return
-                }
+            val node = if (matcher != null) {
+                viewBlockerHelper.resolveMatcherToNode(root, matcher, pkg)
             } else {
-                if (AccessibilityHelper.findElementById(root, req) != null) {
-                    hideReelCounter()
-                    return
-                }
+                AccessibilityHelper.findElementById(root, req)
+            }
+
+            if (node != null && isViewInBounds(node)) {
+                hideReelCounter()
+                return
             }
         }
         Log.d("reel","all absent")
@@ -198,6 +200,15 @@ class ReelsCountTracker {
                 lastDynamicText[pkg] = currentText
             }
         }
+    }
+
+    private fun isViewInBounds(node: AccessibilityNodeInfo): Boolean {
+        val rect = Rect()
+        node.getBoundsInScreen(rect)
+        val displayMetrics = service.resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val screenHeight = displayMetrics.heightPixels
+        return rect.left < screenWidth && rect.right > 0 && rect.top < screenHeight && rect.bottom > 0
     }
 
     private fun extractTextFromNode(node: AccessibilityNodeInfo?): String {
