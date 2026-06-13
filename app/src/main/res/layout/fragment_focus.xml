@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/coolvetica"
             android:includeFontPadding="false"
-            android:text="25"
+            android:text="@string/default_focus_duration_value"
             android:textColor="?attr/colorOnSurface"
             android:textSize="150sp"
             android:textStyle="bold"
@@ -41,7 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:text="mins"
+            android:text="@string/label_mins"
             android:textSize="20sp"
             app:layout_constraintStart_toEndOf="@+id/tvMinutes"
             app:layout_constraintTop_toTopOf="@+id/tvMinutes" />

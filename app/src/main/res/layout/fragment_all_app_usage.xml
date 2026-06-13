@@ -104,7 +104,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Previous week"
+                android:contentDescription="@string/desc_previous_week"
                 android:padding="8dp"
                 android:src="@drawable/baseline_arrow_back_ios_24"
                 app:tint="?attr/colorOnSurfaceVariant" />
@@ -123,7 +123,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Next week"
+                android:contentDescription="@string/desc_next_week"
                 android:padding="8dp"
                 android:src="@drawable/baseline_arrow_forward_ios_24"
                 app:tint="?attr/colorOnSurfaceVariant" />

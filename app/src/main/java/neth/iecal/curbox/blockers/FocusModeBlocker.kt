@@ -1,7 +1,5 @@
 package neth.iecal.curbox.blockers
 
-import neth.iecal.curbox.R
-
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -17,6 +15,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.data.models.ManualFocusGroup
 import neth.iecal.curbox.services.AppBlockerService
@@ -233,7 +232,7 @@ class FocusModeBlocker : BaseBlocker() {
                     notificationManager.startTimer(
                         focusModeData!!.endTimeInMillis - System.currentTimeMillis(),
                         timerId = "focus_mode",
-                        title = "Focus Mode is on"
+                        title = service.getString(R.string.notification_title_focus_mode_on)
                     )
                 }
             } else {

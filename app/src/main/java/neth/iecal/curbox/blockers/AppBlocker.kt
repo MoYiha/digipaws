@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import neth.iecal.curbox.Constants
+import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
 import neth.iecal.curbox.data.models.AppBlockingType
 import neth.iecal.curbox.data.models.AppTimeConfig
@@ -136,7 +137,11 @@ class AppBlocker() : BaseBlocker() {
                 notificationManager.stopTimer()
                 showWarningScreen(packageName)
             } else {
-                notificationManager.startTimer(totalMillis = remainingUsage, timerId = packageName, title = "Remaining usage before lockdown")
+                notificationManager.startTimer(
+                    totalMillis = remainingUsage,
+                    timerId = packageName,
+                    title = service.getString(R.string.notification_title_remaining_usage)
+                )
                 setUpForcedRefreshChecker(packageName, System.currentTimeMillis() + remainingUsage)
                 return
             }

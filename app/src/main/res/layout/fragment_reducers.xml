@@ -541,7 +541,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:letterSpacing="0.1"
-            android:text="Reducer Analytics"
+            android:text="@string/label_reducer_analytics"
             android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:visibility="gone" />
@@ -589,7 +589,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Logged Intents"
+                        android:text="@string/label_logged_intents"
                         android:textColor="?attr/colorOnSurface"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -597,7 +597,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Review your past unlock reasons."
+                        android:text="@string/label_logged_intents_desc"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="13sp" />
                 </LinearLayout>

@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:text="Enter specific websites (e.g., facebook.com/*) or use keywords to block or allow during this focus session."
+        android:text="@string/focus_add_websites_desc"
         android:textAppearance="?attr/textAppearanceBodyMedium"
         android:textColor="?attr/colorOnSurfaceVariant"
         android:lineSpacingExtra="2dp" />
@@ -39,7 +39,7 @@
                 android:id="@+id/et_website"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Add website or keyword"
+                android:hint="@string/hint_add_website"
                 android:inputType="textUri|textNoSuggestions"
                 android:maxLines="1"
                 android:paddingVertical="16dp"
@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:minHeight="56dp"
-            android:text="Add"
+            android:text="@string/add"
             android:textAllCaps="false"
             app:cornerRadius="16dp" />
     </LinearLayout>

@@ -203,7 +203,7 @@ class AllAppsUsageFragment : Fragment() {
                     R.id.export_as_csv -> {
 
                         val dateRangePicker = MaterialDatePicker.Builder.dateRangePicker()
-                            .setTitleText("Select Export Range")
+                            .setTitleText(getString(R.string.dialog_title_select_export_range))
                             .setSelection(
                                 Pair(
                                     MaterialDatePicker.thisMonthInUtcMilliseconds(),

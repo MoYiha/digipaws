@@ -34,7 +34,7 @@
                         android:id="@+id/date_sublabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="TOTAL TODAY"
+                        android:text="@string/total_today"
                         android:textAppearance="@style/TextAppearance.Material3.LabelSmall" />
 
                     <TextView

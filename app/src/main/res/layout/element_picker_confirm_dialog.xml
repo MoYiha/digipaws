@@ -21,7 +21,7 @@
                 android:id="@+id/titleText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Block This Element"
+                android:text="@string/picker_dialog_block_element"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -41,7 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Generated Rule:"
+                android:text="@string/picker_dialog_generated_rule"
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -50,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Auto-generated from your selection. Toggle chips below to customize."
+                android:text="@string/picker_dialog_rule_desc"
                 android:textColor="#888888"
                 android:textSize="11sp" />
 
@@ -61,7 +61,7 @@
                 android:layout_marginTop="6dp"
                 android:background="#1AFFFFFF"
                 android:gravity="top|start"
-                android:hint="pkg:com.app id:btn"
+                android:hint="@string/hint_picker_query"
                 android:inputType="textMultiLine"
                 android:minLines="2"
                 android:padding="10dp"
@@ -74,7 +74,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="⊕ Element Properties"
+                android:text="@string/picker_dialog_element_properties"
                 android:textColor="#90CAF9"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -83,7 +83,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="What identifies this element? Toggle to add/remove from the rule."
+                android:text="@string/picker_dialog_properties_desc"
                 android:textColor="#777777"
                 android:textSize="10sp" />
 
@@ -103,7 +103,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:text="⚡ Blocking Action"
+                android:text="@string/picker_dialog_blocking_action"
                 android:textColor="#CE93D8"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -112,7 +112,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="What happens when this element is found?"
+                android:text="@string/picker_dialog_action_desc"
                 android:textColor="#777777"
                 android:textSize="10sp" />
 
@@ -132,7 +132,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:text="⚙ Advanced"
+                android:text="@string/picker_dialog_advanced"
                 android:textColor="#A5D6A7"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -141,7 +141,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Fine-tune matching behavior."
+                android:text="@string/picker_dialog_advanced_desc"
                 android:textColor="#777777"
                 android:textSize="10sp" />
 
@@ -161,7 +161,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="💬 Label (optional)"
+                android:text="@string/picker_dialog_label_optional"
                 android:textColor="#DDDDDD"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -172,7 +172,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:background="#1AFFFFFF"
-                android:hint="e.g. Hide Reels, Block Ads..."
+                android:hint="@string/hint_picker_label"
                 android:inputType="text"
                 android:padding="10dp"
                 android:textColor="#EEFFFF"
@@ -191,7 +191,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="40dp"
                     android:background="#00000000"
-                    android:text="?"
+                    android:text="@string/dialog_question_mark"
                     android:textColor="#80DEEA"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -202,7 +202,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:background="#00000000"
-                    android:text="Cancel"
+                    android:text="@string/cancel"
                     android:textAllCaps="false"
                     android:textColor="#AAAAAA"
                     android:textSize="14sp" />
@@ -213,7 +213,7 @@
                     android:layout_height="wrap_content"
                     android:background="#1565C0"
                     android:paddingHorizontal="24dp"
-                    android:text="Block"
+                    android:text="@string/btn_block"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp"

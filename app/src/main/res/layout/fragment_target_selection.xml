@@ -124,7 +124,7 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/val_15_min" />
+                    android:text="@string/limit_15_min" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_30m"
@@ -132,21 +132,21 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="@string/val_30_min" />
+                    android:text="@string/limit_30_min" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_1h"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/val_1_hour" />
+                    android:text="@string/limit_1_hour" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_2h"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/val_2_hours" />
+                    android:text="@string/limit_2_hours" />
 
             </com.google.android.material.chip.ChipGroup>
 

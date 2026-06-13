@@ -82,7 +82,7 @@
                         style="@style/TextAppearance.Material3.TitleMedium"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Non-session based installation detected"
+                        android:text="@string/onboarding_non_session_title"
                         android:textColor="?attr/colorOnErrorContainer"
                         android:textStyle="bold" />
 
@@ -91,7 +91,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Android 13+ restricts Accessibility services for apps installed outside of app stores (like F-Droid or Play Store). To enable permissions, you'll need to manually allow 'Restricted settings' for Curbox. Alternatively, install via the F-Droid app(not website) to avoid this."
+                        android:text="@string/onboarding_restricted_settings_desc"
                         android:textColor="?attr/colorOnErrorContainer" />
 
                     <com.google.android.material.button.MaterialButton
@@ -101,7 +101,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:layout_marginTop="8dp"
-                        android:text="Show tutorial to enable permissions"
+                        android:text="@string/onboarding_show_tutorial"
                         android:textColor="?attr/colorOnErrorContainer" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -112,7 +112,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Grant all permissions with Shizuku" />
+                android:text="@string/onboarding_shizuku_grant" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -213,7 +213,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Do Not Disturb Access"
+                        android:text="@string/onboarding_dnd_access"
                         android:textColor="?attr/colorOnSurface" />
 
                     <ImageView

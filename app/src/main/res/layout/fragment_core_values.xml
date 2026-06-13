@@ -64,7 +64,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:lines="2"
-                        android:text="I would rather spend this time ..." />
+                        android:text="@string/label_rather_spend_time" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton

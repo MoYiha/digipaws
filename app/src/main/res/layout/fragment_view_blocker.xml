@@ -26,7 +26,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="View Blocking is Experimental"
+                    android:text="@string/view_blocker_experimental_title"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -34,7 +34,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="This feature is still in beta and might occasionally break. The element picker is recommended for advanced users only. Join our Discord for more blocking rules."
+                    android:text="@string/view_blocker_experimental_desc"
                     android:alpha="0.9" />
 
             </LinearLayout>
@@ -105,7 +105,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Turn on advanced view blocking"
+                            android:text="@string/label_turn_on_advanced_blocking"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="13sp" />
                     </LinearLayout>

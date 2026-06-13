@@ -67,7 +67,7 @@
                 app:tint="?attr/colorError"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Delete" />
+                android:contentDescription="@string/desc_delete" />
         </LinearLayout>
 
         <com.google.android.material.card.MaterialCardView

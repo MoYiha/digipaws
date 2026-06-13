@@ -67,7 +67,7 @@
                         android:layout_height="wrap_content"
                         android:padding="12dp"
                         android:visibility="gone"
-                        android:contentDescription="Edit group"
+                        android:contentDescription="@string/desc_edit_group"
                         app:iconTint="?attr/colorOnSurface"
                         app:icon="@drawable/baseline_edit_24" />
 
@@ -78,7 +78,7 @@
                         android:layout_height="wrap_content"
                         android:padding="12dp"
                         android:visibility="gone"
-                        android:contentDescription="Delete group"
+                        android:contentDescription="@string/desc_delete_group"
                         app:iconTint="?attr/colorError"
                         app:icon="@drawable/baseline_delete_24" />
 
@@ -167,7 +167,7 @@
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Add Websites" />
+                        android:text="@string/dialog_add_websites" />
 
                     <Space
                         android:layout_width="0dp"
@@ -178,7 +178,7 @@
                         android:id="@+id/selected_website_count"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Selected: 0"
+                        android:text="@string/dialog_selected_count"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -232,7 +232,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:checked="false"
-                    android:text="Turn on do not disturb" />
+                    android:text="@string/dialog_turn_on_dnd" />
 
                 <Button
                     android:id="@+id/save_group"

@@ -29,7 +29,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Create Keyword Group"
+                    android:text="@string/create_keyword_group_title"
                     android:textSize="25sp"
                     android:textStyle="bold" />
 
@@ -64,7 +64,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="Keywords to block"
+                android:text="@string/label_keywords_to_block"
                 android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -210,7 +210,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="Unlock Behavior"
+                android:text="@string/label_unlock_behavior"
                 android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -235,13 +235,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:text="URL Redirection" />
+                        android:text="@string/label_url_redirection" />
 
                     <com.google.android.material.radiobutton.MaterialRadioButton
                         android:id="@+id/rb_warning_screen"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Show Warning Screen" />
+                        android:text="@string/label_show_warning_screen" />
                 </RadioGroup>
             </com.google.android.material.card.MaterialCardView>
 

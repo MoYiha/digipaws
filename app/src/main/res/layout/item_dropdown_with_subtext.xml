@@ -45,7 +45,7 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="8dp"
             android:paddingVertical="2dp"
-            android:text="Recommended"
+            android:text="@string/label_recommended"
             android:textAllCaps="true"
             android:textSize="10sp"
             android:textStyle="bold"

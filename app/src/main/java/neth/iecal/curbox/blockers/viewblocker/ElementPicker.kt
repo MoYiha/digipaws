@@ -18,6 +18,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.ElementPickerConfirmDialogBinding
 import neth.iecal.curbox.databinding.ElementPickerControlBarBinding
 import neth.iecal.curbox.databinding.ElementPickerHighlightBinding
@@ -197,7 +198,7 @@ class ElementPicker(
             collectNodesAtPoint(root, x.toInt(), y.toInt(), nodesAtPoint)
 
             if (nodesAtPoint.isEmpty()) {
-                updateInfo("No element found at that point")
+                updateInfo(service.getString(R.string.picker_no_element_found))
                 hideHighlight()
                 return
             }
@@ -295,7 +296,7 @@ class ElementPicker(
 
     private fun confirmBlock() {
         if (nodesAtPoint.isEmpty() || currentNodeIndex >= nodesAtPoint.size) {
-            Toast.makeText(service, "No element selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(service, service.getString(R.string.picker_no_element_selected), Toast.LENGTH_SHORT).show()
             return
         }
         val node = nodesAtPoint[currentNodeIndex]
@@ -305,20 +306,20 @@ class ElementPicker(
 
     private fun confirmBlockAll() {
         if (nodesAtPoint.isEmpty() || currentNodeIndex >= nodesAtPoint.size) {
-            Toast.makeText(service, "No element selected", Toast.LENGTH_SHORT).show()
+            Toast.makeText(service, service.getString(R.string.picker_no_element_selected), Toast.LENGTH_SHORT).show()
             return
         }
         val node = nodesAtPoint[currentNodeIndex]
         showConfirmationOverlay(node, "All similar elements", true)
     }
 
-    private enum class MatchStrategy(val label: String) {
-        AUTO("Auto (Best Choice)"),
-        VIEW_ID("View ID"),
-        DESC("Content Description"),
-        TEXT("Text"),
-        CLASS_NAME("Class Name"),
-        PATH("Path")
+    private enum class MatchStrategy {
+        AUTO,
+        VIEW_ID,
+        DESC,
+        TEXT,
+        CLASS_NAME,
+        PATH
     }
 
     private data class NodeSnapshot(

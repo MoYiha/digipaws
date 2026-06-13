@@ -31,7 +31,7 @@ open class BaseBlockingService : AccessibilityService() {
 
     private fun startForegroundService() {
         val channelId = "blocking_service_channel"
-        val channelName = "Blocking Service"
+        val channelName = getString(R.string.blocking_service_channel_name)
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
@@ -40,14 +40,14 @@ open class BaseBlockingService : AccessibilityService() {
             channelName,
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Running in the background to protect you"
+            description = getString(R.string.blocking_service_channel_description)
         }
         notificationManager.createNotificationChannel(channel)
 
         val className = this::class.simpleName
         val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Curbox $className is active")
-            .setContentText("Protecting your digital wellbeing")
+            .setContentTitle(getString(R.string.blocking_service_notification_title, className))
+            .setContentText(getString(R.string.blocking_service_notification_text))
             .setSmallIcon(R.drawable.icon)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOngoing(true)

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import neth.iecal.curbox.Constants
+import neth.iecal.curbox.R
 import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.data.db.WebsiteStatsEntity
 import neth.iecal.curbox.data.models.AppBlockingType
@@ -193,7 +194,7 @@ class KeywordBlocker : BaseBlocker() {
         lastpkg = packageName
         if (isUnsupportedBrowserBlockingOn && browserBlocker.isAppBrowser(event)) {
             Handler(Looper.getMainLooper()).post {
-                Toast.makeText(service, "Unsupported Browser", Toast.LENGTH_LONG).show()
+                Toast.makeText(service, service.getString(R.string.toast_unsupported_browser), Toast.LENGTH_LONG).show()
             }
             service.pressHome()
         }

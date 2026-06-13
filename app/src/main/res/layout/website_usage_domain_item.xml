@@ -48,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="0dp"
-            android:text="Show More"
+            android:text="@string/label_show_more"
             android:textSize="12sp"
             android:visibility="gone" />
 

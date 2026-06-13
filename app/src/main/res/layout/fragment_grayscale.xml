@@ -36,7 +36,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Shizuku Permission Required"
+                android:text="@string/grayscale_shizuku_title"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="This feature needs Shizuku permission to apply the grayscale filter correctly." />
+                android:text="@string/grayscale_shizuku_desc" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_action_shizuku"
@@ -53,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_marginTop="12dp"
-                android:text="Grant Permission" />
+                android:text="@string/btn_grant_permission" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -86,7 +86,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="24dp"
-        android:contentDescription="Add Group"
+        android:contentDescription="@string/desc_add_group"
         android:src="@drawable/baseline_add_24"
         app:backgroundTint="?attr/colorPrimaryContainer"
         app:layout_constraintBottom_toBottomOf="parent"

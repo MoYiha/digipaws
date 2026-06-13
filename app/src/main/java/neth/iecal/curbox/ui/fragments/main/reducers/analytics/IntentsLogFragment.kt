@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.R
 import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.databinding.FragmentIntentsLogBinding
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -46,7 +47,7 @@ class IntentsLogFragment : Fragment() {
 
         binding.btnFilterDate.setOnClickListener {
             val datePicker = MaterialDatePicker.Builder.dateRangePicker()
-                .setTitleText("Select Date Range")
+                .setTitleText(getString(R.string.dialog_title_select_date_range))
                 .build()
 
             datePicker.addOnPositiveButtonClickListener { selection ->

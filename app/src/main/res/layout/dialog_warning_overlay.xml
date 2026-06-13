@@ -55,7 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:visibility="gone"
-        android:hint="Type the exact sentence above">
+        android:hint="@string/hint_type_sentence">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/typing_input_edit"
             android:layout_width="match_parent"
@@ -69,7 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:visibility="gone"
-        android:hint="Why do you need to use this app?">
+        android:hint="@string/hint_unlock_reason">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/intent_input_edit"
             android:layout_width="match_parent"

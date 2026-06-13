@@ -22,7 +22,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp"
-                android:text="Block Short Form Content"
+                android:text="@string/reel_blocker_title"
                 android:textAlignment="textStart"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                 android:textSize="25sp"

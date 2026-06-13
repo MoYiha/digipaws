@@ -11,7 +11,7 @@
         android:id="@+id/tv_crash_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Oops! Curbox has crashed"
+        android:text="@string/crash_title"
         style="@style/TextAppearance.Material3.HeadlineMedium"
         android:textColor="?attr/colorError"
         android:layout_marginBottom="8dp"/>
@@ -19,7 +19,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Something went wrong. Please share these logs with the developer to help fix the issue."
+        android:text="@string/crash_desc"
         style="@style/TextAppearance.Material3.BodyMedium"
         android:layout_marginBottom="16dp"/>
 
@@ -57,7 +57,7 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Clear" />
+            android:text="@string/btn_clear" />
 
         <Space
             android:layout_width="0dp"
@@ -69,7 +69,7 @@
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Close"
+            android:text="@string/close"
             android:layout_marginEnd="8dp"/>
 
         <com.google.android.material.button.MaterialButton
@@ -77,13 +77,13 @@
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Restart"
+            android:text="@string/btn_restart"
             android:layout_marginEnd="8dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_share"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Share" />
+            android:text="@string/btn_share" />
     </LinearLayout>
 </LinearLayout>

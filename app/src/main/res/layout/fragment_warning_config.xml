@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="24dp"
-            android:text="Warning Screen Configuration"
+            android:text="@string/warning_config_title"
             android:textSize="25sp"
             android:textStyle="bold" />
 
@@ -28,14 +28,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:text="Set what happens if you try to access this outside its schedule." />
+            android:text="@string/warning_config_desc" />
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Unlock Challenge">
+            android:hint="@string/hint_unlock_challenge">
 
             <AutoCompleteTextView
                 android:id="@+id/unlock_challenge_dropdown"
@@ -50,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Unlock Method"
+            android:hint="@string/hint_unlock_method"
             android:visibility="gone">
             <AutoCompleteTextView
                 android:id="@+id/secondary_behavior_dropdown"
@@ -77,7 +77,7 @@
                     android:id="@+id/timing_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Fixed Unlock Duration: 5 mins"
+                    android:text="@string/label_fixed_unlock_duration"
                     style="@style/TextAppearance.Material3.TitleSmall" />
 
                 <com.google.android.material.slider.Slider
@@ -109,13 +109,13 @@
                     android:id="@+id/proceed_delay_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Wait before unlocking: 15s"
+                    android:text="@string/label_wait_before_unlocking"
                     style="@style/TextAppearance.Material3.TitleSmall" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Forces you to think before bypassing the block."
+                    android:text="@string/label_wait_desc"
                     style="@style/TextAppearance.Material3.BodySmall"
                     android:layout_marginTop="4dp" />
 
@@ -147,7 +147,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="QR/Barcode Authentication"
+                    android:text="@string/label_qr_auth"
                     style="@style/TextAppearance.Material3.TitleMedium" />
 
                 <LinearLayout
@@ -162,7 +162,7 @@
                         android:layout_weight="1"
                         android:layout_marginEnd="4dp"
                         android:layout_height="wrap_content"
-                        android:text="Generate New" />
+                        android:text="@string/btn_generate_new" />
 
                     <Button
                         android:id="@+id/btn_scan_existing_qr"
@@ -171,7 +171,7 @@
                         android:layout_marginStart="4dp"
                         android:layout_height="wrap_content"
                         style="?attr/materialButtonOutlinedStyle"
-                        android:text="Scan Existing" />
+                        android:text="@string/btn_scan_existing" />
                 </LinearLayout>
 
                 <TextView
@@ -179,7 +179,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Configured QR/Barcodes:" />
+                    android:text="@string/label_configured_qr" />
 
                 <LinearLayout
                     android:id="@+id/qr_list_container"
@@ -209,14 +209,14 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Typing Authentication"
+                    android:text="@string/label_typing_auth"
                     style="@style/TextAppearance.Material3.TitleMedium" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Enter the sentence the user must type exactly to bypass the block:"
+                    android:text="@string/label_typing_desc"
                     style="@style/TextAppearance.Material3.BodyMedium" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -224,7 +224,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:hint="Required Sentence">
+                    android:hint="@string/hint_required_sentence">
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/typing_sentence_edit"
                         android:layout_width="match_parent"
@@ -286,7 +286,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="Custom Warning Message">
+                        android:hint="@string/hint_custom_warning">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/warning_msg_edit"
@@ -299,7 +299,7 @@
                         style="@style/TextAppearance.Material3.TitleSmall"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Limit unlock frequency" />
+                        android:text="@string/label_limit_unlock_frequency" />
 
                     <LinearLayout
                         android:id="@+id/proceed_limit_container"
@@ -314,7 +314,7 @@
                             style="@style/TextAppearance.Material3.BodyMedium"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Allowed proceeds: 3" />
+                            android:text="@string/label_allowed_proceeds" />
 
                         <com.google.android.material.slider.Slider
                             android:id="@+id/allowed_proceeds_slider"
@@ -331,7 +331,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="Time window: 60 mins" />
+                            android:text="@string/label_time_window" />
 
                         <com.google.android.material.slider.Slider
                             android:id="@+id/proceed_window_slider"
@@ -349,7 +349,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Vibrate &amp; max brightness on warning" />
+                        android:text="@string/label_vibrate_brightness" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

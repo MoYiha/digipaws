@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="@string/str_empty"
+        android:text="@string/label_empty_dash"
         android:textSize="18sp" />
 
     <LinearLayout
@@ -32,7 +32,7 @@
             android:inputType="number"
             android:maxLength="3"
             android:minEms="2"
-            android:text="@string/val_0"
+            android:text="@string/value_zero"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -52,6 +52,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="@string/str_empty_1"
+        android:text="@string/label_add_plus"
         android:textSize="18sp" />
 </LinearLayout>
