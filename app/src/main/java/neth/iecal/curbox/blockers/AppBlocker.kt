@@ -89,14 +89,12 @@ class AppBlocker() : BaseBlocker() {
 
         if (lastPackage == packageName || packageName == service.packageName || packageName == "com.android.systemui") return
 
-        // Session Reset for OnOpen
         if (onOpenAppsList.containsKey(lastPackage) && lastPackage != packageName) {
             removeCooldownFrom(lastPackage)
         }
 
         lastPackage = packageName
 
-        // Check Cooldown
         if (cooldownAppsList.containsKey(packageName)) {
             if (cooldownAppsList[packageName]!! < System.currentTimeMillis()) {
                 removeCooldownFrom(packageName)
@@ -106,13 +104,12 @@ class AppBlocker() : BaseBlocker() {
             }
         }
 
-        // Check OnOpen
         if (onOpenAppsList.containsKey(packageName)) {
             notificationManager.stopTimer()
             showWarningScreen(packageName)
             return
         }
-        // Check Time Blocks
+
         if (timeBlockedAppsList.contains(packageName)) {
             val endAllowedRealTime = getEndTimeInRealTimeMillis(packageName)
             if (endAllowedRealTime == null) {
@@ -123,9 +120,8 @@ class AppBlocker() : BaseBlocker() {
                 setUpForcedRefreshChecker(packageName, endAllowedRealTime)
             }
         }
-        Log.d("checking","checking ${event.packageName}")
+        Log.d("App Blocker","checking ${event.packageName}")
 
-        // Check Usage Blocks
         if (blockedAppsList.contains(packageName)) {
             val config = blockedAppsList[packageName]!!
             val currentUsage = runBlocking { usageStats.getForegroundStatsByRelativeDay(0) }

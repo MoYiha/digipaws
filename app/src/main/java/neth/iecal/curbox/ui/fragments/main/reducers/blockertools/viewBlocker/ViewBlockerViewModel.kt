@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
 import neth.iecal.curbox.data.models.ViewBlockerConfig
+import neth.iecal.curbox.hardcoded.DEFAULT_VB_RULES
 import neth.iecal.curbox.utils.DataStoreManager
 
 class ViewBlockerViewModel(application: Application) : AndroidViewModel(application) {
@@ -24,7 +25,7 @@ class ViewBlockerViewModel(application: Application) : AndroidViewModel(applicat
                 val config = settings.viewBlockerConfig
                 val currentRulesMap = config.rules.associateBy { it.id }
                 
-                val mergedRules = ViewBlocker.DEFAULT_RULES.map { defaultRule ->
+                val mergedRules = DEFAULT_VB_RULES.map { defaultRule ->
                     val savedRule = currentRulesMap[defaultRule.id]
                     if (savedRule != null) {
                         defaultRule.copy(isEnabled = savedRule.isEnabled)

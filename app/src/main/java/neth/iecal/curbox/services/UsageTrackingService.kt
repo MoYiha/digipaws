@@ -9,7 +9,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import androidx.core.net.toUri
 import neth.iecal.curbox.R
-import neth.iecal.curbox.anti_stimulants.MindfulMessageTracker
+import neth.iecal.curbox.anti_stimulants.MindfulMessage
 import neth.iecal.curbox.trackers.AppUsageTracker
 import neth.iecal.curbox.trackers.ReelsCountTracker
 import neth.iecal.curbox.trackers.WebsiteUsageTracker
@@ -19,7 +19,7 @@ class UsageTrackingService : BaseBlockingService() {
 
     private val reelsOverlayManager by lazy { ReelsOverlayManager(this) }
     private val reelsCountTracker = ReelsCountTracker()
-    private val mindfulMessageTracker = MindfulMessageTracker()
+    private val mindfulMessage = MindfulMessage()
     private val websiteUsageTracker = WebsiteUsageTracker()
     private val appUsageTracker = AppUsageTracker()
 
@@ -28,7 +28,7 @@ class UsageTrackingService : BaseBlockingService() {
         try {
             appUsageTracker.onEvent(event)
             reelsCountTracker.onEvent(event)
-            mindfulMessageTracker.onEvent(event)
+            mindfulMessage.onEvent(event)
             websiteUsageTracker.onEvent(event)
         } catch (error: Exception) {
             Log.e("Usage Tracking error", error.toString())
@@ -49,7 +49,7 @@ class UsageTrackingService : BaseBlockingService() {
             flags = AccessibilityServiceInfo.DEFAULT or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         }
         reelsCountTracker.setup(this, reelsOverlayManager)
-        mindfulMessageTracker.setup(this)
+        mindfulMessage.setup(this)
         websiteUsageTracker.setup(this)
         appUsageTracker.setup(this)
 
@@ -79,7 +79,7 @@ class UsageTrackingService : BaseBlockingService() {
     override fun onDestroy() {
         super.onDestroy()
         try {
-            mindfulMessageTracker.onDestroy()
+            mindfulMessage.onDestroy()
             reelsCountTracker.onDestroy()
             websiteUsageTracker.onDestroy()
             appUsageTracker.onDestroy()

@@ -48,54 +48,6 @@ class ViewBlocker : BaseBlocker() {
          * Converted to [ViewBlockerFilterRule] at runtime via [ViewBlockerRule.toFilterRule].
          * [requirePresent] / [requireAbsent] use [NodeMatcher] syntax: `"type:value;type2:value2"`.
          */
-        val DEFAULT_RULES : List<ViewBlockerRule> = listOf(
-//            // Instagram
-//            ViewBlockerRule("ig_stories_tray", "com.instagram.android", "Hide Stories",
-//                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.LinearLayout[0]",
-//                requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
-//            ViewBlockerRule("ig_search_suggestions", "com.instagram.android", "Hide Explore Grid",
-//                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[3]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.FrameLayout[*]"),
-//            ViewBlockerRule("ig_feed_1", "com.instagram.android", "Hide main feed",
-//                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]"),
-//            ViewBlockerRule("ig_feed_2", "com.instagram.android", "Hide main feed but let me use the following tab",
-//                path = "androidx.viewpager.widget.ViewPager[0]>android.widget.FrameLayout[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[*]",
-//                requirePresent = listOf("viewId:com.instagram.android:id/title_logo")),
-//            ViewBlockerRule("ig_reel_interactive_reels", "com.instagram.android", "Hide interactive buttons (like, share, comment) in the reels tab",
-//                viewId = "com.instagram.android:id/clips_ufi_component"),
-
-            // YouTube
-            ViewBlockerRule("yt_video_thingies", "com.google.android.youtube", "Hide everything (recommendations, comments, description etc) except the video",
-                viewId = "com.google.android.youtube:id/watch_list"),
-            ViewBlockerRule("yt_video_everything_except_results", "com.google.android.youtube", "Hide feed and only let me access search results",
-                viewId = "com.google.android.youtube:id/results",
-                requirePresent = listOf("descres:accessibility_feed_filter_bar_content_description")),
-
-            // Reddit
-            ViewBlockerRule("reddit_block_main","com.reddit.frontpage","Hide home feed but let me access custom feeds",
-                path = "androidx.drawerlayout.widget.DrawerLayout[0]>android.widget.FrameLayout[0]>android.view.ViewGroup[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[0]>android.view.View[1]"),
-            // X / Twitter
-            ViewBlockerRule("x_feed_but_allow_following", "com.twitter.android", "Hide 'For You' and only let me access the Following tab",
-                viewId = "android:id/list",
-                requirePresent = listOf("descres:guide_tab_title_for_you;isSelected:true")),
-
-            // LinkedIn
-            ViewBlockerRule("li_feed_item", "com.linkedin.android", "Hide feed item",
-                viewId = "com.linkedin.android:id/feed_item_update_card"),
-            ViewBlockerRule("li_notifications", "com.linkedin.android", "Hide notifications",
-                viewId = "com.linkedin.android:id/tab_notifications"),
-
-            // WhatsApp
-            ViewBlockerRule("wa_ai_search", "com.whatsapp", "Hide AI suggestions in search",
-                viewId = "com.whatsapp:id/search_meta_ai_input_send_button"),
-            ViewBlockerRule("wa_ai_button", "com.whatsapp", "Hide AI button",
-                viewId = "com.whatsapp:id/extended_mini_fab"),
-            ViewBlockerRule("wa_rec_channels", "com.whatsapp", "Hide recommended channels",
-                viewId = "com.whatsapp:id/newsletter_directory_row_container"),
-            ViewBlockerRule("wa_updates_button", "com.whatsapp", "Hide Updates button",
-                path = "android.view.ViewGroup[0]>android.widget.FrameLayout[1]"),
-            ViewBlockerRule("wa_channels_path", "com.whatsapp", "Hide channels",
-                path = "androidx.viewpager.widget.ViewPager[0]>androidx.recyclerview.widget.RecyclerView[0]>android.widget.RelativeLayout[*]")
-        )
     }
 
     lateinit var service: BaseBlockingService

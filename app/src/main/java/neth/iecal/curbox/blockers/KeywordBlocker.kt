@@ -158,6 +158,8 @@ class KeywordBlocker : BaseBlocker() {
         val patterns = groupPatternMap[group.id] ?: return false
         return matchesPatterns(patterns, urlIdentifier)
     }
+
+    // TODO: instead of this approach, add a datastore obj that automatcally setups up focus mode blocker in the regular observer
     fun isFocusWebsiteBlocked(
         packageName: String,
         compiledKeywords: Pair<List<Regex>, List<String>>,
@@ -452,13 +454,4 @@ class KeywordBlocker : BaseBlocker() {
             }
         }
     }
-
-    // Used by WebsiteUsageTracker to locate URL bar elements in each supported browser.
-    data class BrowserUrlBarInfo(
-        val displayUrlBarId: String,
-        val editUrlBarId: String? = null,
-        val browserSugggestionBoxId: String,
-        val suggestionBoxIndexOfGoBtn: Int = 0,
-        val isSuggestionEqualToGo: Boolean = false
-    )
 }

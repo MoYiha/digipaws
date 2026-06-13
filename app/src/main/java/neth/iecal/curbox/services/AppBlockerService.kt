@@ -16,6 +16,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.CrashLogger
+import neth.iecal.curbox.anti_stimulants.AutoDnd
 import neth.iecal.curbox.anti_stimulants.GrayScaleFilter
 import neth.iecal.curbox.blockers.AppBlocker
 import neth.iecal.curbox.blockers.FocusModeBlocker
@@ -30,7 +31,7 @@ class AppBlockerService : BaseBlockingService() {
 
     private val appBlocker: AppBlocker = AppBlocker()
     private val focusModeBlocker = FocusModeBlocker()
-    private val autoDndEnabler = neth.iecal.curbox.blockers.AutoDndEnabler()
+    private val autoDnd = AutoDnd()
     private val reelBlocker = ReelBlocker()
     private var keywordBlocker = KeywordBlocker()
     private val viewBlocker = ViewBlocker()
@@ -69,7 +70,7 @@ class AppBlockerService : BaseBlockingService() {
     private lateinit var crashLogger: CrashLogger
 
     fun syncDndState() {
-        val autoDndActive = autoDndEnabler.isDndRequested()
+        val autoDndActive = autoDnd.isDndRequested()
         val manualFocusDndActive = focusModeBlocker.isDndRequested()
         neth.iecal.curbox.utils.DndHelper.applyDndState(this, autoDndActive || manualFocusDndActive)
     }
@@ -134,7 +135,7 @@ class AppBlockerService : BaseBlockingService() {
         super.onServiceConnected()
         appBlocker.setupAppBlocker(this)
         focusModeBlocker.setupFocusMode(this)
-        autoDndEnabler.setup(this)
+        autoDnd.setup(this)
         reelBlocker.setupBlocker(this)
         keywordBlocker.setupBlocker(this)
         viewBlocker.setupBlocker(this)
@@ -168,7 +169,7 @@ class AppBlockerService : BaseBlockingService() {
         try {
 
             focusModeBlocker.removeReceivers()
-            autoDndEnabler.stop()
+            autoDnd.stop()
             reelBlocker.removeReceivers()
             appBlocker.onDestroy()
             keywordBlocker.removeReceivers()

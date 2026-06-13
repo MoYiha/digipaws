@@ -16,7 +16,7 @@ import neth.iecal.curbox.data.models.MindfulMessageConfig
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.overlay.MindfulMessageOverlayManager
 
-class MindfulMessageTracker {
+class MindfulMessage {
 
     companion object {
         /**

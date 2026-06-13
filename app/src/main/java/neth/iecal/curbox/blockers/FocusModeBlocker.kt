@@ -18,9 +18,9 @@ import kotlinx.coroutines.withContext
 import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.data.models.ManualFocusGroup
+import neth.iecal.curbox.hardcoded.URL_BAR_ID_LIST
 import neth.iecal.curbox.services.AppBlockerService
 import neth.iecal.curbox.services.BaseBlockingService
-import neth.iecal.curbox.trackers.WebsiteUsageTracker.Companion.URL_BAR_ID_LIST
 import neth.iecal.curbox.utils.AppSuspendHelper
 import neth.iecal.curbox.utils.TimerNotification
 import neth.iecal.curbox.utils.getCurrentKeyboardPackageName
@@ -111,7 +111,6 @@ class FocusModeBlocker : BaseBlocker() {
         if (packageName == service.packageName) return
 
         if (focusModeData != null) {
-            // 1. App Block Check (Instant - only on package change)
             if (lastPackage != packageName) {
                 lastPackage = packageName
                 when (focusModeData!!.focusGroupData.blockMode) {
@@ -134,7 +133,6 @@ class FocusModeBlocker : BaseBlocker() {
                 }
             }
 
-            // 2. Website Block Check
             if (focusModeData!!.focusGroupData.keywords.isNotEmpty() &&
                 URL_BAR_ID_LIST.containsKey(packageName)) {
 
@@ -201,7 +199,6 @@ class FocusModeBlocker : BaseBlocker() {
             }
         }
 
-        // Cancel any previously running settings watcher to prevent multiple competing coroutines
         settingsJob?.cancel()
         settingsJob = CoroutineScope(Dispatchers.IO).launch {
             service.dataStoreManager.settings.collectLatest { settings ->

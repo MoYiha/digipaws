@@ -10,7 +10,7 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import neth.iecal.curbox.blockers.BaseBlocker
 import androidx.core.net.toUri
-import neth.iecal.curbox.trackers.WebsiteUsageTracker.Companion.URL_BAR_ID_LIST
+import neth.iecal.curbox.hardcoded.URL_BAR_ID_LIST
 
 class BrowserBlocker(val service: AccessibilityService) : BaseBlocker() {
 

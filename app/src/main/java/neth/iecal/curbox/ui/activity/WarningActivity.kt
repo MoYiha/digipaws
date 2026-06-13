@@ -2,7 +2,6 @@ package neth.iecal.curbox.ui.activity
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -24,7 +23,6 @@ import neth.iecal.curbox.blockers.KeywordBlocker
 import neth.iecal.curbox.blockers.ReelBlocker
 import neth.iecal.curbox.data.models.AppBlockerWarningScreenConfig
 import neth.iecal.curbox.databinding.DialogWarningOverlayBinding
-import neth.iecal.curbox.services.AppBlockerService
 import kotlin.random.Random
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +30,7 @@ import kotlinx.coroutines.launch
 import android.widget.Toast
 import androidx.core.content.edit
 import androidx.core.widget.doAfterTextChanged
-import neth.iecal.curbox.anti_stimulants.MindfulMessageTracker
+import neth.iecal.curbox.anti_stimulants.MindfulMessage
 
 class WarningActivity : AppCompatActivity() {
 
@@ -240,7 +238,7 @@ class WarningActivity : AppCompatActivity() {
                     neth.iecal.curbox.data.db.AppDatabase.getInstance(this@WarningActivity).intentLogDao().insert(log)
                 }
 
-                val broadcastIntent = Intent(MindfulMessageTracker.ADD_NEW_INTENT)
+                val broadcastIntent = Intent(MindfulMessage.ADD_NEW_INTENT)
                 broadcastIntent.putExtra("package_name", pkg)
                 broadcastIntent.putExtra("intent_text", intentText)
                 broadcastIntent.putExtra("duration_ms", time)

@@ -10,87 +10,18 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.blockers.KeywordBlocker
-import neth.iecal.curbox.blockers.KeywordBlocker.BrowserUrlBarInfo
 import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.data.db.WebsiteStatsDao
 import neth.iecal.curbox.data.db.WebsiteStatsEntity
+import neth.iecal.curbox.hardcoded.URL_BAR_ID_LIST
 import neth.iecal.curbox.services.BaseBlockingService
+import neth.iecal.curbox.utils.AccessibilityHelper
 import neth.iecal.curbox.utils.TimeTools
 import java.util.regex.Pattern
 import kotlin.text.endsWith
 import kotlin.text.substring
 
 class WebsiteUsageTracker {
-
-    companion object {
-        val URL_BAR_ID_LIST = mapOf(
-            "com.android.chrome" to BrowserUrlBarInfo(
-                displayUrlBarId = "com.android.chrome:id/url_bar",
-                browserSugggestionBoxId = "com.android.chrome:id/omnibox_suggestions_dropdown",
-            ),
-            "org.cromite.cromite" to BrowserUrlBarInfo(
-                displayUrlBarId = "org.cromite.cromite:id/url_bar",
-                browserSugggestionBoxId = "org.cromite.cromite:id/omnibox_suggestions_dropdown",
-            ),
-            "app.vanadium.browser" to BrowserUrlBarInfo(
-                displayUrlBarId = "app.vanadium.browser:id/url_bar",
-                browserSugggestionBoxId = "app.vanadium.browser:id/omnibox_suggestions_dropdown"
-            ),
-            "com.brave.browser" to BrowserUrlBarInfo(
-                displayUrlBarId = "com.brave.browser:id/url_bar",
-                browserSugggestionBoxId = "com.brave.browser:id/omnibox_suggestions_dropdown"
-            ),
-
-
-            "org.mozilla.firefox" to BrowserUrlBarInfo(
-                displayUrlBarId = "ADDRESSBAR_URL_BOX",
-                browserSugggestionBoxId = "sfcnt",
-            ),
-            "org.mozilla.fennec_fdroid" to BrowserUrlBarInfo(
-                displayUrlBarId = "ADDRESSBAR_URL_BOX",
-                browserSugggestionBoxId = "sfcnt",
-            ),
-
-
-            "com.opera.browser" to BrowserUrlBarInfo(
-                displayUrlBarId = "com.opera.browser:id/url_field",
-                browserSugggestionBoxId = "com.opera.browser:id/right_state_button",
-                isSuggestionEqualToGo = true
-            ),
-        )
-
-        fun findElementById(node: AccessibilityNodeInfo?, id: String?): AccessibilityNodeInfo? {
-            if (node == null) return null
-            var targetNode: AccessibilityNodeInfo? = null
-            if(node.viewIdResourceName == id) return node
-            try {
-                targetNode = node.findAccessibilityNodeInfosByViewId(id!!)[0]
-            } catch (e: Exception) {
-                //e.printStackTrace();
-            }
-            return targetNode
-        }
-
-        fun filterOutUrlFromPlainText(inputText: String?): String? {
-            if (inputText.isNullOrBlank()) return null
-
-            val urlRegex = """(?:https?://|www\.)?[a-zA-Z0-9][a-zA-Z0-9\-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}(?:[/\?#][a-zA-Z0-9\-._~:/?#\[\]@!${'$'}&'()*+,;=%]*)?"""
-            val pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE)
-            val matcher = pattern.matcher(inputText)
-
-            if (matcher.find()) {
-                var cleanUrl = matcher.group(0) ?: return null
-
-                // Strip trailing punctuation unlikely to be part of the URL
-                cleanUrl = cleanUrl.trimEnd('.', ',', ')', ']', '\'', '"', '>')
-
-                return cleanUrl
-            }
-
-            return null
-        }
-
-    }
     private lateinit var service: BaseBlockingService
     private lateinit var websiteStatsDao: WebsiteStatsDao
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -132,6 +63,24 @@ class WebsiteUsageTracker {
         }
     }
 
+    private fun filterOutUrlFromPlainText(inputText: String?): String? {
+        if (inputText.isNullOrBlank()) return null
+
+        val urlRegex = """(?:https?://|www\.)?[a-zA-Z0-9][a-zA-Z0-9\-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}(?:[/\?#][a-zA-Z0-9\-._~:/?#\[\]@!${'$'}&'()*+,;=%]*)?"""
+        val pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE)
+        val matcher = pattern.matcher(inputText)
+
+        if (matcher.find()) {
+            var cleanUrl = matcher.group(0) ?: return null
+
+            // Strip trailing punctuation unlikely to be part of the URL
+            cleanUrl = cleanUrl.trimEnd('.', ',', ')', ']', '\'', '"', '>')
+
+            return cleanUrl
+        }
+
+        return null
+    }
     fun onEvent(event: AccessibilityEvent?) {
         if (event == null) return
         
@@ -162,10 +111,10 @@ class WebsiteUsageTracker {
 
         Log.d("source node",event.source.toString())
         try {
-            val nodes = findElementById(
+            val nodes = AccessibilityHelper.findElementById(
                 rootNode,
                 urlBarInfo.displayUrlBarId
-            ) ?: findElementById(
+            ) ?: AccessibilityHelper.findElementById(
                 event.source,
                 urlBarInfo.displayUrlBarId
             ) ?: return

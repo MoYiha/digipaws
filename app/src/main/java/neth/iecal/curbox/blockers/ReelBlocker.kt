@@ -30,6 +30,7 @@ import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.hardcoded.ReelAppConfig.Companion.reelData
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.activity.WarningActivity
+import neth.iecal.curbox.utils.AccessibilityHelper
 import neth.iecal.curbox.utils.TimeTools
 import neth.iecal.curbox.utils.TimerNotification
 import java.util.Calendar
@@ -41,16 +42,6 @@ class ReelBlocker : BaseBlocker() {
         const val INTENT_ACTION_REFRESH_REEL_BLOCKER_COOLDOWN =
             "neth.iecal.curbox.refresh.reelblocker.cooldown"
 
-        fun findElementById(node: AccessibilityNodeInfo?, id: String?): AccessibilityNodeInfo? {
-            if (node == null) return null
-            var targetNode: AccessibilityNodeInfo? = null
-            try {
-                targetNode = node.findAccessibilityNodeInfosByViewId(id!!)[0]
-            } catch (e: Exception) {
-                //e.printStackTrace();
-            }
-            return targetNode
-        }
 
         private const val TARGET_EVENTS_MASK = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
                 AccessibilityEvent.TYPE_VIEW_SCROLLED or
@@ -117,7 +108,7 @@ class ReelBlocker : BaseBlocker() {
                 if (matcher != null) {
                     if (!viewBlockerHelper.findNodeByMatcher(node, matcher, pkg)) return
                 } else {
-                    if (findElementById(node, req) == null) return
+                    if (AccessibilityHelper.findElementById(node, req) == null) return
                 }
             }
             Log.d("reelblocker","all present")
@@ -127,7 +118,7 @@ class ReelBlocker : BaseBlocker() {
                 if (matcher != null) {
                     if (viewBlockerHelper.findNodeByMatcher(node, matcher, pkg)) return
                 } else {
-                    if (findElementById(node, req) != null) return
+                    if (AccessibilityHelper.findElementById(node, req) != null) return
                 }
             }
             Log.d("reelblocker","all absent")
@@ -272,7 +263,7 @@ class ReelBlocker : BaseBlocker() {
         val viewNode = if (viewIdMatcher != null) {
             viewBlockerHelper.resolveMatcherToNode(rootNode, viewIdMatcher, pkg)
         } else {
-            findElementById(rootNode, viewId)
+            AccessibilityHelper.findElementById(rootNode, viewId)
         }
         val nodeRect = Rect()
         viewNode?.getBoundsInScreen(nodeRect)

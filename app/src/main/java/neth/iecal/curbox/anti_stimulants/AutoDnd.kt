@@ -1,7 +1,8 @@
-package neth.iecal.curbox.blockers
+package neth.iecal.curbox.anti_stimulants
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -11,11 +12,11 @@ import neth.iecal.curbox.services.AppBlockerService
 import neth.iecal.curbox.services.BaseBlockingService
 import java.util.Calendar
 
-class AutoDndEnabler {
+class AutoDnd {
     private lateinit var service: AppBlockerService
     private var autoDndGroups: List<AutoDndGroup> = emptyList()
-    private var settingsJob: kotlinx.coroutines.Job? = null
-    private var tickerJob: kotlinx.coroutines.Job? = null
+    private var settingsJob: Job? = null
+    private var tickerJob: Job? = null
 
     @Volatile private var isDndRequested = false
 
@@ -29,7 +30,7 @@ class AutoDndEnabler {
                 updateDndRequest()
             }
         }
-        
+
         // Periodic check every minute to handle schedule transitions
         tickerJob?.cancel()
         tickerJob = CoroutineScope(Dispatchers.Default).launch {
@@ -50,16 +51,16 @@ class AutoDndEnabler {
         var shouldBeOn = false
         for (group in autoDndGroups) {
             if (!group.autoTurnOnDnd) continue
-            
+
             val config = group.timeConfig
             val intervals = if (config.isEveryday) config.everydayIntervals else config.dailyIntervals[currentDay]
-            
+
             if (intervals != null && intervals.any { isWithinInterval(currentMinutes, it) }) {
                 shouldBeOn = true
                 break
             }
         }
-        
+
         if (isDndRequested != shouldBeOn) {
             isDndRequested = shouldBeOn
             service.syncDndState()

@@ -24,7 +24,7 @@ import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.FocusBlockMode
 import neth.iecal.curbox.data.models.ManualFocusGroup
 import neth.iecal.curbox.databinding.DialogFocusSessionConfigBinding
-import neth.iecal.curbox.trackers.WebsiteUsageTracker.Companion.URL_BAR_ID_LIST
+import neth.iecal.curbox.hardcoded.URL_BAR_ID_LIST
 import neth.iecal.curbox.ui.activity.SelectAppsActivity
 
 class FocusSetupBottomSheet : BottomSheetDialogFragment() {

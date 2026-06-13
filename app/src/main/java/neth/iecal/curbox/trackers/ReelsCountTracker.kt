@@ -30,6 +30,7 @@ import neth.iecal.curbox.data.models.ReelCounterOverlayConfig
 import neth.iecal.curbox.hardcoded.ReelAppConfig.Companion.reelData
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
+import neth.iecal.curbox.utils.AccessibilityHelper
 import neth.iecal.curbox.utils.TimeTools
 
 
@@ -120,7 +121,7 @@ class ReelsCountTracker {
                 return
             }
         } else {
-            if (ReelBlocker.findElementById(root, data.viewId) == null) {
+            if (AccessibilityHelper.findElementById(root, data.viewId) == null) {
                 hideReelCounter()
                 return
             }
@@ -137,7 +138,7 @@ class ReelsCountTracker {
                     return
                 }
             } else {
-                if (ReelBlocker.findElementById(root, req) == null) {
+                if (AccessibilityHelper.findElementById(root, req) == null) {
                     hideReelCounter()
                     return
                 }
@@ -155,7 +156,7 @@ class ReelsCountTracker {
                     return
                 }
             } else {
-                if (ReelBlocker.findElementById(root, req) != null) {
+                if (AccessibilityHelper.findElementById(root, req) != null) {
                     hideReelCounter()
                     return
                 }
@@ -170,7 +171,7 @@ class ReelsCountTracker {
             val compNode = if (matcher != null) {
                 viewBlockerHelper.resolveMatcherToNode(root, matcher, pkg)
             } else {
-                ReelBlocker.findElementById(root, compId)
+                AccessibilityHelper.findElementById(root, compId)
             }
             if (compNode != null) {
                 currentText += data.comparsionResultCleanser( extractTextFromNode(compNode))
