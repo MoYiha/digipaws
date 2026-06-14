@@ -96,6 +96,11 @@ We welcome contributions from the community! If you want to help improve Curbox,
 Developing for accessibility services and blockers is complex. It requires understanding how different apps structure their views. We appreciate any help in discovering new ways to block distracting content.
 Please don't open a pr if you vibe code and have no idea what you're doing or the code does. Just preferably open an issue with the feature request.
 
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) file before working on the project or learning
+how to make quick contributions like adding a support for a mod app in reel counter, adding a support
+for a new browser etc.
+
+
 ### Special Thanks
 * All my beloved donators and sponsers
 * Digipaws: inspiration for the entire code structure and working mechanism
