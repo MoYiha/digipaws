@@ -23,6 +23,7 @@ android {
         versionCode = 50
         versionName = "5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        resValue("string", "app_name", "Curbox")
     }
 
     productFlavors {
@@ -68,6 +69,11 @@ android {
                         }
                 }
             }
+        }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            resValue("string", "app_name", "Debug Curbox")
         }
     }
     compileOptions {
@@ -127,18 +133,20 @@ androidComponents {
             
             doLast {
                 val adbPath = sdkComponents.adb.get().asFile.absolutePath
-                val appId = "neth.iecal.curbox"
+                val appId = variant.applicationId.get()
                 Thread.sleep(2000)
                 // Grant Accessibility Permission
                 exec {
-                    val combinedServices = "$appId/$appId.services.AppBlockerService:$appId/$appId.services.UsageTrackingService"
+                    val baseId = "neth.iecal.curbox"
+                    val combinedServices = "$appId/$baseId.services.AppBlockerService:$appId/$baseId.services.UsageTrackingService"
 
                     commandLine(adbPath, "shell", "settings", "put", "secure", "enabled_accessibility_services", combinedServices)
                 }
-                
+
                 // Launch MainActivity
                 exec {
-                    commandLine(adbPath, "shell", "am", "start", "-n", "$appId/$appId.ui.activity.FragmentActivity")
+                    val baseId = "neth.iecal.curbox"
+                    commandLine(adbPath, "shell", "am", "start", "-n", "$appId/$baseId.ui.activity.FragmentActivity")
                 }
             }
         }
