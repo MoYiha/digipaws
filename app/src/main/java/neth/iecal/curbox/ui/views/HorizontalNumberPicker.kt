@@ -1,4 +1,4 @@
-package neth.iecal.curbox.views
+package neth.iecal.curbox.ui.views
 
 import android.annotation.SuppressLint
 import android.content.Context
