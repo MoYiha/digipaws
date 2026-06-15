@@ -17,7 +17,6 @@ data class Settings(
     val grayscaleGroups: List<GrayscaleGroup> = listOf(),
     val usageTrackerIgnoredApps: List<String> = listOf(),
     val mindfulMessageConfig: MindfulMessageConfig = MindfulMessageConfig(),
-    val viewBlockerConfig: ViewBlockerConfig = ViewBlockerConfig(),
     val uiHiderConfig: UiHiderConfig = UiHiderConfig(),
     val reelCounterOverlayConfig: ReelCounterOverlayConfig = ReelCounterOverlayConfig(),
     val nextWebsiteRecheckTime: Long = 0L

@@ -3,15 +3,14 @@ package neth.iecal.curbox.hardcoded
 import neth.iecal.curbox.data.models.UiHiderScript
 
 /**
- * Starter scripts shipped (disabled) with UIHider. These are UIHider equivalents of the built-in
- * [DEFAULT_VB_RULES] ViewBlocker rules, plus a worked Instagram example. View-id selectors may need
- * adjusting as target apps update their layouts.
+ * Starter scripts shipped (disabled) with UIHider, including a worked Instagram example. View-id
+ * selectors may need adjusting as target apps update their layouts.
  *
- * Notes on the conversion:
- *  - The ViewBlocker `descres:` matcher (resolve a string resource by name from the target app) maps
- *    to the script builtin `appString("res_name")`, so these stay locale-independent.
- *  - ViewBlocker `path:` rules (class-index hierarchy walks) are reproduced with the `step()` helper
- *    that descends to the n-th child of a given class — the same semantics as the path syntax.
+ * Notes on the selectors used here:
+ *  - `appString("res_name")` resolves a string resource by name from the target app, so scripts that
+ *    match localized content descriptions stay locale-independent.
+ *  - A class-index hierarchy walk can be expressed with the `find(path="ClassName[0]>...")` selector,
+ *    which descends to the n-th child of a given class.
  */
 val DEFAULT_UIHIDER_SCRIPTS: List<UiHiderScript> = listOf(
 

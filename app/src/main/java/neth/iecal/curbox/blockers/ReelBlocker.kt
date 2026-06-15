@@ -20,8 +20,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.Constants
-import neth.iecal.curbox.blockers.viewblocker.NodeMatcher
-import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
+import neth.iecal.curbox.blockers.uihider.NodeFinder
 import neth.iecal.curbox.data.models.ReelBlocker
 import neth.iecal.curbox.data.models.ReelBlockingType
 import neth.iecal.curbox.data.models.ReelTimeConfig
@@ -30,7 +29,6 @@ import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.hardcoded.ReelAppConfig.Companion.reelData
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.activity.WarningActivity
-import neth.iecal.curbox.utils.AccessibilityHelper
 import neth.iecal.curbox.utils.TimeTools
 import neth.iecal.curbox.utils.TimerNotification
 import java.util.Calendar
@@ -50,7 +48,6 @@ class ReelBlocker : BaseBlocker() {
 
     }
     private lateinit var service : BaseBlockingService
-    private val viewBlockerHelper = ViewBlocker()
 
     private var reelBlockerConfig: ReelBlocker = ReelBlocker(isActive = false)
     private var timeBAsedConfig : ReelTimeConfig? = null
@@ -101,25 +98,15 @@ class ReelBlocker : BaseBlocker() {
         val data = reelData[pkg] ?: return
         val viewId = data.viewId
 
-        if(isViewOpened(node, viewId, pkg)){
+        if(isViewOpened(node, viewId)){
             Log.d("reelblocker","view found")
             for (req in data.requiresPresent) {
-                val matcher = NodeMatcher.parse(req)
-                if (matcher != null) {
-                    if (!viewBlockerHelper.findNodeByMatcher(node, matcher, pkg)) return
-                } else {
-                    if (AccessibilityHelper.findElementById(node, req) == null) return
-                }
+                if (!NodeFinder.exists(node, req)) return
             }
             Log.d("reelblocker","all present")
 
             for (req in data.requiresAbsent) {
-                val matcher = NodeMatcher.parse(req)
-                if (matcher != null) {
-                    if (viewBlockerHelper.findNodeByMatcher(node, matcher, pkg)) return
-                } else {
-                    if (AccessibilityHelper.findElementById(node, req) != null) return
-                }
+                if (NodeFinder.exists(node, req)) return
             }
             Log.d("reelblocker","all absent")
 
@@ -158,7 +145,6 @@ class ReelBlocker : BaseBlocker() {
 
     fun setupBlocker(service: BaseBlockingService) {
         this.service = service
-        this.viewBlockerHelper.service = service
 
         notificationManager = TimerNotification(service)
         var displayMetrics: DisplayMetrics = service.resources.displayMetrics
@@ -258,18 +244,14 @@ class ReelBlocker : BaseBlocker() {
         return true
     }
 
-    private fun isViewOpened(rootNode: AccessibilityNodeInfo, viewId: String, pkg: String): Boolean {
-        val viewIdMatcher = NodeMatcher.parse(viewId)
-        val viewNode = if (viewIdMatcher != null) {
-            viewBlockerHelper.resolveMatcherToNode(rootNode, viewIdMatcher, pkg)
-        } else {
-            AccessibilityHelper.findElementById(rootNode, viewId)
-        }
+    private fun isViewOpened(rootNode: AccessibilityNodeInfo, viewId: String): Boolean {
+        val viewNode = NodeFinder.findFirst(rootNode, viewId) ?: return false
         val nodeRect = Rect()
-        viewNode?.getBoundsInScreen(nodeRect)
+        viewNode.getBoundsInScreen(nodeRect)
+        NodeFinder.recycle(viewNode)
         val isOffScreenLeft = nodeRect.right <= 0
         val isOffScreenRight = nodeRect.left >= screenWidth
-        return (viewNode != null && !isOffScreenLeft && !isOffScreenRight)
+        return !isOffScreenLeft && !isOffScreenRight
     }
 
     private fun getDailyReelCountLimit(): Int? {

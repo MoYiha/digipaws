@@ -1,11 +1,6 @@
 package neth.iecal.curbox.services
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import kotlinx.coroutines.CancellationException
@@ -23,9 +18,6 @@ import neth.iecal.curbox.blockers.FocusModeBlocker
 import neth.iecal.curbox.blockers.KeywordBlocker
 import neth.iecal.curbox.blockers.ReelBlocker
 import neth.iecal.curbox.blockers.uihider.UiHider
-import neth.iecal.curbox.blockers.viewblocker.ElementPickerNotification
-import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
-import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
 
 @Suppress("DEPRECATION")
 class AppBlockerService : BaseBlockingService() {
@@ -35,31 +27,7 @@ class AppBlockerService : BaseBlockingService() {
     private val autoDnd = AutoDnd()
     private val reelBlocker = ReelBlocker()
     private var keywordBlocker = KeywordBlocker()
-    private val viewBlocker = ViewBlocker()
     private val uiHider = UiHider()
-    private var pickerNotification: ElementPickerNotification? = null
-
-    private val pickerReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                ViewBlockerFragment.INTENT_ACTION_SHOW_PICKER_NOTIFICATION -> {
-                    pickerNotification?.showNotification()
-                }
-                ElementPickerNotification.ACTION_START_PICKER -> {
-                    val picker = viewBlocker.elementPicker
-                    if (picker != null && !picker.isActive) {
-                        picker.show()
-                        pickerNotification?.showPickerActiveNotification()
-                    }
-                }
-                ElementPickerNotification.ACTION_STOP_PICKER -> {
-                    viewBlocker.elementPicker?.hide()
-                    pickerNotification?.cancelNotification()
-                }
-            }
-        }
-    }
-
 
     private var grayScaleFilter = GrayScaleFilter()
 
@@ -120,7 +88,6 @@ class AppBlockerService : BaseBlockingService() {
                 try {
                     reelBlocker.doViewBlockerCheck(event)
                     keywordBlocker.checkIfUnsupportedBrowser(event)
-                    viewBlocker.doViewBlockerCheck(event)
                     uiHider.doUiHiderCheck(event)
                 } catch (t: Throwable) {
                     // Don't log normal coroutine cancellations as crashes
@@ -143,10 +110,7 @@ class AppBlockerService : BaseBlockingService() {
         autoDnd.setup(this)
         reelBlocker.setupBlocker(this)
         keywordBlocker.setupBlocker(this)
-        viewBlocker.setupBlocker(this)
-        viewBlocker.setupElementPicker()
         uiHider.setupBlocker(this)
-        pickerNotification = ElementPickerNotification(this)
         grayScaleFilter.setup(this)
 
         focusModeBlocker.setupReceivers()
@@ -154,19 +118,7 @@ class AppBlockerService : BaseBlockingService() {
         reelBlocker.setupReceivers()
         keywordBlocker.setupReceivers()
         grayScaleFilter.setupReceivers()
-        viewBlocker.setupReceivers()
         uiHider.setupReceivers()
-
-        val pickerFilter = IntentFilter().apply {
-            addAction(ViewBlockerFragment.INTENT_ACTION_SHOW_PICKER_NOTIFICATION)
-            addAction(ElementPickerNotification.ACTION_START_PICKER)
-            addAction(ElementPickerNotification.ACTION_STOP_PICKER)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(pickerReceiver, pickerFilter, Context.RECEIVER_EXPORTED)
-        } else {
-            registerReceiver(pickerReceiver, pickerFilter)
-        }
 
         startBackgroundWorker()
     }
@@ -181,10 +133,7 @@ class AppBlockerService : BaseBlockingService() {
             appBlocker.onDestroy()
             keywordBlocker.removeReceivers()
             grayScaleFilter.unregisterReceivers()
-            viewBlocker.removeReceivers()
             uiHider.removeReceivers()
-            try { unregisterReceiver(pickerReceiver) } catch (_: Exception) {}
-            pickerNotification?.cancelNotification()
 
             eventChannel.close()
             serviceScope.cancel()

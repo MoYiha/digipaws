@@ -21,8 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import neth.iecal.curbox.blockers.ReelBlocker
-import neth.iecal.curbox.blockers.viewblocker.NodeMatcher
-import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
+import neth.iecal.curbox.blockers.uihider.NodeFinder
 import neth.iecal.curbox.data.db.AppDatabase
 import neth.iecal.curbox.data.db.ReelStatsDao
 import neth.iecal.curbox.data.db.ReelStatsEntity
@@ -31,7 +30,6 @@ import neth.iecal.curbox.data.models.ReelCounterOverlayConfig
 import neth.iecal.curbox.hardcoded.ReelAppConfig.Companion.reelData
 import neth.iecal.curbox.services.BaseBlockingService
 import neth.iecal.curbox.ui.overlay.ReelsOverlayManager
-import neth.iecal.curbox.utils.AccessibilityHelper
 import neth.iecal.curbox.utils.TimeTools
 
 
@@ -56,12 +54,10 @@ class ReelsCountTracker {
 
     private val lastDynamicText = mutableMapOf<String, String>()
     private val seenReelsCache = mutableMapOf<String, LruCache<String, Boolean>>()
-    private val viewBlockerHelper = ViewBlocker()
 
     private var ignored = listOf<String>()
     fun setup(service: BaseBlockingService, overlayManager: ReelsOverlayManager) {
         this.service = service
-        this.viewBlockerHelper.service = service
         this.overlayManager = overlayManager
 
         ignored = listOf("com.android.systemui",
@@ -114,69 +110,51 @@ class ReelsCountTracker {
     private fun checkForReelProgression(pkg: String, data: ReelAppData) {
         val root = service.rootInActiveWindow ?: return
 
-        Log.d("reel","searchin view")
+        Log.d("reel","searchin view $data")
 
-        val viewIdMatcher = NodeMatcher.parse(data.viewId)
-        if (viewIdMatcher != null) {
-            val node = viewBlockerHelper.resolveMatcherToNode(root, viewIdMatcher, pkg)
-            if (node == null || !isViewInBounds(node)) {
-                hideReelCounter()
-                return
-            }
-        } else {
-            val node = AccessibilityHelper.findElementById(root, data.viewId)
-            if (node == null || !isViewInBounds(node)) {
-                hideReelCounter()
-                return
-            }
+        val viewNode = NodeFinder.findFirst(root, data.viewId)
+        Log.d("reel",viewNode.toString())
+
+        if (viewNode == null || !isViewInBounds(viewNode)) {
+            viewNode?.let { NodeFinder.recycle(it) }
+            hideReelCounter()
+            return
         }
+        NodeFinder.recycle(viewNode)
         Log.d("reel","found view")
 
         // Check if required views are present
         for (req in data.requiresPresent) {
-            val matcher = NodeMatcher.parse(req)
-            Log.d("nodematcher", matcher.toString())
-            val node = if (matcher != null) {
-                viewBlockerHelper.resolveMatcherToNode(root, matcher, pkg)
-            } else {
-                AccessibilityHelper.findElementById(root, req)
-            }
-
+            val node = NodeFinder.findFirst(root, req)
             if (node == null || !isViewInBounds(node)) {
+                node?.let { NodeFinder.recycle(it) }
                 hideReelCounter()
                 return
             }
+            NodeFinder.recycle(node)
         }
 
         Log.d("reel","all present")
 
         // Check if requires absent views are found
         for (req in data.requiresAbsent) {
-            val matcher = NodeMatcher.parse(req)
-            val node = if (matcher != null) {
-                viewBlockerHelper.resolveMatcherToNode(root, matcher, pkg)
-            } else {
-                AccessibilityHelper.findElementById(root, req)
-            }
-
+            val node = NodeFinder.findFirst(root, req)
             if (node != null && isViewInBounds(node)) {
+                NodeFinder.recycle(node)
                 hideReelCounter()
                 return
             }
+            node?.let { NodeFinder.recycle(it) }
         }
         Log.d("reel","all absent")
 
         // Loop dynamic comparator viewgroups and extract text
         var currentText = ""
         for (compId in data.dynamicComparator) {
-            val matcher = NodeMatcher.parse(compId)
-            val compNode = if (matcher != null) {
-                viewBlockerHelper.resolveMatcherToNode(root, matcher, pkg)
-            } else {
-                AccessibilityHelper.findElementById(root, compId)
-            }
+            val compNode = NodeFinder.findFirst(root, compId)
             if (compNode != null) {
                 currentText += data.comparsionResultCleanser( extractTextFromNode(compNode))
+                NodeFinder.recycle(compNode)
             }
         }
 

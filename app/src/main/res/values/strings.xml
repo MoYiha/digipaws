@@ -264,9 +264,6 @@
     <string name="position_center">Center</string>
     <string name="position_bottom">Bottom</string>
 
-    <string name="view_blocking">Hide UI Elements</string>
-    <string name="hide_distracting_ui_elements_in_apps">Hide distracting UI elements in apps</string>
-    <string name="enable_view_blocker">Enable View Blocker</string>
     <string name="default_rules">Default Rules</string>
     <string name="custom_rules">Custom Rules</string>
     <string name="custom_rule_hint">Custom Rule Hint</string>
@@ -339,9 +336,6 @@
     <string name="btn_block">Block</string>
     <string name="btn_all">All</string>
     <string name="btn_move">Move</string>
-    <string name="view_blocker_experimental_title">View Blocking is Experimental</string>
-    <string name="view_blocker_experimental_desc">This feature is still in beta and might occasionally break. The element picker is recommended for advanced users only. Join our Discord for more blocking rules.</string>
-    <string name="label_turn_on_advanced_blocking">Turn on advanced view blocking</string>
     <string name="label_group_name">Group Name</string>
     <string name="label_app_blocker">App Blocker</string>
     <string name="default_focus_duration_value">25</string>

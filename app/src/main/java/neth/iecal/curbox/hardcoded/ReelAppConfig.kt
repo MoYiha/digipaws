@@ -8,21 +8,21 @@ class ReelAppConfig {
     companion object{
         val reelData: Map<String, ReelAppData> = mapOf(
             "com.instagram.android" to ReelAppData(
-                viewId = "com.instagram.android:id/clips_viewer_view_pager",
-                requiresPresent = listOf("com.instagram.android:id/clips_ufi_component"),
-                dynamicComparator = listOf("com.instagram.android:id/clips_captions_component", "com.instagram.android:id/clips_author_username")
+                viewId = "id:com.instagram.android:id/clips_viewer_view_pager",
+                requiresPresent = listOf("id:com.instagram.android:id/clips_ufi_component"),
+                dynamicComparator = listOf("id:com.instagram.android:id/clips_captions_component", "id:com.instagram.android:id/clips_author_username")
             ),
 
             "com.myinsta.android" to ReelAppData(
-                viewId = "com.myinsta.android:id/clips_viewer_view_pager",
-                requiresPresent = listOf("com.myinsta.android:id/clips_ufi_component"),
-                dynamicComparator = listOf("com.myinsta.android:id/clips_captions_component", "com.myinsta.android:id/clips_author_username")
+                viewId = "id:com.myinsta.android:id/clips_viewer_view_pager",
+                requiresPresent = listOf("id:com.myinsta.android:id/clips_ufi_component"),
+                dynamicComparator = listOf("id:com.myinsta.android:id/clips_captions_component", "id:com.myinsta.android:id/clips_author_username")
             ),
 
             "com.google.android.youtube" to ReelAppData(
-                viewId = "com.google.android.youtube:id/reel_recycler",
+                viewId = "id:com.google.android.youtube:id/reel_recycler",
                 requiresPresent = listOf(),
-                dynamicComparator = listOf("com.google.android.youtube:id/reel_player_page_content"),
+                dynamicComparator = listOf("id:com.google.android.youtube:id/reel_player_page_content"),
                 comparsionResultCleanser = {
                     if(it.contains("PostPostPostlike")) return@ReelAppData ""
                     if(it.length <= 15) return@ReelAppData ""
@@ -35,9 +35,9 @@ class ReelAppConfig {
                 eventType = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
             ),
             "app.revanced.android.youtube" to ReelAppData(
-                viewId = "app.revanced.android.youtube:id/reel_recycler",
+                viewId = "id:app.revanced.android.youtube:id/reel_recycler",
                 requiresPresent = listOf(),
-                dynamicComparator = listOf("app.revanced.android.youtube:id/reel_player_page_content"),
+                dynamicComparator = listOf("id:app.revanced.android.youtube:id/reel_player_page_content"),
                 comparsionResultCleanser = {
                     if(it.contains("PostPostPostlike")) return@ReelAppData ""
                     if(it.length <= 15) return@ReelAppData ""
@@ -50,9 +50,9 @@ class ReelAppConfig {
                 eventType = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
             ),
             "app.morphe.android.youtube" to ReelAppData(
-                viewId = "app.morphe.android.youtube:id/reel_recycler",
+                viewId = "id:app.morphe.android.youtube:id/reel_recycler",
                 requiresPresent = listOf(),
-                dynamicComparator = listOf("app.morphe.android.youtube:id/reel_player_page_content"),
+                dynamicComparator = listOf("id:app.morphe.android.youtube:id/reel_player_page_content"),
                 comparsionResultCleanser = {
                     if(it.contains("PostPostPostlike")) return@ReelAppData ""
                     if(it.length <= 15) return@ReelAppData ""

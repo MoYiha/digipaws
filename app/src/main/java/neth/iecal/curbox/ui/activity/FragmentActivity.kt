@@ -21,7 +21,6 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.autodnd.CreateA
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.reelBlocker.ReelBlockerFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.KeywordBlockerFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.CreateKeywordGroupFragment
-import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHiderFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHiderEditorFragment
 import androidx.core.view.isVisible
@@ -75,7 +74,6 @@ class FragmentActivity : AppCompatActivity() {
             neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID,
             GrayscaleFragment.FRAGMENT_ID,
             CreateGrayscaleGroupFragment.FRAGMENT_ID,
-                ViewBlockerFragment.FRAGMENT_ID,
                 UiHiderFragment.FRAGMENT_ID,
                 UiHiderEditorFragment.FRAGMENT_ID,
                 IntentsLogFragment.FRAGMENT_ID,
@@ -92,7 +90,6 @@ class FragmentActivity : AppCompatActivity() {
                     ReelBlockerFragment.FRAGMENT_ID -> ReelBlockerFragment()
                     KeywordBlockerFragment.FRAGMENT_ID -> KeywordBlockerFragment()
                     CreateKeywordGroupFragment.FRAGMENT_ID -> CreateKeywordGroupFragment()
-                    ViewBlockerFragment.FRAGMENT_ID -> ViewBlockerFragment()
                     UiHiderFragment.FRAGMENT_ID -> UiHiderFragment()
                     UiHiderEditorFragment.FRAGMENT_ID -> UiHiderEditorFragment()
                     AutoDndFragment.FRAGMENT_ID -> AutoDndFragment()
