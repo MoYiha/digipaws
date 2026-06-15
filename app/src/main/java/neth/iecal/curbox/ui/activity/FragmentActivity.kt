@@ -22,6 +22,8 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.reelBlocker.Ree
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.KeywordBlockerFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.CreateKeywordGroupFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
+import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHiderFragment
+import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHiderEditorFragment
 import androidx.core.view.isVisible
 import android.animation.ValueAnimator
 import android.graphics.RenderEffect
@@ -74,6 +76,8 @@ class FragmentActivity : AppCompatActivity() {
             GrayscaleFragment.FRAGMENT_ID,
             CreateGrayscaleGroupFragment.FRAGMENT_ID,
                 ViewBlockerFragment.FRAGMENT_ID,
+                UiHiderFragment.FRAGMENT_ID,
+                UiHiderEditorFragment.FRAGMENT_ID,
                 IntentsLogFragment.FRAGMENT_ID,
             neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID,
             KeywordBlockerFragment.FRAGMENT_ID,
@@ -89,6 +93,8 @@ class FragmentActivity : AppCompatActivity() {
                     KeywordBlockerFragment.FRAGMENT_ID -> KeywordBlockerFragment()
                     CreateKeywordGroupFragment.FRAGMENT_ID -> CreateKeywordGroupFragment()
                     ViewBlockerFragment.FRAGMENT_ID -> ViewBlockerFragment()
+                    UiHiderFragment.FRAGMENT_ID -> UiHiderFragment()
+                    UiHiderEditorFragment.FRAGMENT_ID -> UiHiderEditorFragment()
                     AutoDndFragment.FRAGMENT_ID -> AutoDndFragment()
                     CreateAutoDndGroupFragment.FRAGMENT_ID -> CreateAutoDndGroupFragment()
                     neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment.FRAGMENT_ID -> neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.reel_counter.ReelCounterFragment()

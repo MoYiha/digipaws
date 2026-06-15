@@ -782,4 +782,18 @@
     <string name="export_keywords">Export Keywords</string>
     <string name="delete_group">Delete Group</string>
     <string name="advanced">Advanced</string>
+
+    <!-- UIHider -->
+    <string name="delete">Delete</string>
+    <string name="ui_hider_title">UI Hider (scripts)</string>
+    <string name="ui_hider_desc">Write small scripts to analyze an app\'s UI and draw overlays, press back, or press home. Advanced; for users comfortable with simple scripting.</string>
+    <string name="enable_ui_hider">Enable UI Hider</string>
+    <string name="ui_hider_enable_subtitle">Run your scripts on supported apps</string>
+    <string name="ui_hider_scripts">Scripts</string>
+    <string name="ui_hider_add_script">Add script</string>
+    <string name="ui_hider_editor_title">Edit script</string>
+    <string name="ui_hider_package_hint">App package (e.g. com.instagram.android)</string>
+    <string name="ui_hider_label_hint">Label (optional)</string>
+    <string name="ui_hider_script_label">SCRIPT</string>
+    <string name="ui_hider_source_hint">if app != \"com.instagram.android\" { return }\n…</string>
 </resources>

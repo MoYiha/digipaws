@@ -22,6 +22,7 @@ import neth.iecal.curbox.blockers.AppBlocker
 import neth.iecal.curbox.blockers.FocusModeBlocker
 import neth.iecal.curbox.blockers.KeywordBlocker
 import neth.iecal.curbox.blockers.ReelBlocker
+import neth.iecal.curbox.blockers.uihider.UiHider
 import neth.iecal.curbox.blockers.viewblocker.ElementPickerNotification
 import neth.iecal.curbox.blockers.viewblocker.ViewBlocker
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.viewBlocker.ViewBlockerFragment
@@ -35,6 +36,7 @@ class AppBlockerService : BaseBlockingService() {
     private val reelBlocker = ReelBlocker()
     private var keywordBlocker = KeywordBlocker()
     private val viewBlocker = ViewBlocker()
+    private val uiHider = UiHider()
     private var pickerNotification: ElementPickerNotification? = null
 
     private val pickerReceiver = object : BroadcastReceiver() {
@@ -119,6 +121,7 @@ class AppBlockerService : BaseBlockingService() {
                     reelBlocker.doViewBlockerCheck(event)
                     keywordBlocker.checkIfUnsupportedBrowser(event)
                     viewBlocker.doViewBlockerCheck(event)
+                    uiHider.doUiHiderCheck(event)
                 } catch (t: Throwable) {
                     // Don't log normal coroutine cancellations as crashes
                     if (t is CancellationException) throw t
@@ -142,6 +145,7 @@ class AppBlockerService : BaseBlockingService() {
         keywordBlocker.setupBlocker(this)
         viewBlocker.setupBlocker(this)
         viewBlocker.setupElementPicker()
+        uiHider.setupBlocker(this)
         pickerNotification = ElementPickerNotification(this)
         grayScaleFilter.setup(this)
 
@@ -151,6 +155,7 @@ class AppBlockerService : BaseBlockingService() {
         keywordBlocker.setupReceivers()
         grayScaleFilter.setupReceivers()
         viewBlocker.setupReceivers()
+        uiHider.setupReceivers()
 
         val pickerFilter = IntentFilter().apply {
             addAction(ViewBlockerFragment.INTENT_ACTION_SHOW_PICKER_NOTIFICATION)
@@ -177,6 +182,7 @@ class AppBlockerService : BaseBlockingService() {
             keywordBlocker.removeReceivers()
             grayScaleFilter.unregisterReceivers()
             viewBlocker.removeReceivers()
+            uiHider.removeReceivers()
             try { unregisterReceiver(pickerReceiver) } catch (_: Exception) {}
             pickerNotification?.cancelNotification()
 

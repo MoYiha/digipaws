@@ -84,6 +84,14 @@ class ReducersFragment : Fragment() {
             startActivity(intent)
         }
 
+        val uiHiderCard = view.findViewById<MaterialCardView>(R.id.card_ui_hider)
+        uiHiderCard.setOnClickListener {
+            val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                putExtra("fragment", neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHiderFragment.FRAGMENT_ID)
+            }
+            startActivity(intent)
+        }
+
         val intentsLogCard = view.findViewById<MaterialCardView>(R.id.card_logged_intents)
         intentsLogCard.setOnClickListener {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
