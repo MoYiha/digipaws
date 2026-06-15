@@ -300,6 +300,46 @@ height = clamp(nav.top - top.bottom, 0, screen.height)
 
 ---
 
+## Persistent storage (caching)
+
+Scripts run **very often** (on every screen change), so re‑doing expensive work each time is wasteful.
+A small per‑script key/value store lets you **cache results** and read them back instantly on later
+runs. The store is kept in memory (fast) and saved to disk in the background, so it also survives app
+restarts. Each script has its **own** namespace — keys never collide between scripts.
+
+- `save(key, value)` — store `value` (a number, string, boolean, or list) under the string `key`.
+- `load(key)` — return the stored value, or `null` if nothing is saved under `key`.
+- `has(key)` — `true` if `key` has a stored value.
+- `remove(key)` — delete the value under `key`.
+
+> Only plain values are storable. You **cannot** `save()` a node — node handles are only valid during
+> the run that produced them. Save the data you need from a node instead (its `id`, bounds, etc.).
+
+**Cache an expensive lookup so later runs skip the work:**
+```
+# Resolve the localized "For You" label once, then reuse it on every subsequent run
+forYou = load("forYouLabel")
+if forYou == null {
+    forYou = appString("guide_tab_title_for_you")
+    if forYou != null {
+        save("forYouLabel", forYou)
+    }
+}
+```
+
+**Remember state across runs (e.g. a counter or a one‑time action):**
+```
+runs = load("runs")
+if runs == null { runs = 0 }
+save("runs", runs + 1)
+```
+
+> **Tip:** caching is most useful for values that are costly to compute but stable — resolved
+> resource strings, fixed layout measurements, feature flags. Don't cache live geometry that changes
+> as the user scrolls.
+
+---
+
 ## Putting it together: recipes
 
 **Hide a region between two anchors** (the feed example, generalized):
@@ -376,6 +416,7 @@ scanning the whole tree where possible.
 # Node fn:   child(i)  children()  parent()  find(...)  findAll(...)  hide(color=, touch=)
 # Actions:   draw(x,y,w,h, color=, touch=, key=)  hide(node, ...)  back()  home()  log(...)
 # Math/util: min max abs floor ceil round sqrt pow clamp  len int str range  appString(name)
+# Storage:   save(key, value)  load(key)  has(key)  remove(key)   (per-script, persistent cache)
 # Control:   if / else if / else   while   for x in <list|a..b>   break   continue
 #            fn name(args) { ... return ... }   return
 ```

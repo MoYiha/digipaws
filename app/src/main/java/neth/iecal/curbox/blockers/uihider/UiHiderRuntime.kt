@@ -23,7 +23,9 @@ class UiHiderRuntime(
     private val service: BaseBlockingService,
     private val root: AccessibilityNodeInfo,
     private val budget: Budget,
-    private val globals: Map<String, Any?>
+    private val globals: Map<String, Any?>,
+    private val scriptId: String,
+    private val store: ScriptStore
 ) : RuntimeApi {
 
     val drawCommands = ArrayList<DrawCommand>()
@@ -52,6 +54,15 @@ class UiHiderRuntime(
             "home" -> { service.pressHome(); null }
             "log" -> { output.append(args.joinToString(" ") { Values.stringify(it) }).append('\n'); null }
             "appString" -> resolveAppString(args.getOrNull(0))
+            "save" -> {
+                val value = args.getOrNull(1)
+                assertStorable(value)
+                store.put(scriptId, storeKey(args, "save"), value)
+                null
+            }
+            "load" -> store.get(scriptId, storeKey(args, "load"))
+            "has" -> store.has(scriptId, storeKey(args, "has"))
+            "remove" -> { store.remove(scriptId, storeKey(args, "remove")); null }
             else -> {
                 val result = Builtins.tryCall(name, args)
                 if (result === Builtins.UNKNOWN) throw ScriptError("unknown function '$name'")
@@ -122,6 +133,25 @@ class UiHiderRuntime(
             if (id == 0) null else res.getString(id).also { appStringCache[cacheKey] = it }
         } catch (_: Exception) {
             null
+        }
+    }
+
+    // ── Persistent storage ──
+
+    private fun storeKey(args: List<Any?>, fn: String): String {
+        val k = args.getOrNull(0)
+        if (k !is String) throw ScriptError("$fn() expects a string key")
+        return k
+    }
+
+    /** Reject values that can't be persisted (live node handles); everything else is JSON-friendly. */
+    private fun assertStorable(value: Any?) {
+        when (value) {
+            null, is Double, is String, is Boolean -> {}
+            is List<*> -> value.forEach { assertStorable(it) }
+            else -> throw ScriptError(
+                "cannot save a ${Values.typeName(value)} (only numbers, strings, booleans, and lists)"
+            )
         }
     }
 

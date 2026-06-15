@@ -11,10 +11,11 @@ import org.junit.Test
  */
 class ScriptLanguageTest {
 
-    /** Captures `log()` output and `draw()` calls; routes everything else to [Builtins]. */
+    /** Captures `log()`/`draw()`, backs `save`/`load`, routes everything else to [Builtins]. */
     private class StubApi : RuntimeApi {
         val log = StringBuilder()
         val draws = ArrayList<List<Any?>>()
+        val store = HashMap<String, Any?>()
 
         override fun provideGlobals(): Map<String, Any?> = mapOf(
             "app" to "com.test.app",
@@ -25,6 +26,10 @@ class ScriptLanguageTest {
         override fun callFunction(name: String, args: List<Any?>, named: Map<String, Any?>): Any? = when (name) {
             "log" -> { log.append(args.joinToString(" ") { Values.stringify(it) }).append('\n'); null }
             "draw" -> { draws.add(args); null }
+            "save" -> { store[args[0] as String] = args.getOrNull(1); null }
+            "load" -> store[args[0] as String]
+            "has" -> store.containsKey(args[0] as String)
+            "remove" -> { store.remove(args[0] as String); null }
             else -> {
                 val r = Builtins.tryCall(name, args)
                 if (r === Builtins.UNKNOWN) throw ScriptError("unknown function '$name'")
@@ -142,6 +147,40 @@ class ScriptLanguageTest {
             log(n == null)
         """.trimIndent()
         assertEquals("true\n", run(src).log.toString())
+    }
+
+    @Test fun saveAndLoadRoundTripsValues() {
+        val src = """
+            if not has("count") {
+                save("count", 0)
+            }
+            save("count", load("count") + 1)
+            log(load("count"))
+        """.trimIndent()
+        // Same StubApi (shared store) across two runs simulates persistence across script runs.
+        val api = StubApi()
+        Interpreter(api, Budget()).run(Parser.parse(src))
+        Interpreter(api, Budget()).run(Parser.parse(src))
+        assertEquals("1\n2\n", api.log.toString())
+    }
+
+    @Test fun scriptStorePersistsToDisk() {
+        val file = java.io.File.createTempFile("uihider_store", ".json").also { it.delete() }
+        try {
+            val store = neth.iecal.curbox.blockers.uihider.ScriptStore(file)
+            store.put("s1", "name", "hello")
+            store.put("s1", "nums", listOf(1.0, 2.0, 3.0))
+            store.put("s2", "flag", true)
+            store.close()  // flushes synchronously
+
+            val reopened = neth.iecal.curbox.blockers.uihider.ScriptStore(file)
+            assertEquals("hello", reopened.get("s1", "name"))
+            assertEquals(listOf(1.0, 2.0, 3.0), reopened.get("s1", "nums"))
+            assertEquals(true, reopened.get("s2", "flag"))
+            assertEquals(null, reopened.get("s1", "missing"))
+        } finally {
+            file.delete()
+        }
     }
 
     @Test fun syntaxErrorReportsLine() {

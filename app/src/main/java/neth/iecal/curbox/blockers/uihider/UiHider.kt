@@ -42,6 +42,7 @@ class UiHider : BaseBlocker() {
 
     private lateinit var service: BaseBlockingService
     private lateinit var overlay: UiHiderOverlayManager
+    private var store: ScriptStore? = null
 
     private var config = UiHiderConfig()
     private var settingsJob: Job? = null
@@ -59,6 +60,7 @@ class UiHider : BaseBlocker() {
     fun setupBlocker(service: BaseBlockingService) {
         this.service = service
         overlay = UiHiderOverlayManager(service)
+        if (store == null) store = ScriptStore(java.io.File(service.filesDir, "uihider_store.json"))
         val metrics = service.resources.displayMetrics
         screenWidth = metrics.widthPixels
         screenHeight = metrics.heightPixels
@@ -86,6 +88,8 @@ class UiHider : BaseBlocker() {
         try { service.unregisterReceiver(refreshReceiver) } catch (_: Exception) {}
         settingsJob?.cancel()
         overlay.clearAll()
+        store?.close()
+        store = null
     }
 
     private fun recompile() {
@@ -136,7 +140,7 @@ class UiHider : BaseBlocker() {
             val globals = buildGlobals(pkg, event)
             for (compiled in scripts) {
                 val budget = Budget()
-                val runtime = UiHiderRuntime(service, root, budget, globals)
+                val runtime = UiHiderRuntime(service, root, budget, globals, compiled.id, store!!)
                 try {
                     Interpreter(runtime, budget).run(compiled.program)
                     for (cmd in runtime.drawCommands) {
