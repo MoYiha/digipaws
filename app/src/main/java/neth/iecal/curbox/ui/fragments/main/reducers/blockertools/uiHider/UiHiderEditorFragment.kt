@@ -18,7 +18,7 @@ class UiHiderEditorFragment : Fragment() {
     private val viewModel: UiHiderViewModel by activityViewModels()
 
     private var scriptId: String? = null
-    private var existing: UiHiderScript? = null
+    private var existingIsEnabled: Boolean = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -31,14 +31,16 @@ class UiHiderEditorFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         scriptId = arguments?.getString(EXTRA_SCRIPT_ID)
-        existing = scriptId?.let { viewModel.scriptById(it) }
+        val isEditing = scriptId != null
 
-        existing?.let { script ->
-            binding.editPackage.setText(script.packageName)
-            binding.editLabel.setText(script.label)
-            binding.editSource.setText(script.source)
+        if (isEditing) {
+            existingIsEnabled = arguments?.getBoolean(EXTRA_IS_ENABLED, true) ?: true
+            binding.editPackage.setText(arguments?.getString(EXTRA_PACKAGE_NAME).orEmpty())
+            binding.editLabel.setText(arguments?.getString(EXTRA_LABEL).orEmpty())
+            binding.editSource.setText(arguments?.getString(EXTRA_SOURCE).orEmpty())
         }
-        binding.btnDelete.visibility = if (existing != null) View.VISIBLE else View.GONE
+
+        binding.btnDelete.visibility = if (isEditing) View.VISIBLE else View.GONE
 
         binding.btnSave.setOnClickListener { save() }
         binding.btnDelete.setOnClickListener {
@@ -69,7 +71,7 @@ class UiHiderEditorFragment : Fragment() {
             packageName = packageName,
             label = label.ifEmpty { packageName.substringAfterLast('.') },
             source = source,
-            isEnabled = existing?.isEnabled ?: true
+            isEnabled = existingIsEnabled
         )
         viewModel.upsertScript(script)
         requireActivity().finish()
@@ -83,5 +85,9 @@ class UiHiderEditorFragment : Fragment() {
     companion object {
         const val FRAGMENT_ID = "ui_hider_editor"
         const val EXTRA_SCRIPT_ID = "scriptId"
+        const val EXTRA_PACKAGE_NAME = "packageName"
+        const val EXTRA_LABEL = "label"
+        const val EXTRA_SOURCE = "source"
+        const val EXTRA_IS_ENABLED = "isEnabled"
     }
 }

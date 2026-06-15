@@ -16,7 +16,7 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <neth.iecal.curbox.views.HorizontalNumberPicker
+    <neth.iecal.curbox.ui.views.HorizontalNumberPicker
         android:id="@+id/mins_picker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,7 +25,7 @@
         android:gravity="center"
         android:visibility="gone">
 
-    </neth.iecal.curbox.views.HorizontalNumberPicker>
+    </neth.iecal.curbox.ui.views.HorizontalNumberPicker>
 
     <TextView
         android:id="@+id/proceed_seconds"

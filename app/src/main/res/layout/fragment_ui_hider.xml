@@ -126,12 +126,13 @@
                 android:layout_marginBottom="12dp"
                 android:layout_marginStart="4dp" />
 
-            <LinearLayout
-                android:id="@+id/scripts_container"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_scripts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="16dp"
+                android:nestedScrollingEnabled="false"
+                android:clipToPadding="false" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_script"
