@@ -145,6 +145,9 @@ class UiHider : BaseBlocker() {
                 } catch (e: ScriptError) {
                     Log.w("UiHider", "Runtime error in script '${compiled.id}': ${e.message}")
                 } finally {
+                    if (runtime.output.isNotEmpty()) {
+                        Log.i("UiHider", "[${compiled.id}] ${runtime.output.toString().trimEnd()}")
+                    }
                     runtime.finish()
                 }
             }

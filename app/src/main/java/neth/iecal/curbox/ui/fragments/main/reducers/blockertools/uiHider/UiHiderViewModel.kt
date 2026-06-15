@@ -26,24 +26,47 @@ class UiHiderViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             dataStoreManager.settings.collectLatest { settings ->
                 val persisted = settings.uiHiderConfig
-                // Show the shipped sample(s) as a starter until the user has any of their own.
-                _config.value = if (persisted.scripts.isEmpty()) {
-                    persisted.copy(scripts = DEFAULT_UIHIDER_SCRIPTS)
-                } else {
-                    persisted
+                val merged = mergeWithDefaults(persisted)
+                _config.value = merged
+
+                // Persist (and refresh the running blocker) when the shipped defaults changed,
+                // e.g. their source was edited in code. Re-emits but converges (merged == persisted next time).
+                if (merged.scripts != persisted.scripts) {
+                    dataStoreManager.updateUiHiderConfig(merged)
+                    requestRefresh()
                 }
             }
         }
+    }
+
+    /**
+     * Shipped sample scripts (ids present in [DEFAULT_UIHIDER_SCRIPTS]) always take their
+     * source/label/package from code, keeping only the user's enabled state — so edits to the
+     * hardcoded samples propagate automatically. User-created scripts are preserved untouched.
+     */
+    private fun mergeWithDefaults(persisted: UiHiderConfig): UiHiderConfig {
+        val savedById = persisted.scripts.associateBy { it.id }
+        val defaultIds = DEFAULT_UIHIDER_SCRIPTS.mapTo(HashSet()) { it.id }
+
+        val mergedDefaults = DEFAULT_UIHIDER_SCRIPTS.map { default ->
+            savedById[default.id]?.let { default.copy(isEnabled = it.isEnabled) } ?: default
+        }
+        val userScripts = persisted.scripts.filter { it.id !in defaultIds }
+        return persisted.copy(scripts = mergedDefaults + userScripts)
     }
 
     private fun updateConfig(newConfig: UiHiderConfig) {
         _config.value = newConfig
         viewModelScope.launch {
             dataStoreManager.updateUiHiderConfig(newConfig)
-            getApplication<Application>().sendBroadcast(
-                Intent(UiHider.INTENT_ACTION_REFRESH_UI_HIDER).setPackage(getApplication<Application>().packageName)
-            )
+            requestRefresh()
         }
+    }
+
+    private fun requestRefresh() {
+        getApplication<Application>().sendBroadcast(
+            Intent(UiHider.INTENT_ACTION_REFRESH_UI_HIDER).setPackage(getApplication<Application>().packageName)
+        )
     }
 
     fun setIsActive(isActive: Boolean) {

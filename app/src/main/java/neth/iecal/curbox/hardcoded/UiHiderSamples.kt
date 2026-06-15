@@ -22,26 +22,26 @@ val DEFAULT_UIHIDER_SCRIPTS: List<UiHiderScript> = listOf(
         label = "Instagram: hide home feed",
         isEnabled = false,
         source = """
-            # Cover the gap between the top bar and the bottom nav (the feed),
-            # leaving stories, the top bar, and bottom navigation visible.
             if app != "com.instagram.android" {
                 return
             }
+            
             # The stories view
             top = find(desc="reels tray container")
             nav = find(id="com.instagram.android:id/feed_tab")
-            log("top: " + top + ", nav: " + nav)
 
-            if top != null and nav != null {
-                log("found")
-                y = top.bottom
-                height = nav.top - y
-                if height > 0 {
-                    draw(0, y, screen.width, height)
-                }
-            }else{
-                log("not found")
-               
+            if top != null and top.visible and nav != null and nav.visible {
+                # Ensure anchors are within the visible screen bounds
+             
+                    log("found and visible")
+                    y = top.bottom
+                    height = nav.top - y
+                    if height > 0 {
+                        draw(0, y, screen.width, height)
+                    }
+                
+            } else {
+                log("not found or not visible")
             }
         """.trimIndent()
     ),
@@ -57,6 +57,7 @@ val DEFAULT_UIHIDER_SCRIPTS: List<UiHiderScript> = listOf(
             if app != "com.google.android.youtube" {
                 return
             }
+            
             watch = find(id="com.google.android.youtube:id/watch_list")
             if watch != null {
                 hide(watch)
