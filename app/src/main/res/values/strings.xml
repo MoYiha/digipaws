@@ -780,7 +780,7 @@
     <!-- UIHider -->
     <string name="delete">Delete</string>
     <string name="ui_hider_title">UI Hider (scripts)</string>
-    <string name="ui_hider_desc">Write small scripts to analyze an app\'s UI and draw overlays, press back, or press home. Advanced; for users comfortable with simple scripting.</string>
+    <string name="ui_hider_desc">Write small scripts to analyze an app\'s UI and draw overlays, press back, or press home. Advanced; for users comfortable with simple scripting and android development. \nWe highly recommend you to join our discord to discover and request more scripts.</string>
     <string name="enable_ui_hider">Enable UI Hider</string>
     <string name="ui_hider_enable_subtitle">Run your scripts on supported apps</string>
     <string name="ui_hider_scripts">Scripts</string>
@@ -790,4 +790,23 @@
     <string name="ui_hider_label_hint">Label (optional)</string>
     <string name="ui_hider_script_label">SCRIPT</string>
     <string name="ui_hider_source_hint">if app != \"com.instagram.android\" { return }\n…</string>
+
+    <string name="node_picker_start">Start Node Picker</string>
+    <string name="node_picker_channel_name">Node Picker</string>
+    <string name="node_picker_notif_title">Node Picker</string>
+    <string name="node_picker_notif_text">Press to open picker</string>
+    <string name="node_picker_stop">Stop</string>
+    <string name="node_picker_started_hint">I am ready. Open the app you want to look at, then tap my notification to start picking.</string>
+    <string name="node_picker_need_accessibility">Please turn on my accessibility service first.</string>
+    <string name="node_picker_need_overlay">Please let me draw over other apps first.</string>
+    <string name="node_picker_hint">Tap any element on screen to look at it</string>
+    <string name="node_picker_copied">Copied to clipboard</string>
+    <string name="node_picker_up">Up</string>
+    <string name="node_picker_deeper">Deeper</string>
+    <string name="node_picker_move">Move</string>
+    <string name="node_picker_info">Info</string>
+    <string name="node_picker_copy">Copy</string>
+    <string name="node_picker_hide">Hide</string>
+    <string name="node_picker_show">Show panel</string>
+    <string name="node_picker_close">Close</string>
 </resources>

@@ -91,6 +91,15 @@
                 android:value="Usage tracking for digital wellbeing" />
         </service>
 
+        <service
+            android:name=".services.NodePickerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Accessibility node inspection for building UI hider scripts" />
+        </service>
+
         <receiver
             android:name=".receivers.AdminReceiver"
             android:description="@string/admin_permission_desc"

@@ -17,6 +17,7 @@ import neth.iecal.curbox.blockers.AppBlocker
 import neth.iecal.curbox.blockers.FocusModeBlocker
 import neth.iecal.curbox.blockers.KeywordBlocker
 import neth.iecal.curbox.blockers.ReelBlocker
+import neth.iecal.curbox.blockers.uihider.NodePicker
 import neth.iecal.curbox.blockers.uihider.UiHider
 
 @Suppress("DEPRECATION")
@@ -28,6 +29,7 @@ class AppBlockerService : BaseBlockingService() {
     private val reelBlocker = ReelBlocker()
     private var keywordBlocker = KeywordBlocker()
     private val uiHider = UiHider()
+    private val nodePicker = NodePicker()
 
     private var grayScaleFilter = GrayScaleFilter()
 
@@ -111,6 +113,7 @@ class AppBlockerService : BaseBlockingService() {
         reelBlocker.setupBlocker(this)
         keywordBlocker.setupBlocker(this)
         uiHider.setupBlocker(this)
+        nodePicker.setupBlocker(this)
         grayScaleFilter.setup(this)
 
         focusModeBlocker.setupReceivers()
@@ -119,6 +122,7 @@ class AppBlockerService : BaseBlockingService() {
         keywordBlocker.setupReceivers()
         grayScaleFilter.setupReceivers()
         uiHider.setupReceivers()
+        nodePicker.setupReceivers()
 
         startBackgroundWorker()
     }
@@ -134,6 +138,7 @@ class AppBlockerService : BaseBlockingService() {
             keywordBlocker.removeReceivers()
             grayScaleFilter.unregisterReceivers()
             uiHider.removeReceivers()
+            nodePicker.removeReceivers()
 
             eventChannel.close()
             serviceScope.cancel()

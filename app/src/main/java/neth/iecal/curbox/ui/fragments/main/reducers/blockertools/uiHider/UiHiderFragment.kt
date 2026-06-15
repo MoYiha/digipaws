@@ -5,15 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.UiHiderScript
 import neth.iecal.curbox.databinding.FragmentUiHiderBinding
+import neth.iecal.curbox.services.AppBlockerService
+import neth.iecal.curbox.services.NodePickerService
 import neth.iecal.curbox.ui.activity.FragmentActivity
+import neth.iecal.curbox.utils.PermissionUtils
 
 class UiHiderFragment : Fragment() {
 
@@ -45,6 +50,7 @@ class UiHiderFragment : Fragment() {
             if (!isUpdatingUi) viewModel.setIsActive(isChecked)
         }
         binding.btnAddScript.setOnClickListener { openEditor(null) }
+        binding.btnStartNodePicker.setOnClickListener { startNodePicker() }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.config.collectLatest { config ->
@@ -56,6 +62,20 @@ class UiHiderFragment : Fragment() {
                 isUpdatingUi = false
             }
         }
+    }
+
+    private fun startNodePicker() {
+        val context = requireContext()
+        if (!PermissionUtils.isAccessibilityServiceEnabled(context, AppBlockerService::class.java)) {
+            Toast.makeText(context, R.string.node_picker_need_accessibility, Toast.LENGTH_LONG).show()
+            return
+        }
+        if (!PermissionUtils.hasOverlayPermission(context)) {
+            Toast.makeText(context, R.string.node_picker_need_overlay, Toast.LENGTH_LONG).show()
+            return
+        }
+        NodePickerService.start(context)
+        Toast.makeText(context, R.string.node_picker_started_hint, Toast.LENGTH_LONG).show()
     }
 
     private fun openEditor(script: UiHiderScript?) {
