@@ -49,11 +49,15 @@ class UiHider : BaseBlocker() {
 
     private var screenWidth = 0
     private var screenHeight = 0
+    private var screenMap: Map<String, Any?> = emptyMap()
 
     @Volatile private var scriptsByPackage: Map<String, List<CompiledScript>> = emptyMap()
 
     private var lastPackage = ""
     private var lastRunAt = 0L
+
+    // Last overlay set handed to the manager; lets us skip re-posting an identical frame.
+    @Volatile private var lastCommands: List<DrawCommand> = emptyList()
 
     private class CompiledScript(val id: String, val program: List<Stmt>)
 
@@ -64,6 +68,7 @@ class UiHider : BaseBlocker() {
         val metrics = service.resources.displayMetrics
         screenWidth = metrics.widthPixels
         screenHeight = metrics.heightPixels
+        screenMap = mapOf("width" to screenWidth.toDouble(), "height" to screenHeight.toDouble())
 
         settingsJob?.cancel()
         settingsJob = CoroutineScope(Dispatchers.IO).launch {
@@ -87,7 +92,7 @@ class UiHider : BaseBlocker() {
     fun removeReceivers() {
         try { service.unregisterReceiver(refreshReceiver) } catch (_: Exception) {}
         settingsJob?.cancel()
-        overlay.clearAll()
+        clearOverlays()
         store?.close()
         store = null
     }
@@ -107,7 +112,7 @@ class UiHider : BaseBlocker() {
             }
         }
         scriptsByPackage = newMap
-        if (!config.isActive) overlay.clearAll()
+        if (!config.isActive) clearOverlays()
     }
 
     fun doUiHiderCheck(event: AccessibilityEvent?) {
@@ -118,7 +123,7 @@ class UiHider : BaseBlocker() {
         val scripts = scriptsByPackage[pkg]
         if (scripts.isNullOrEmpty()) {
             if (lastPackage != pkg) {
-                overlay.clearAll()
+                clearOverlays()
                 lastPackage = pkg
             }
             return
@@ -155,7 +160,10 @@ class UiHider : BaseBlocker() {
                     runtime.finish()
                 }
             }
-            overlay.apply(commands)
+            if (commands != lastCommands) {
+                overlay.apply(commands)
+                lastCommands = commands
+            }
         } catch (t: Throwable) {
             Log.e("UiHider", "Error running scripts for $pkg", t)
         } finally {
@@ -163,12 +171,15 @@ class UiHider : BaseBlocker() {
         }
     }
 
+    /** Remove all overlays and invalidate the dedupe cache so the next run re-applies cleanly. */
+    private fun clearOverlays() {
+        overlay.clearAll()
+        lastCommands = emptyList()
+    }
+
     private fun buildGlobals(pkg: String, event: AccessibilityEvent): Map<String, Any?> = mapOf(
         "app" to pkg,
-        "screen" to mapOf(
-            "width" to screenWidth.toDouble(),
-            "height" to screenHeight.toDouble()
-        ),
+        "screen" to screenMap,
         "event" to mapOf(
             "type" to eventTypeName(event.eventType),
             "package" to pkg,
@@ -189,7 +200,7 @@ class UiHider : BaseBlocker() {
     private val refreshReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == INTENT_ACTION_REFRESH_UI_HIDER) {
-                overlay.clearAll()
+                clearOverlays()
             }
         }
     }

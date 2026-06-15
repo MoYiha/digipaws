@@ -160,34 +160,73 @@ class UiHiderRuntime(
     } catch (_: Exception) { null }
 
     // ── Node search ──
+    //
+    // Whenever a selector can drive the platform's batched finders
+    // (findAccessibilityNodeInfosByViewId / ByText) we anchor on them: one prefetched
+    // cross-process query instead of a manual per-node getChild() walk over the whole tree.
+    // The remaining selectors are then verified on the small candidate set. Only selector sets
+    // with no id/text/desc anchor (e.g. class- or state-only) fall back to a depth-first walk.
+    // This mirrors ViewBlocker's matching strategy.
 
-    private fun matches(node: AccessibilityNodeInfo, named: Map<String, Any?>): Boolean {
-        for ((key, value) in named) {
-            val ok = when (key) {
-                "id" -> node.viewIdResourceName == Values.stringify(value)
-                "text" -> node.text?.toString() == Values.stringify(value)
-                "desc" -> node.contentDescription?.toString() == Values.stringify(value)
-                "class" -> node.className?.toString() == Values.stringify(value)
-                "textContains" -> node.text?.toString()?.contains(Values.stringify(value), true) == true
-                "descContains" -> node.contentDescription?.toString()?.contains(Values.stringify(value), true) == true
-                "clickable" -> node.isClickable == Values.isTruthy(value)
-                "scrollable" -> node.isScrollable == Values.isTruthy(value)
-                "selected" -> node.isSelected == Values.isTruthy(value)
-                "checked" -> node.isChecked == Values.isTruthy(value)
-                else -> throw ScriptError("unknown selector '$key'")
-            }
-            if (!ok) return false
+    private fun interface NodeMatcher { fun test(node: AccessibilityNodeInfo): Boolean }
+
+    /** Compile the selectors into predicates once per query so target values aren't re-derived per node. */
+    private fun compileMatchers(named: Map<String, Any?>): List<NodeMatcher> = named.map { (key, value) ->
+        when (key) {
+            "id" -> Values.stringify(value).let { s -> NodeMatcher { it.viewIdResourceName == s } }
+            "text" -> Values.stringify(value).let { s -> NodeMatcher { it.text?.toString() == s } }
+            "desc" -> Values.stringify(value).let { s -> NodeMatcher { it.contentDescription?.toString() == s } }
+            "class" -> Values.stringify(value).let { s -> NodeMatcher { it.className?.toString() == s } }
+            "textContains" -> Values.stringify(value).let { s -> NodeMatcher { it.text?.toString()?.contains(s, true) == true } }
+            "descContains" -> Values.stringify(value).let { s -> NodeMatcher { it.contentDescription?.toString()?.contains(s, true) == true } }
+            "clickable" -> Values.isTruthy(value).let { b -> NodeMatcher { it.isClickable == b } }
+            "scrollable" -> Values.isTruthy(value).let { b -> NodeMatcher { it.isScrollable == b } }
+            "selected" -> Values.isTruthy(value).let { b -> NodeMatcher { it.isSelected == b } }
+            "checked" -> Values.isTruthy(value).let { b -> NodeMatcher { it.isChecked == b } }
+            else -> throw ScriptError("unknown selector '$key'")
         }
+    }
+
+    private fun matchesAll(node: AccessibilityNodeInfo, matchers: List<NodeMatcher>): Boolean {
+        for (m in matchers) if (!m.test(node)) return false
         return true
     }
 
-    /** Depth-first search returning an owned copy of the first match, or null. */
+    /**
+     * Candidate nodes from the platform's batched finder for the most selective anchor selector,
+     * or null when no selector can drive one. Returned nodes are owned by the caller.
+     */
+    private fun anchorCandidates(start: AccessibilityNodeInfo, named: Map<String, Any?>): List<AccessibilityNodeInfo>? {
+        val list = when {
+            named.containsKey("id") -> start.findAccessibilityNodeInfosByViewId(Values.stringify(named["id"]))
+            named.containsKey("text") -> start.findAccessibilityNodeInfosByText(Values.stringify(named["text"]))
+            named.containsKey("textContains") -> start.findAccessibilityNodeInfosByText(Values.stringify(named["textContains"]))
+            named.containsKey("desc") -> start.findAccessibilityNodeInfosByText(Values.stringify(named["desc"]))
+            named.containsKey("descContains") -> start.findAccessibilityNodeInfosByText(Values.stringify(named["descContains"]))
+            else -> return null
+        }
+        return list ?: emptyList()
+    }
+
+    /** Returns an owned handle to the first match, or null. */
     private fun findFirst(start: AccessibilityNodeInfo, named: Map<String, Any?>): AccessibilityNodeInfo? {
+        val matchers = compileMatchers(named)
+        val candidates = anchorCandidates(start, named) ?: return dfsFirst(start, matchers)
+        var result: AccessibilityNodeInfo? = null
+        for (c in candidates) {
+            budget.countNode()
+            if (result == null && matchesAll(c, matchers)) result = c else recycle(c)
+        }
+        return result
+    }
+
+    /** Manual depth-first walk, used only when no selector can drive a native finder. */
+    private fun dfsFirst(start: AccessibilityNodeInfo, matchers: List<NodeMatcher>): AccessibilityNodeInfo? {
         budget.countNode()
-        if (matches(start, named)) return obtain(start)
+        if (matchesAll(start, matchers)) return obtain(start)
         for (i in 0 until start.childCount) {
             val child = start.getChild(i) ?: continue
-            val found = findFirst(child, named)
+            val found = dfsFirst(child, matchers)
             recycle(child)
             if (found != null) return found
         }
@@ -195,18 +234,27 @@ class UiHiderRuntime(
     }
 
     private fun findAll(start: AccessibilityNodeInfo, named: Map<String, Any?>): List<AccessibilityNodeInfo> {
+        val matchers = compileMatchers(named)
         val out = ArrayList<AccessibilityNodeInfo>()
-        collectAll(start, named, out)
+        val candidates = anchorCandidates(start, named)
+        if (candidates != null) {
+            for (c in candidates) {
+                budget.countNode()
+                if (out.size < MAX_FIND_RESULTS && matchesAll(c, matchers)) out.add(c) else recycle(c)
+            }
+        } else {
+            dfsCollect(start, matchers, out)
+        }
         return out
     }
 
-    private fun collectAll(node: AccessibilityNodeInfo, named: Map<String, Any?>, out: MutableList<AccessibilityNodeInfo>) {
+    private fun dfsCollect(node: AccessibilityNodeInfo, matchers: List<NodeMatcher>, out: MutableList<AccessibilityNodeInfo>) {
         if (out.size >= MAX_FIND_RESULTS) return
         budget.countNode()
-        if (matches(node, named)) out.add(obtain(node))
+        if (matchesAll(node, matchers)) out.add(obtain(node))
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
-            collectAll(child, named, out)
+            dfsCollect(child, matchers, out)
             recycle(child)
         }
     }

@@ -59,7 +59,6 @@ class FocusModeBlocker : BaseBlocker() {
     @Synchronized
     private fun updateSuspendedPackages(serviceContext: Context) {
         val newSuspendedPackages = mutableSetOf<String>()
-
         var shouldDndBeOn = false
         focusModeData?.focusGroupData?.let { group ->
             if (group.autoTurnOnDnd) shouldDndBeOn = true
