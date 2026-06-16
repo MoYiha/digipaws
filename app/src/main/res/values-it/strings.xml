@@ -10,17 +10,17 @@
 
     <string name="accessibility_permission_app_blocker">
         Abilitando questa opzione, sbloccherai le seguenti funzionalità in Curbox:\n1. Blocco app\n2. Modalità Focus \n\n
-        Curbox necessita dell'accesso ai dati di accessibilità per sapere quando apri una funzionalità specifica all'interno di un'app, come un feed social o un gioco.
+        Curbox necessita dell\'accesso ai dati di accessibilità per sapere quando apri una funzionalità specifica all\'interno di un\'app, come un feed social o un gioco.
         Questo permette a Curbox di bloccare tali funzionalità in base alle tue preferenze, aiutandoti a mantenere la concentrazione e ridurre le distrazioni digitali.\n\n
         Stai tranquillo: tutti i dati di accessibilità rimangono al sicuro sul tuo dispositivo — non condividiamo né trasmettiamo mai i tuoi dati, garantendo sempre la tua privacy.
         \n\n
     </string>
 
     <string name="accessibility_permission_usage_tracker">
-        QUESTA FUNZIONALITÀ RICHIEDE L'AUTORIZZAZIONE “MOSTRA SOPRA ALTRE APP” (DRAW OVER OTHER APPS) PER FUNZIONARE. ABILITALA PRIMA E POI ATTIVA QUESTA OPZIONE. RIAVVIA L'APP SE IL SERVIZIO NON FUNZIONA CORRETTAMENTE.\n\n
+        QUESTA FUNZIONALITÀ RICHIEDE L\'AUTORIZZAZIONE “MOSTRA SOPRA ALTRE APP” (DRAW OVER OTHER APPS) PER FUNZIONARE. ABILITALA PRIMA E POI ATTIVA QUESTA OPZIONE. RIAVVIA L\'APP SE IL SERVIZIO NON FUNZIONA CORRETTAMENTE.\n\n
 
         Abilitando questa opzione, sbloccherai le seguenti funzionalità in Curbox:\n1. Conteggio dei reel/TikTok visualizzati\n2. Overlay flottante che mostra il tempo trascorso\n\n
-        Curbox necessita dell'accesso ai dati di accessibilità per sapere quando apri una funzionalità specifica all'interno di un'app, come un feed social o un gioco.
+        Curbox necessita dell\'accesso ai dati di accessibilità per sapere quando apri una funzionalità specifica all\'interno di un\'app, come un feed social o un gioco.
         Questo permette a Curbox di bloccare tali funzionalità in base alle tue preferenze, aiutandoti a mantenere la concentrazione e ridurre le distrazioni digitali.\n\n
         Stai tranquillo: tutti i dati di accessibilità rimangono al sicuro sul tuo dispositivo — non condividiamo né trasmettiamo mai i tuoi dati, garantendo sempre la tua privacy.
         \n\n
@@ -51,15 +51,15 @@
     <string name="focus_top_tags">Tag principali</string>
     <string name="quick_setup_guide">Guida rapida alla configurazione</string>
     <string name="curbox_needs_accessibility_permissions_to_help">
-        Curbox necessita dei permessi di accessibilità per aiutarti a monitorare il tempo trascorso sullo schermo. Il processo di configurazione varia in base a come hai installato l'app.
+        Curbox necessita dei permessi di accessibilità per aiutarti a monitorare il tempo trascorso sullo schermo. Il processo di configurazione varia in base a come hai installato l\'app.
     </string>
     <string name="fdroid_installation">Installazione F-Droid</string>
     <string name="installed_via_fdroid_appnyoure_all_set">
-        ✅ Installato tramite l'app F-Droid?\nÈ tutto pronto! Segui semplicemente la configurazione dell'accessibilità nel passaggio successivo.\n\n⚠️ Hai scaricato l'app dal sito web di F-Droid?\nInstalla invece tramite l'app F-Droid per evitare problemi di autorizzazioni.
+        ✅ Installato tramite l\'app F-Droid?\nÈ tutto pronto! Segui semplicemente la configurazione dell\'accessibilità nel passaggio successivo.\n\n⚠️ Hai scaricato l\'app dal sito web di F-Droid?\nInstalla invece tramite l\'app F-Droid per evitare problemi di autorizzazioni.
     </string>
     <string name="apk_installation">Installazione APK</string>
     <string name="if_you_installed_from_an_apk">
-        Se hai installato l'app tramite APK, segui questi passaggi:\n\n1️⃣ Apri Impostazioni → App → Curbox\n\n2️⃣ Tocca Permessi → Accesso speciale app → Accessibilità → Abilita Curbox\n\n3️⃣ Torna alle informazioni dell'app Curbox → Scorri verso il basso → Tocca Impostazioni limitate → Consenti\n\n💡 Consiglio: installa tramite l'app F-Droid per una configurazione più semplice! 🚀
+        Se hai installato l\'app tramite APK, segui questi passaggi:\n\n1️⃣ Apri Impostazioni → App → Curbox\n\n2️⃣ Tocca Permessi → Accesso speciale app → Accessibilità → Abilita Curbox\n\n3️⃣ Torna alle informazioni dell\'app Curbox → Scorri verso il basso → Tocca Impostazioni limitate → Consenti\n\n💡 Consiglio: installa tramite l\'app F-Droid per una configurazione più semplice! 🚀
     </string>
     <string name="usage_timeline">Cronologia utilizzo</string>
     <string name="screentime">Tempo di utilizzo</string>
@@ -112,7 +112,7 @@
     <string name="join_the_discord">Unisciti a Discord</string>
     <string name="system_diagnostics">Diagnostica di sistema</string>
     <string name="view_and_share_application_crash_logs">
-        Visualizza e condividi i log di crash dell'applicazione per aiutare a migliorare Curbox.
+        Visualizza e condividi i log di crash dell\'applicazione per aiutare a migliorare Curbox.
     </string>
     <string name="view_crash_logs">Visualizza log di crash</string>
 </resources>
