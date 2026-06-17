@@ -8,7 +8,7 @@
 
 </div>
 
-Curbox(formerly digipaws) is a powerful open source utility for Android built to help you reclaim your time and master your digital habits. It provides a suite of tools designed to break the cycle of screen addiction through granular control and deep insights.
+Curbox(formerly digipauwse) is a powerful open source utility for Android built to help you reclaim your time and master your digital habits. It provides a suite of tools designed to break the cycle of screen addiction through granular control and deep insights.
 
 ### Screenshots
 Click on any image to enlarge it.
@@ -47,6 +47,7 @@ Because there is no cloud connection, you are the sole owner of your statistics.
 * **El Androide Feliz (50k followers):** [The BEST APPS compatible with SHIZUKU](https://www.youtube.com/watch?v=rps2uw8Cokw)
 * **Techy Marathi (723k followers):** [Instagram Reel](https://www.instagram.com/reel/DJjcOc8yKOR/)
 * **Sillycorns (700k followers):** [Top 10 Coolest Android Apps of 2025!](https://youtu.be/FWn5ZEyqdvQ?t=273&si=hocsC2GTdYPPmNRK)
+
   Please open a issue if your review is not included, Thank you so much!)
 
 
