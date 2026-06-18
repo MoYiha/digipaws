@@ -138,8 +138,8 @@ class OnboardingPermissionsFragment : Fragment() {
             if (Settings.canDrawOverlays(requireContext())) return@setOnClickListener
             showExplanationDialog(
                 title = "Screen Overlay",
-                rationale = "To break your scrolling habit, we need permission to show a 'pause' screen over distracting apps when you open them.",
-                openSourceExplanation = "\uD83D\uDEE1\uFE0F Open Source: Think of our app like a restaurant with an 'open kitchen'. Our entire codebase is public. Anyone can look through it to verify we aren't doing anything sneaky. There are no closed doors here."
+                rationale = "Curbox needs this to show a calm pause screen on top of distracting apps when you open them. Without it, Curbox cannot place anything over those apps to help you stop and think.",
+                openSourceExplanation = "\uD83D\uDEE1\uFE0F Open Source: Think of Curbox like a restaurant with an open kitchen. The whole codebase is public, so anyone can check that Curbox is not doing anything sneaky. There are no closed doors here."
             ) {
                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
                     data = Uri.parse("package:${requireContext().packageName}")
@@ -153,8 +153,8 @@ class OnboardingPermissionsFragment : Fragment() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 showExplanationDialog(
                     title = "Notifications",
-                    rationale = "We need this to keep the application running reliably in the background and to gently remind you of your goals.",
-                    openSourceExplanation = "\uD83D\uDEE1\uFE0F Not a Data Broker: Most apps hide their code because their true business is harvesting your data. Since our code is 100% public, you can verify yourself that there is no hidden code sending your personal information away."
+                    rationale = "Curbox needs this to stay running in the background so your blocks keep working, and to gently remind you of your goals. Without it, Android can stop Curbox and your blocks may fail.",
+                    openSourceExplanation = "\uD83D\uDEE1\uFE0F Not a Data Broker: Many apps hide their code because they make money by harvesting your data. Curbox keeps all its code public, so you can check yourself that nothing is quietly sending your information away."
                 ) {
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
@@ -167,8 +167,8 @@ class OnboardingPermissionsFragment : Fragment() {
             
             showExplanationDialog(
                 title = "Do Not Disturb",
-                rationale = "Curbox needs permission to control Do Not Disturb to automatically hide distractions when you are focusing.",
-                openSourceExplanation = "\uD83D\uDEE1\uFE0F We respect your peace: Curbox uses this permission to mute distractions exactly when you want."
+                rationale = "Curbox needs this to turn on Do Not Disturb for you, so it can mute calls and alerts while you focus. Without it, Curbox cannot silence distractions on its own.",
+                openSourceExplanation = "\uD83D\uDEE1\uFE0F Curbox respects your peace: It uses this only to mute distractions when you ask it to."
             ) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
@@ -181,8 +181,8 @@ class OnboardingPermissionsFragment : Fragment() {
             if (neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), AppBlockerService::class.java)) return@setOnClickListener
             showExplanationDialog(
                 title = "App Blocker (Accessibility API)",
-                rationale = "Curbox uses the Android AccessibilityService API to detect when you launch a target app and draw the blocker screen. This is crucial for the core app blocking to function.",
-                openSourceExplanation = "\uD83D\uDEE1\uFE0F Transparency for Deep Access: This is a powerful permission, which is why being open source is so critical. You don't have to just trust our word that we only block apps—the global community has reviewed our public code to guarantee it."
+                rationale = "Curbox needs this to notice when you open a blocked app and show the blocker screen. Without it, app blocking cannot work at all.",
+                openSourceExplanation = "\uD83D\uDEE1\uFE0F Transparency for Deep Access: This is a powerful permission, which is why being open source matters so much. You do not have to take Curbox at its word. The global community has reviewed its public code and confirmed it only blocks apps."
             ) {
                 PermissionUtils.openAccessibilityServiceScreen(requireContext(),AppBlockerService::class.java)
             }
@@ -192,8 +192,8 @@ class OnboardingPermissionsFragment : Fragment() {
             if (neth.iecal.curbox.utils.PermissionUtils.isAccessibilityServiceEnabled(requireContext(), UsageTrackingService::class.java)) return@setOnClickListener
             showExplanationDialog(
                 title = "Usage Tracker (Accessibility API)",
-                rationale = "Curbox uses the Android AccessibilityService API to track the number of reels/tiktoks you consume and show mindful nudges. This is crucial for usage tracking to function.",
-                openSourceExplanation = "\uD83D\uDEE1\uFE0F Transparency for Deep Access: This is a powerful permission, which is why being open source is so critical. You don't have to just trust our word that we only track usage—the global community has reviewed our public code to guarantee it."
+                rationale = "Curbox needs this to count how many reels and short videos you scroll and show you mindful nudges. Without it, usage tracking cannot work at all.",
+                openSourceExplanation = "\uD83D\uDEE1\uFE0F Transparency for Deep Access: This is a powerful permission, which is why being open source matters so much. You do not have to take Curbox at its word. The global community has reviewed its public code and confirmed it only tracks usage."
             ) {
                 PermissionUtils.openAccessibilityServiceScreen(requireContext(),UsageTrackingService::class.java)
             }
@@ -278,7 +278,7 @@ class OnboardingPermissionsFragment : Fragment() {
     }
 
     private fun showExplanationDialog(title: String, rationale: String, openSourceExplanation: String, onProceed: () -> Unit) {
-        val privacy = "\n\n\uD83D\uDD12 100% Private: We do not collect, send, or store any of your data on our servers. All processing stays strictly on your phone.\n\n"
+        val privacy = "\n\n\uD83D\uDD12 100% Private: Curbox does not collect, send, or store any of your data on a server. Everything stays on your phone.\n\n"
         
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(title)

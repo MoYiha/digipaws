@@ -8,17 +8,16 @@
     <string name="minutes">minutes</string>
     <string name="app_icon">app_icon</string>
     <string name="accessibility_permission_app_blocker">
-        Turning this on lets Curbox do two things for you:\n1. App Blocking\n2. Focus Mode\n\n
-        This allows Curbox to tell when you open an app, or a part of an app like a social media feed.
-        It can then block it the way you want, so you can stay focused and feel less distracted.\n\n
+        Turning this on lets Curbox do these things for you:\n1. Block apps\n2. Block short form content\n3. Block websites and keywords\n4. Focus Mode\n5. Hide parts of an app\'s screen that distract you\n\n
+        Curbox needs accessibility access to see which app, website, or screen you are on, so it can step in and block it the way you set. Without this, none of the blocking can work.\n\n
         Curbox keeps everything safely on your phone. It never shares or sends your data, so your privacy is always safe.
         \n\n
     </string>
     <string name="accessibility_permission_usage_tracker">
         This feature needs the Display over other apps permission to work. Please turn that on first, then turn this on. If something stops working, restart the app.\n\n
 
-        Turning this on lets Curbox do two things for you:\n1. Count how many reels and short videos you scroll\n2. Show a floating timer of how long you have been on an app\n\n
-        This allows Curbox to see what is on your screen and keep track of this for you.\n\n
+        Turning this on lets Curbox do these things for you:\n1. See how long you spend in each app\n2. Count how much short form content you scroll, and show the count in a floating overlay\n3. See which websites you visit and for how long\n\n
+        Curbox needs accessibility access to read which app or website is on your screen, so it can keep these stats for you. Without this, tracking cannot work.\n\n
         Curbox keeps everything safely on your phone. It never shares or sends your data, so your privacy is always safe.
         \n\n
     </string>
@@ -233,7 +232,7 @@
     <string name="limit_2_hours">2 hours</string>
     <string name="add_friction_to_this_app">Add friction to this app</string>
     <string name="give_us_the_keys">Give us the keys.</string>
-    <string name="to_create_friction_and_give_you">To create friction and give you your time back, we need deep system access. We never read your messages or track browsing.</string>
+    <string name="to_create_friction_and_give_you">To create friction and give you your time back, we need deep system access.</string>
     <string name="display_over_other_apps">Display over other apps</string>
     <string name="usage_access">Usage Access</string>
     <string name="send_notifications">Send Notifications</string>
@@ -873,8 +872,8 @@
     <string name="node_picker_close">Close</string>
 
     <string name="terms_consent_title">One quick thing</string>
-    <string name="terms_consent_body">By continuing, you agree to our Terms and Conditions, and Privacy Policy..</string>
-    <string name="terms_consent_footer">When you tap "I agree", you accept both.</string>
+    <string name="terms_consent_body">Before you start, please read our Terms and Conditions and Privacy Policy.</string>
+    <string name="terms_consent_footer">Tapping \"I agree\" means you accept both.</string>
     <string name="terms_consent_terms_link">Read the Terms and Conditions</string>
     <string name="terms_consent_privacy_link">Read the Privacy Policy</string>
     <string name="terms_consent_agree">I agree</string>
