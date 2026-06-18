@@ -86,7 +86,7 @@ Define what happens when you try to open an app outside its allowed schedule:
 - **Unlock Limits:** Set how many subsequent unlocks you can perform every X hours.
 
 ### How to install
-The app is not yet released. However, you can test the beta versions from either our Discord or Telegram groups. Beta apps are also available on the GitHub Actions page.
+App can be downloaded from [Releases](https://github.com/nethical6/curbox/releases)
 
 ### Contributing
 
