@@ -117,7 +117,9 @@ class FragmentActivity : AppCompatActivity() {
             else -> {
                 // Show bottom nav for main fragments
                 bottomNav.visibility = android.view.View.VISIBLE
-                
+
+                neth.iecal.curbox.utils.DonationPrompt.maybeShow(this)
+
                 if (savedInstanceState == null) {
                     bottomNav.selectedItemId = R.id.nav_usage
                     supportFragmentManager.beginTransaction()
