@@ -25,10 +25,15 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHider
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHiderEditorFragment
 import androidx.core.view.isVisible
 import android.animation.ValueAnimator
+import android.content.Context
+import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
+import android.net.Uri
 import android.os.Build
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class FragmentActivity : AppCompatActivity() {
 
@@ -44,6 +49,8 @@ class FragmentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_fragment)
+
+        maybeShowTermsConsent()
 
         val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
 
@@ -133,6 +140,38 @@ class FragmentActivity : AppCompatActivity() {
                     true
                 }
             }
+        }
+    }
+
+    private fun maybeShowTermsConsent() {
+        val prefs = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("hasAcceptedTerms", false)) return
+
+        val view = layoutInflater.inflate(R.layout.dialog_terms_consent, null)
+        view.findViewById<TextView>(R.id.terms_link).setOnClickListener {
+            openUrl(getString(R.string.terms_url))
+        }
+        view.findViewById<TextView>(R.id.privacy_link).setOnClickListener {
+            openUrl(getString(R.string.privacy_url))
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setView(view)
+            .setCancelable(false)
+            .setPositiveButton(R.string.terms_consent_agree) { _, _ ->
+                prefs.edit().putBoolean("hasAcceptedTerms", true).apply()
+            }
+            .setNegativeButton(R.string.terms_consent_exit) { _, _ ->
+                finishAffinity()
+            }
+            .show()
+    }
+
+    private fun openUrl(url: String) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

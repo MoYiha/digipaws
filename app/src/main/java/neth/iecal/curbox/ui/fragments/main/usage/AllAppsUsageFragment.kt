@@ -254,15 +254,20 @@ class AllAppsUsageFragment : Fragment() {
                         true
                     }
 
+                    R.id.action_help -> {
+                        ViewUtils.showHelpPopup(
+                            binding.openMenu,
+                            "Track your application usage statistics to understand your digital habits better.",
+                            "https://curbox.app/docs/usage/usage-stats/"
+                        )
+                        true
+                    }
+
                     else -> false
                 }
             }
 
             popupMenu.show()
-        }
-
-        binding.btnHelp.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Track your application usage statistics to understand your digital habits better.", "https://curbox.app/docs/usage/usage-stats/")
         }
 
         // Initialize ViewModel data

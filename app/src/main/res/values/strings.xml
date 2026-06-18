@@ -810,4 +810,14 @@
     <string name="node_picker_hide">Hide</string>
     <string name="node_picker_show">Show panel</string>
     <string name="node_picker_close">Close</string>
+
+    <string name="terms_consent_title">One quick thing</string>
+    <string name="terms_consent_body">By continuing, you agree to our Terms and Conditions, and Privacy Policy..</string>
+    <string name="terms_consent_footer">When you tap "I agree", you accept both.</string>
+    <string name="terms_consent_terms_link">Read the Terms and Conditions</string>
+    <string name="terms_consent_privacy_link">Read the Privacy Policy</string>
+    <string name="terms_consent_agree">I agree</string>
+    <string name="terms_consent_exit">Not now</string>
+    <string name="terms_url" translatable="false">https://curbox.app/terms.html</string>
+    <string name="privacy_url" translatable="false">https://curbox.app/privacy.html</string>
 </resources>
