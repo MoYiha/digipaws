@@ -4,10 +4,17 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +23,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import neth.iecal.curbox.R
@@ -211,7 +219,37 @@ class OnboardingPermissionsFragment : Fragment() {
             }
         }
 
+        setupDescText()
         updatePermissionsState()
+    }
+
+    private fun setupDescText() {
+        val baseText = getString(R.string.to_create_friction_and_give_you)
+        val actionText = " Read Documentation"
+        val fullText = "$baseText $actionText"
+        val spannableString = SpannableString(fullText)
+
+        val clickableSpan = object : ClickableSpan() {
+            override fun onClick(view: View) {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://curbox.app/docs"))
+                startActivity(intent)
+            }
+        }
+
+        val start = fullText.indexOf(actionText)
+        val end = start + actionText.length
+
+        spannableString.setSpan(clickableSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        spannableString.setSpan(
+            ForegroundColorSpan(MaterialColors.getColor(binding.desc, com.google.android.material.R.attr.colorPrimary)),
+            start,
+            end,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        spannableString.setSpan(StyleSpan(Typeface.BOLD), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        binding.desc.text = spannableString
+        binding.desc.movementMethod = LinkMovementMethod.getInstance()
     }
 
     override fun onResume() {
