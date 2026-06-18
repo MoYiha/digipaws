@@ -8,7 +8,7 @@
 
 </div>
 
-Curbox(formerly digipauwse) is a powerful open source utility for Android built to help you reclaim your time and master your digital habits. It provides a suite of tools designed to break the cycle of screen addiction through granular control and deep insights.
+Curbox (formerly digipauwse) is a powerful open source utility for Android built to help you reclaim your time and master your digital habits. It provides a suite of tools designed to break the cycle of screen addiction through granular control and deep insights.
 
 ### Screenshots
 Click on any image to enlarge it.
@@ -27,7 +27,7 @@ Click on any image to enlarge it.
 ### Why Curbox Stands Out
 
 Most screen time tools are closed source and require internet access. This raises concerns about your private usage data being tracked or sold. Curbox takes a different path.
-* All screen time apps use a powerful Android feature (Accessibility service) that lets them see everything you do, including your private messages. They all connect to internet posing a severe security threat. Curbox uses this same feature, but it does not have internet access (it doesn't declare the permission in manifest). This means your personal data can never leave your phone, keeping it completely private and secure.
+* All screen time apps use a powerful Android feature (Accessibility service) that lets them see everything you do, including your private messages. They all connect to the internet, posing a severe security threat. Curbox uses this same feature, but it does not have internet access (it doesn't declare the permission in the manifest). This means your personal data can never leave your phone, keeping it completely private and secure.
 * Open Source Transparency
 The entire codebase is public. Anyone can verify how the app works. This ensures there are no hidden trackers or malicious behaviors. Open source doesn't mean anyone can see how you use the app. 
 * Respect for Your Data
@@ -48,41 +48,45 @@ Because there is no cloud connection, you are the sole owner of your statistics.
 * **Techy Marathi (723k followers):** [Instagram Reel](https://www.instagram.com/reel/DJjcOc8yKOR/)
 * **Sillycorns (700k followers):** [Top 10 Coolest Android Apps of 2025!](https://youtu.be/FWn5ZEyqdvQ?t=273&si=hocsC2GTdYPPmNRK)
 
-  Please open a issue if your review is not included, Thank you so much!)
+  Please open an issue if your review is not included, Thank you so much!)
 
 
-### In Depth Feature Analysis
+### In-Depth Feature Analysis
 
 Curbox goes beyond simple app timers. It targets the specific triggers that lead to mindless scrolling.
-- Block apps
-- Block Instagram reels, Youtube Shorts
-- Block Websites
-- App usage insights
-- Website usage insights
-- Block parts of UI (eg. Block the entire youtube home feed while allowing searches)
-- Focus Mode (temporarily pause apps/websites to focus on your work)
-- Focus statistics
-- Schedule DND to turn on automatically
-- Set Grayscale filter to only specific apps (eg. put grayscale to instagram while no grayscale to camera)
-- Show a live count of how much short form content you've scrolled while you scroll
-- Show a live timer showing how much time has elapsed ever since you opened the app on the app itself
-- Qr/Barcode based app/website unlocking
-- Automatically redirect to a different website when blocked website accessed
-- Block only specific url paths (eg. block m.youtube.com/shorts/* but allow m.youtube.com)
-- Block entities based on usage (eg. block if i use whatsapp more than 1 hour)
-- Blokc on basis of Time (allow whatsapp only between 7 am to 9pm)
-- Home screen widgets
-- Set how many subsequent unlocks you can do every x hours
-  
-App/Website unlock mechanisms (specifiy what happens when you try opening the app out of its schedule)
-- Complete blockade with no access
-- Predeine a time (like 5mins) for each subsequent unlocks
-- Dynamic time selection on each subsequent unlocks
-- Qr/Bar code based unlock (use qr code from existing product boxes like books, spread them across your home, physically move to the spot to unlock app each time)
-- Requires physically typing a sentence (eg type "I am giving up on my goals to use this app right now" to unlock)
+
+#### Blocking & Control
+- **App & Website Blocking:** Block distracting apps and websites completely.
+- **Short-Form Content Blocker:** Specifically target Instagram Reels and YouTube Shorts.
+- **Granular UI Hiding:** Block specific parts of an app's UI (e.g., block the entire YouTube home feed while allowing searches).
+- **URL Path Blocking:** Block specific sections of a website (e.g., block `m.youtube.com/shorts/*` but allow `m.youtube.com`).
+- **Automatic Redirection:** Automatically redirect to a different website when a blocked website is accessed.
+
+#### Insights & Awareness
+- **Usage Analytics:** Detailed insights into app and website usage.
+- **Focus Statistics:** Track your progress and focus sessions.
+- **Live Scroll Counter:** See a real-time count of how many short-form videos you've scrolled through.
+- **Session Timer:** A live timer showing how much time has elapsed since you opened the app.
+
+#### Mindful Usage Tools
+- **Focus Mode:** Temporarily pause apps and websites to stay focused on your work.
+- **Scheduled DND:** Schedule Do Not Disturb to turn on automatically.
+- **App-Specific Grayscale:** Apply a grayscale filter only to specific apps (e.g., Instagram) while keeping others (e.g., Camera) in color.
+- **Usage-Based Limits:** Block apps or websites based on usage (e.g., block WhatsApp after 1 hour of use).
+- **Time-Based Access:** Allow apps only during specific hours (e.g., WhatsApp only between 7 AM and 9 PM).
+- **Home Screen Widgets:** Quick access to your stats and controls right from your home screen.
+
+#### Unlock Mechanisms
+Define what happens when you try to open an app outside its allowed schedule:
+- **Strict Blockade:** Complete blockade with no access.
+- **Timed Unlocks:** Predefine a short duration (e.g., 5 mins) for each subsequent unlock.
+- **Dynamic Selection:** Choose the duration of your temporary unlock on each attempt.
+- **QR/Barcode Unlock:** Requires scanning a physical QR code or barcode (e.g., from product boxes like books) to unlock. Spread them across your home to force physical movement!
+- **Sentence Retyping:** Requires physically typing a specific sentence (e.g., "I am giving up on my goals to use this app right now") to unlock.
+- **Unlock Limits:** Set how many subsequent unlocks you can perform every X hours.
 
 ### How to install
-The app is not yet released. Howsoever you could test the beta versions from either our discord or telegram groups. Beta apps are also available on the github actions page.
+The app is not yet released. However, you can test the beta versions from either our Discord or Telegram groups. Beta apps are also available on the GitHub Actions page.
 
 ### Contributing
 
@@ -95,16 +99,16 @@ We welcome contributions from the community! If you want to help improve Curbox,
 5. Create a new Pull Request.
 
 Developing for accessibility services and blockers is complex. It requires understanding how different apps structure their views. We appreciate any help in discovering new ways to block distracting content.
-Please don't open a pr if you vibe code and have no idea what you're doing or the code does. Just preferably open an issue with the feature request.
+Please don't open a PR if you "vibe code" and have no idea what you're doing or what the code does. Preferably, just open an issue with the feature request.
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) file before working on the project or learning
-how to make quick contributions like adding a support for a mod app in reel counter, adding a support
-for a new browser etc.
+Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file before working on the project or learning
+how to make quick contributions like adding support for a modded app in the reel counter, adding support
+for a new browser, etc.
 
 
 ### Special Thanks
-* All my beloved donators and sponsers
-* Digipaws: inspiration for the entire code structure and working mechanism
+* All my beloved donors and sponsors
+* Digipaws: Inspiration for the entire code structure and working mechanism
 * Usage Direct: For help with app usage statistics.
 * Redd Focus: For the foundation of the view blocker system.
 * ShizuTools: For Shizuku runner implementations.
