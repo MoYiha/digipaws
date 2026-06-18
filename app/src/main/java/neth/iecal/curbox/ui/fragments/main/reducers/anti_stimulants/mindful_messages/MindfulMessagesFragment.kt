@@ -2,6 +2,7 @@ package neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_mes
 
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -64,6 +65,21 @@ class MindfulMessagesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbar.setNavigationOnClickListener { requireActivity().finish() }
+
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            if (item.itemId == R.id.menu_help) {
+                val url = "https://curbox.app/docs/reducers/mindful-messages/"
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                true
+            } else {
+                false
+            }
+        }
 
         colorChipViews = OverlayDragHelper.buildColorChips(
             container = binding.colorChipsContainer,

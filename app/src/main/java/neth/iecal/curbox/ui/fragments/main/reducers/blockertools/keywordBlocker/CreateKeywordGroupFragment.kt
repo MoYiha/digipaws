@@ -104,11 +104,11 @@ class CreateKeywordGroupFragment : Fragment() {
         }
 
         binding.btnHelpUsage.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Set a daily time limit for these keywords. Once reached, they will be blocked for the rest of the day.")
+            ViewUtils.showHelpPopup(it, "Set a daily time limit for these keywords. Once reached, they will be blocked for the rest of the day.", "https://curbox.app/docs/reducers/keyword-blocker/")
         }
 
         binding.btnHelpTime.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Block these keywords during specific time intervals during the day.")
+            ViewUtils.showHelpPopup(it, "Block these keywords during specific time intervals during the day.", "https://curbox.app/docs/reducers/keyword-blocker/")
         }
     }
 

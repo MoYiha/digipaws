@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
+import neth.iecal.curbox.utils.ViewUtils
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -44,6 +46,10 @@ class AppBlockerGroupsFragment : Fragment() {
         rvGroups = view.findViewById(R.id.rv_app_groups)
         tvEmptyState = view.findViewById(R.id.tv_empty_state)
         fabAddGroup = view.findViewById(R.id.fab_add_group)
+
+        view.findViewById<Button>(R.id.btn_help).setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Block distracting apps and regain control over your screen time.", "https://curbox.app/docs/reducers/app-pause/")
+        }
 
 
         fabAddGroup.setOnClickListener {

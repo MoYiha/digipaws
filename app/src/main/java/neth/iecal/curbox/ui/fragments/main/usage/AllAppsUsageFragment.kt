@@ -39,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import neth.iecal.curbox.utils.ViewUtils
 import neth.iecal.curbox.R
 import neth.iecal.curbox.data.db.WebsiteStatsEntity
 import neth.iecal.curbox.databinding.AppUsageItemBinding
@@ -258,6 +259,10 @@ class AllAppsUsageFragment : Fragment() {
             }
 
             popupMenu.show()
+        }
+
+        binding.btnHelp.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Track your application usage statistics to understand your digital habits better.", "https://curbox.app/docs/usage/usage-stats/")
         }
 
         // Initialize ViewModel data

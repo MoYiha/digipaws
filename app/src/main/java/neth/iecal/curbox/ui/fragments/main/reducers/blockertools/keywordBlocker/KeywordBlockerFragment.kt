@@ -1,6 +1,7 @@
 package neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -77,7 +78,13 @@ class KeywordBlockerFragment : Fragment() {
                     true
                 }
                 R.id.menu_help -> {
-                    Toast.makeText(requireContext(), "Help coming soon!", Toast.LENGTH_SHORT).show()
+                    val url = "https://curbox.app/docs/reducers/keyword-blocker/"
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                     true
                 }
                 else -> false

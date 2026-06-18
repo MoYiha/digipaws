@@ -9,6 +9,8 @@ import neth.iecal.curbox.R
 
 import android.content.Intent
 import neth.iecal.curbox.ui.activity.FragmentActivity
+import neth.iecal.curbox.utils.ViewUtils
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.grayscale.GrayscaleFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.appBlocker.AppBlockerGroupsFragment
@@ -24,6 +26,10 @@ class ReducersFragment : Fragment() {
         val keywordBlockerCard = view.findViewById<MaterialCardView>(R.id.card_keyword_blocker)
         val autoDndCard = view.findViewById<MaterialCardView>(R.id.card_autodnd)
         
+        view.findViewById<MaterialButton>(R.id.btn_help).setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Blocker tools and stimulation reducers help you regain focus.", "https://curbox.app/docs/reducers/overview/")
+        }
+
         appBlockerCard.setOnClickListener {
             val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
                 putExtra("fragment", AppBlockerGroupsFragment.FRAGMENT_ID)

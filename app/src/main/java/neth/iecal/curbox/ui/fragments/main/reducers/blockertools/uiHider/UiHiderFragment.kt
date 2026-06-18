@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.utils.ViewUtils
 import neth.iecal.curbox.R
 import neth.iecal.curbox.data.models.UiHiderScript
 import neth.iecal.curbox.databinding.FragmentUiHiderBinding
@@ -51,6 +52,10 @@ class UiHiderFragment : Fragment() {
         }
         binding.btnAddScript.setOnClickListener { openEditor(null) }
         binding.btnStartNodePicker.setOnClickListener { startNodePicker() }
+
+        binding.btnHelp.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Hide specific UI elements within apps using custom scripts.", "https://curbox.app/docs/reducers/hide-ui-elements/")
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.config.collectLatest { config ->

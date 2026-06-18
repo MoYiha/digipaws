@@ -172,15 +172,15 @@ class CreateAppGroupFragment : Fragment() {
         }
 
         binding.btnHelpUsage.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Set a daily time limit for these apps. Once reached, they will be blocked for the rest of the day.")
+            ViewUtils.showHelpPopup(it, "Set a daily time limit for these apps. Once reached, they will be blocked for the rest of the day.", "https://curbox.app/docs/reducers/app-pause/")
         }
 
         binding.btnHelpTime.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Allow these apps only during specific time intervals during the day (e.g., during work hours).")
+            ViewUtils.showHelpPopup(it, "Allow these apps only during specific time intervals during the day (e.g., during work hours).", "https://curbox.app/docs/reducers/app-pause/")
         }
 
         binding.btnHelpOnOpen.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Show a warning screen every time you open these apps. Access is only allowed for the current session.")
+            ViewUtils.showHelpPopup(it, "Show a warning screen every time you open these apps. Access is only allowed for the current session.", "https://curbox.app/docs/reducers/app-pause/")
         }
     }
 

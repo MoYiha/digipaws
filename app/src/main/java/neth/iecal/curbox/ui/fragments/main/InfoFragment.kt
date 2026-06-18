@@ -34,6 +34,10 @@ class InfoFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
+        binding.btnDocs.setOnClickListener {
+            openUrl("https://curbox.app/docs/")
+        }
+
         binding.btnSupport.setOnClickListener {
             // Replace with actual website/donation link
             openUrl("https://github.com/nethical6")

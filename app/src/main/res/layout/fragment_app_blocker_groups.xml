@@ -56,7 +56,7 @@
         app:tint="?attr/colorPrimary" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btn_help"
         style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="50dp"
         android:layout_height="50dp"

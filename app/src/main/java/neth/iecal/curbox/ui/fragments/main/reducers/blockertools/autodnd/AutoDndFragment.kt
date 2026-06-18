@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.utils.ViewUtils
 import neth.iecal.curbox.data.models.AutoDndGroup
 import neth.iecal.curbox.databinding.FragmentAutodndBinding
 import neth.iecal.curbox.databinding.ItemAutodndGroupBinding
@@ -40,6 +41,10 @@ class AutoDndFragment : Fragment() {
                 putExtra("fragment", CreateAutoDndGroupFragment.FRAGMENT_ID)
             }
             startActivity(intent)
+        }
+
+        binding.btnHelp.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Automatically silence notifications during your focus sessions.", "https://curbox.app/docs/reducers/auto-dnd/")
         }
 
         binding.rvAutodndGroups.layoutManager = LinearLayoutManager(requireContext())

@@ -60,13 +60,13 @@ class ReelBlockerFragment : Fragment() {
         }
 
         binding.btnHelpTime.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Allow short videos during specific time intervals.")
+            ViewUtils.showHelpPopup(it, "Allow short videos during specific time intervals.", "https://curbox.app/docs/reducers/short-form-video/")
         }
         binding.btnHelpUsage.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Set a total time limit for watching short videos across all apps.")
+            ViewUtils.showHelpPopup(it, "Set a total time limit for watching short videos across all apps.", "https://curbox.app/docs/reducers/short-form-video/")
         }
         binding.btnHelpCount.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Limit the number of short videos you can scroll through per day.")
+            ViewUtils.showHelpPopup(it, "Limit the number of short videos you can scroll through per day.", "https://curbox.app/docs/reducers/video-counter/")
         }
     }
 

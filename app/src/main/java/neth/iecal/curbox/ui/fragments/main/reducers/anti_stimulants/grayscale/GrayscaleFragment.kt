@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.utils.ViewUtils
 import neth.iecal.curbox.data.models.GrayscaleGroup
 import neth.iecal.curbox.databinding.FragmentGrayscaleBinding
 import neth.iecal.curbox.databinding.ItemGrayscaleGroupBinding
@@ -43,6 +44,10 @@ class GrayscaleFragment : Fragment() {
                 putExtra("fragment", CreateGrayscaleGroupFragment.FRAGMENT_ID)
             }
             startActivity(intent)
+        }
+
+        binding.btnHelp.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Reduce visual stimulation by turning your screen grayscale for specific apps.", "https://curbox.app/docs/reducers/grayscale/")
         }
 
         binding.rvGrayscaleGroups.layoutManager = LinearLayoutManager(requireContext())

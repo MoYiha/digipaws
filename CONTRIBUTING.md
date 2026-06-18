@@ -22,6 +22,7 @@ Help make Curbox accessible to more people by translating it into your language.
 - Find the base strings file at `app/src/main/res/values/strings.xml`.
 - Create a new directory `values-<language-code>` (e.g., `values-fr` for French) in `app/src/main/res/`.
 - Copy `strings.xml` to your new directory and translate the text within the `<string>` tags.
+- Please do not open a pull request if you're just going to use AI. I can do that too and perhaps better.
 
 ### 2. Adding Support for a New Browser
 Curbox needs to know the ID of the URL bar to track website usage.

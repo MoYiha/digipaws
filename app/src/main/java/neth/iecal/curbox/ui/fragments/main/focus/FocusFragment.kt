@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import java.util.Locale
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.utils.ViewUtils
 import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.FragmentFocusBinding
 import androidx.core.view.isNotEmpty
@@ -155,6 +156,10 @@ class FocusFragment : Fragment() {
             } else {
                 FocusSetupBottomSheet().show(parentFragmentManager, FocusSetupBottomSheet.FRAGMENT_ID)
             }
+        }
+
+        binding.btnHelp.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Focus mode helps you stay away from distractions for a set period of time.", "https://curbox.app/docs/focus/focus-mode/")
         }
     }
 

@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import neth.iecal.curbox.utils.ViewUtils
 import neth.iecal.curbox.R
 import neth.iecal.curbox.databinding.FragmentReelCounterBinding
 import neth.iecal.curbox.ui.overlay.OverlayDragHelper
@@ -61,6 +62,10 @@ class ReelCounterFragment : Fragment() {
     private fun setupListeners() {
         binding.switchEnableCounter.setOnCheckedChangeListener { _, isChecked ->
             if (!isUpdatingUi) viewModel.setIsActive(isChecked)
+        }
+
+        binding.btnHelp.setOnClickListener {
+            ViewUtils.showHelpPopup(it, "Track how many short videos you watch to build better digital habits.", "https://curbox.app/docs/reducers/video-counter/")
         }
 
         binding.btnPrevWeek.setOnClickListener { viewModel.goToPreviousWeek() }

@@ -14,7 +14,7 @@ Each feature (like app blocking, app usage stats, keyword blocking) is a compart
 This class obj is created in accessibility services, and the service instance is passed to the feature in the onServiceConnected() method.
 All function responsible for setting up the feature(like loading configs), broadcast receiver are aswell declared in this method itself.
 
-The App blocker service runs low memory features (like app blocking) in the onAccessibilityEvent itself while high memory consuming tasks (reelblocking, viewblocking) 
+The App blocker service runs low memory features (like app blocking) in the onAccessibilityEvent itself while high memory consuming tasks (reelblocking, Ui hider) 
 that traverse the entire ui node, run in a background worker that is fed with event updates continuously.
 Hardcoded viewids for blocking are always stored separately in hardcoded folder.
 
@@ -31,7 +31,7 @@ Folder /Users/adityagupta/Documents/projects/curbox/app/src/main/java/neth/iecal
 ├── FocusModeBlocker.kt
 ├── KeywordBlocker.kt
 ├── ReelBlocker.kt
-└── viewblocker (is a folder)
+└── Ui hider (is a folder)
 
 - AppBlocking
 - Reel blocking(AppBlocker.kt) :block instagram reels, youtube shorts, facebook reels)
@@ -92,7 +92,7 @@ Main working directory: /Users/adityagupta/Documents/projects/curbox/app/src
 │           └── curbox
 │               ├── anti_stimulants
 │               ├── blockers
-│               │   └── viewblocker
+│               │   └── Ui hider
 │               ├── data
 │               │   ├── db
 │               │   └── models
@@ -120,7 +120,7 @@ Main working directory: /Users/adityagupta/Documents/projects/curbox/app/src
 │               │   │       │       ├── keywordBlocker
 │               │   │       │       ├── reelBlocker
 │               │   │       │       ├── shared
-│               │   │       │       └── viewBlocker
+│               │   │       │       └── Ui hider
 │               │   │       └── usage
 │               │   ├── overlay
 │               │   ├── views
