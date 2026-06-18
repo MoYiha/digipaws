@@ -10,6 +10,7 @@ Thank you for your interest in contributing to Curbox! Curbox is an advanced scr
 5. [UI/UX Guidelines](#uiux-guidelines)
 6. [Data Storage](#data-storage)
 7. [Contribution Workflow](#contribution-workflow)
+8. [Development Tips](#development-tips)
 
 ---
 
@@ -99,3 +100,10 @@ Each feature is a compartmentalized class that receives a service instance in `o
 2.  **Follow Style:** Adhere to the existing directory structure and naming conventions.
 3.  **Verify AI Code:** If you use AI tools to assist your development, you are responsible for fully understanding every line of code you submit.
 4.  **No internet:** Open up a issue if you're adding any feature that connects to a internet before you work on it
+
+## Development Tips
+
+### Automate Accessibility Granting
+When developing accessibility services, Android often requires you to manually re-enable the service after every fresh install. To automate this, you can use the custom Gradle task:
+- Run `./gradlew installAndGrantAccessibilityFdroidDebug` from your terminal.
+- This will build the F-Droid debug variant, install it, automatically grant the necessary accessibility permissions via ADB, and launch the app.
