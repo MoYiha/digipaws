@@ -8,7 +8,6 @@ Everything runs on your phone. Curbox has no internet permission, so your usage 
 • <b>App and Website Blocker</b>: block any distracting app or website completely
 • <b>URL Path Blocking</b>: block just one part of a site, like m.youtube.com/shorts, while the rest of YouTube still works
 • <b>Short Form Content Blocker</b>: shut off Instagram Reels and YouTube Shorts so the feed stops pulling you back
-• <b>Automatic Redirection</b>: send yourself to a calmer page whenever you open a blocked website
 
 
 <b>Hide only the distracting parts</b>
@@ -23,7 +22,7 @@ Granular UI Hiding lets you remove the trap inside an app without losing the app
 • <b>App Specific Grayscale</b>: drain the color out of Instagram while your Camera stays full color, so dull apps lose their pull
 • <b>Usage Based Limits</b>: block an app or site after a set amount of use, like WhatsApp after 1 hour
 • <b>Time Based Access</b>: allow an app only during set hours, like WhatsApp from 7 AM to 9 PM
-• <b>Mindful Messages</b>: gentle nudges that make you pause before you scroll
+• <b>Mindful Messages</b>: gentle nudges that run as overlay when you use an app
 
 
 <b>See your time</b>
@@ -57,4 +56,4 @@ Most screen time apps use the Accessibility service to see everything you do, an
 1. Open Curbox on your Android phone
 2. Grant the permissions it asks for, like Accessibility, Notifications and Draw over other apps
 3. On Android 13 and above, allow restricted settings before you turn on the Accessibility permission. Watch a short guide here: https://youtu.be/91B72lEpcqc?si=PCKKUSwM1aLdELqJ
-4. For the smoothest setup and updates, install Curbox from the F-Droid app
+4. For the smoothest setup and updates, install Curbox from the F-Droid app (please avoid website)
