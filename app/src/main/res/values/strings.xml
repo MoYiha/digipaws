@@ -8,19 +8,18 @@
     <string name="minutes">minutes</string>
     <string name="app_icon">app_icon</string>
     <string name="accessibility_permission_app_blocker">
-        Enabling this would unlock the following in Curbox:\n1. App Blocking\n2, Focus Mode \n\n
-        Curbox needs access to accessibility data to know when you open a specific feature within an app, like a social media feed or a game.
-        This lets Curbox block those features for you based on your preferences, helping you stay focused and reduce screen distractions.\n\n
-        Rest assured, all accessibility data stays securely on your device—we never share or transmit your data, ensuring your privacy is always protected.
+        Turning this on lets Curbox do two things for you:\n1. App Blocking\n2. Focus Mode\n\n
+        This allows Curbox to tell when you open an app, or a part of an app like a social media feed.
+        It can then block it the way you want, so you can stay focused and feel less distracted.\n\n
+        Curbox keeps everything safely on your phone. It never shares or sends your data, so your privacy is always safe.
         \n\n
     </string>
     <string name="accessibility_permission_usage_tracker">
-        THIS FEATURE REQUIRES DISPLAY OVER OTHER APPS (DRAW OVER OTHER APPS) PERMISSION TO WORK. PLEASE ENABLE IT FIRST AND THEN ENABLE THIS. RESTART IF SERVICE MALFUNCTIONS.\n\n
+        This feature needs the Display over other apps permission to work. Please turn that on first, then turn this on. If something stops working, restart the app.\n\n
 
-        Enabling this would unlock the following in Curbox:\n1. Count number of reels/tiktoks scrolled\n2. A floating overlay that shows time elapsed\n\n
-        Curbox needs access to accessibility data to know when you open a specific feature within an app, like a social media feed or a game.
-        This lets Curbox block those features for you based on your preferences, helping you stay focused and reduce screen distractions.\n\n
-        Rest assured, all accessibility data stays securely on your device—we never share or transmit your data, ensuring your privacy is always protected.
+        Turning this on lets Curbox do two things for you:\n1. Count how many reels and short videos you scroll\n2. Show a floating timer of how long you have been on an app\n\n
+        This allows Curbox to see what is on your screen and keep track of this for you.\n\n
+        Curbox keeps everything safely on your phone. It never shares or sends your data, so your privacy is always safe.
         \n\n
     </string>
     <string name="admin_permission_desc">Curbox Anti-Uninstall</string>
