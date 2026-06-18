@@ -58,7 +58,7 @@ Curbox goes beyond simple app timers. It targets the specific triggers that lead
 #### Blocking & Control
 - **App & Website Blocking:** Block distracting apps and websites completely.
 - **Short-Form Content Blocker:** Specifically target Instagram Reels and YouTube Shorts.
-- **Granular UI Hiding:** Block specific parts of an app's UI (e.g., block the entire YouTube home feed while allowing searches).
+- **Granular UI Hiding:** Block specific parts of an app's UI (e.g., block the entire YouTube home feed while allowing searches or hide instagram feed while allowing posts and messages from friends).
 - **URL Path Blocking:** Block specific sections of a website (e.g., block `m.youtube.com/shorts/*` but allow `m.youtube.com`).
 - **Automatic Redirection:** Automatically redirect to a different website when a blocked website is accessed.
 
