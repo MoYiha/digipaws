@@ -84,8 +84,6 @@ class UiHiderRuntime(
         return NodeHandle(node)
     }
 
-    // ── Drawing ──
-
     private fun addDraw(args: List<Any?>, named: Map<String, Any?>) {
         val x = coord(args, named, 0, "x")
         val y = coord(args, named, 1, "y")
@@ -134,8 +132,6 @@ class UiHiderRuntime(
         }
     }
 
-    // ── Persistent storage ──
-
     private fun storeKey(args: List<Any?>, fn: String): String {
         val k = args.getOrNull(0)
         if (k !is String) throw ScriptError("$fn() expects a string key")
@@ -157,8 +153,6 @@ class UiHiderRuntime(
         Color.parseColor(if (s.startsWith("#")) s else "#$s")
     } catch (_: Exception) { null }
 
-    // ── Node lifecycle ──
-    //
     // Selector search itself lives in the shared NodeFinder; this runtime only tracks the nodes a
     // run produced so they can be recycled in finish(), and charges each visited node to the budget.
 

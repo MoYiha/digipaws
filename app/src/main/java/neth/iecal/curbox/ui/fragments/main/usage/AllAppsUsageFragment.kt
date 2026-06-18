@@ -138,7 +138,6 @@ class AllAppsUsageFragment : Fragment() {
             viewModel = ViewModelProvider(this)[AllAppsUsageViewModel::class.java]
             usageStatsHelper = UsageStatsHelper(requireContext().applicationContext)
 
-            // Randomize ASCII art
             val asciiArts = listOf(
                 R.string.ascii_brain,
                 R.string.ascii_aim,
@@ -173,14 +172,12 @@ class AllAppsUsageFragment : Fragment() {
                 viewModel.goToNextWeek()
             }
 
-            // Setup bar graph tap listener
             binding.weeklyBarGraph.setOnDaySelectedListener { dayData ->
                 val index =
                     viewModel.weeklyData.value?.indexOf(dayData) ?: return@setOnDaySelectedListener
                 viewModel.selectDay(index)
             }
 
-            // Menu
             binding.openMenu.setOnClickListener {
                 val popupMenu = PopupMenu(requireContext(), binding.openMenu)
                 popupMenu.menuInflater.inflate(R.menu.usage_tracker_options, popupMenu.menu)
@@ -294,7 +291,6 @@ class AllAppsUsageFragment : Fragment() {
                 popupMenu.show()
             }
 
-            // Initialize ViewModel data
             viewModel.initialize()
         }
 

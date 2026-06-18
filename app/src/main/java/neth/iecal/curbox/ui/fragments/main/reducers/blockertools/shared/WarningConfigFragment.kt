@@ -162,7 +162,6 @@ class WarningConfigFragment : Fragment() {
         
         binding.typingSentenceEdit.setText(config.typingSentence)
 
-        // Setup Sliders
         binding.fixedTimeSlider.value = (config.timeInterval / 60000).toFloat().coerceIn(1f, 120f)
         binding.timingTitle.text = "Fixed Unlock Duration: ${binding.fixedTimeSlider.value.toInt()} mins"
 

@@ -29,7 +29,6 @@ class TargetSelectionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Set initial values
         viewModel.setTargetApp("Instagram")
         viewModel.setDailyLimit(30L)
 

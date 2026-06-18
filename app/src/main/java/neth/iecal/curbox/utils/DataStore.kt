@@ -56,10 +56,8 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
-    // One DataStore for everything
     private val settingsDataStore = getSettingsDataStore(context, gson)
 
-    // Access the flow exactly like before
     val settings = settingsDataStore.data
 
     suspend fun updateAppGroups(newGroups: List<AppGroup>) {

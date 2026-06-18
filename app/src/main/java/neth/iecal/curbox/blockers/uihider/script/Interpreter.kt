@@ -66,8 +66,6 @@ class Interpreter(
         }
     }
 
-    // ── Statements ──
-
     private fun execute(stmt: Stmt, env: Environment) {
         budget.tick()
         when (stmt) {
@@ -129,8 +127,6 @@ class Interpreter(
             }
         }
     }
-
-    // ── Expressions ──
 
     private fun evaluate(expr: Expr, env: Environment): Any? = when (expr) {
         is Expr.Literal -> expr.value

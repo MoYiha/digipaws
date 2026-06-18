@@ -30,7 +30,6 @@ class CrashLogger(private val context: Context) : Thread.UncaughtExceptionHandle
             printWriter.flush()
             printWriter.close()
 
-            // Start CrashLogActivity
             val intent = Intent(context, CrashLogActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }

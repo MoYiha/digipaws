@@ -199,7 +199,6 @@ class ReelsCountTracker {
 
         for (i in 0 until node.childCount) {
             result += extractTextFromNode(node.getChild(i))
-//            if(result!="") return result
         }
         return result
     }

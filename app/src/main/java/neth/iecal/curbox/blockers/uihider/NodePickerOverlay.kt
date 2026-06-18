@@ -126,8 +126,6 @@ class NodePickerOverlay(
         handler.post { infoScroll?.visibility = if (visible) View.VISIBLE else View.GONE }
     }
 
-    // ── Window construction ──
-
     private fun addCapture() {
         val view = View(service).apply {
             setBackgroundColor(Color.TRANSPARENT)

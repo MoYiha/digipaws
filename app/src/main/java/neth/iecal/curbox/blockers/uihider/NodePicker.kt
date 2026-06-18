@@ -100,8 +100,6 @@ class NodePicker : BaseBlocker(), NodePickerOverlay.Listener {
         }
     }
 
-    // ── Listener: selection and navigation ──
-
     override fun onTap(x: Int, y: Int) {
         val root = service.rootInActiveWindow ?: return
         try {
@@ -164,8 +162,6 @@ class NodePicker : BaseBlocker(), NodePickerOverlay.Listener {
         stopPicker()
     }
 
-    // ── Selection plumbing ──
-
     /** Re-resolve the current path against a fresh root and refresh the overlay. */
     private fun refreshSelection() {
         val root = service.rootInActiveWindow ?: return
@@ -216,8 +212,6 @@ class NodePicker : BaseBlocker(), NodePickerOverlay.Listener {
         return cur
     }
 
-    // ── Hit testing ──
-
     /** Path to the deepest node whose bounds contain (x, y), preferring later (upper) siblings. */
     private fun pathTo(node: AccessibilityNodeInfo, x: Int, y: Int, prefix: List<Int>): List<Int>? {
         if (visitCount++ > MAX_VISIT) return null
@@ -232,8 +226,6 @@ class NodePicker : BaseBlocker(), NodePickerOverlay.Listener {
         }
         return best
     }
-
-    // ── Info and selectors ──
 
     /** Most specific single selector for [node]: a view id, else a description, else a path. */
     private fun bestSelector(node: AccessibilityNodeInfo): String {

@@ -61,7 +61,6 @@ class HorizontalNumberPicker @JvmOverloads constructor(
             setOnTouchListener { _, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
-                        // Start incrementing when button is pressed
                         incrementButton.performClick()
                         startIncrementing()
 
@@ -69,7 +68,6 @@ class HorizontalNumberPicker @JvmOverloads constructor(
                     }
 
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        // Stop incrementing when button is released
                         stopIncrementing()
                         true
                     }
@@ -87,14 +85,12 @@ class HorizontalNumberPicker @JvmOverloads constructor(
                 setOnTouchListener { _, event ->
                     when (event.action) {
                         MotionEvent.ACTION_DOWN -> {
-                            // Start incrementing when button is pressed
                             decrementButton.performClick()
                             startDecrementing()
                             true
                         }
 
                         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                            // Stop incrementing when button is released
                             stopDecrementing()
                             true
                         }
@@ -118,7 +114,7 @@ class HorizontalNumberPicker @JvmOverloads constructor(
                     setValue(currentValue + 1)
                 }
                 incrementButton.performClick()
-                delay(100) // Increment every 100 milliseconds
+                delay(100)
             }
         }
     }
@@ -139,7 +135,7 @@ class HorizontalNumberPicker @JvmOverloads constructor(
                     setValue(currentValue - 1)
                 }
                 decrementButton.performClick()
-                delay(100) // Increment every 100 milliseconds
+                delay(100)
             }
         }
     }
@@ -149,7 +145,6 @@ class HorizontalNumberPicker @JvmOverloads constructor(
         decrementJob = null
     }
 
-    // Cleanup method to be called when the view is detached
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         coroutineScope.cancel()

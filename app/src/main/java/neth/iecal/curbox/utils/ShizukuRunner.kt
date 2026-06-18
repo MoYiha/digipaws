@@ -36,22 +36,18 @@ class ShizukuRunner {
         fun executeCommand(command: String, listener: CommandResultListener, lineBundle: Int = 50) {
             Thread {
                 try {
-                    // Initialize the Shizuku process
                     val process = IShizukuService.Stub.asInterface(Shizuku.getBinder())
                         .newProcess(arrayOf("sh", "-c", command), null, null)
 
-                    // Readers for command output and error streams
                     val outputReader = BufferedReader(InputStreamReader(FileInputStream(process.inputStream.fileDescriptor)))
                     val errorReader = BufferedReader(InputStreamReader(FileInputStream(process.errorStream.fileDescriptor)))
 
-                    // StringBuilders for capturing output and errors
                     val outputBuffer = StringBuilder()
                     val errorBuffer = StringBuilder()
 
                     var line: String?
                     var lineCount = 0
 
-                    // Read output stream
                     while (outputReader.readLine().also { line = it } != null) {
                         lineCount++
                         outputBuffer.append(line).append("\n")
@@ -64,23 +60,19 @@ class ShizukuRunner {
                         }
                     }
 
-                    // Read error stream
                     while (errorReader.readLine().also { line = it } != null) {
                         errorBuffer.append(line).append("\n")
                     }
 
-                    // Notify listener of results or errors
                     if (errorBuffer.isNotBlank()) {
                         listener.onCommandError(errorBuffer.toString())
                     } else {
                         listener.onCommandResult(outputBuffer.toString(), true)
                     }
 
-                    // Wait for process to complete
                     process.waitFor()
 
                 } catch (e: Exception) {
-                    // Notify listener of exceptions
                     listener.onCommandError(e.message ?: "An unexpected error occurred while executing the command.")
                 }
             }.start()

@@ -34,18 +34,15 @@ object ZipUtils {
     }
 
 
-    // Function to show directory picker
     fun showDirectoryPicker(launcher: ActivityResultLauncher<Intent>) {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         launcher.launch(intent)
     }
 
-    // Save zip to user selected location
     fun zipSharedPreferencesToUri(context: Context, outputUri: Uri) {
         try {
             context.contentResolver.openOutputStream(outputUri)?.use { outputStream ->
                 ZipOutputStream(BufferedOutputStream(outputStream)).use { zos ->
-                    // Get list of shared preferences files
                     val sharedPrefsDir = File(context.filesDir.parent, "shared_prefs")
 
                     for (file in sharedPrefsDir.listFiles() ?: emptyArray()) {
@@ -64,16 +61,14 @@ object ZipUtils {
         }
     }
 
-    // Load zip from user selected location
     fun unzipSharedPreferencesFromUri(context: Context, inputUri: Uri) {
         try {
             context.contentResolver.openInputStream(inputUri)?.use { inputStream ->
                 ZipInputStream(BufferedInputStream(inputStream)).use { zis ->
                     val sharedPrefsDir = File(context.filesDir.parent, "shared_prefs")
 
-//                    sharedPrefsDir.deleteRecursively()
                     if (!sharedPrefsDir.exists()) {
-                        sharedPrefsDir.mkdir() // Ensure the directory exists
+                        sharedPrefsDir.mkdir()
                     }
 
                     var entry = zis.nextEntry
@@ -82,7 +77,6 @@ object ZipUtils {
                         val outputFile = File(sharedPrefsDir, entry.name)
 
                         Log.d("Unzipping", entry.name + " to ${outputFile.path}")
-                        // Ensure the file is deleted if it already exists
                         if (outputFile.exists()) {
                             outputFile.delete()
                         }
@@ -92,7 +86,7 @@ object ZipUtils {
                         )
 
                         FileOutputStream(outputFile).use { outputStream ->
-                            zis.copyTo(outputStream) // Efficiently copy data
+                            zis.copyTo(outputStream)
                         }
 
                         zis.closeEntry()
@@ -118,7 +112,6 @@ object ZipUtils {
         }
     }
 
-    // Utility function to create a zip file name with timestamp
     fun createZipFileName(): String {
         val timestamp = System.currentTimeMillis()
         return "backup_$timestamp.zip"

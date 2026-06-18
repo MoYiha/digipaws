@@ -188,7 +188,6 @@ class SelectAppsActivity : AppCompatActivity() {
             val profiles = launcherApps.profiles
             val installedPackages = mutableSetOf<String>()
 
-            // Load installed apps
             for (profile in profiles) {
                 val apps = launcherApps.getActivityList(null, profile)
                     .map { it.applicationInfo }

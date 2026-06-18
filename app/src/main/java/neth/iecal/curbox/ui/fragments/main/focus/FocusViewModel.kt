@@ -52,7 +52,6 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
                 _autoDndGroups.value = settings.autoDndGroups
                 _currentRunningFocus.value = settings.activeManualFocusGroupId
 
-                // Auto-select logic
                 if (selectedGroup == null && settings.manualFocusGroups.isNotEmpty()) {
                     val lastGroupId = prefs.getString("lastFocusGroupId", null)
                     val lastUsedGroup = settings.manualFocusGroups.find { it.groupId == lastGroupId }
@@ -162,7 +161,6 @@ class FocusViewModel(application: Application) : AndroidViewModel(application) {
                 delay(100L)
             }
 
-            // Timer Finished
             onTimerFinished()
         }
     }

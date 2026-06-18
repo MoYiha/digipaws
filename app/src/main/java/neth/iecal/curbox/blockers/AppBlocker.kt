@@ -88,35 +88,28 @@ class AppBlocker() : BaseBlocker() {
         if (event == null || (event.eventType and TARGET_EVENTS_MASK) == 0) return
 
         val packageName = event.packageName?.toString() ?: return
-//        Log.d("AppBlocker", "Checking package: $packageName, lastPackage: $lastPackage, eventType: ${event.eventType}")
 
         if (lastPackage == packageName || packageName == service.packageName || packageName == "com.android.systemui") {
-            // Log.v("AppBlocker", "Skipping check for $packageName")
             return
         }
 
         if (onOpenAppsList.containsKey(lastPackage) && lastPackage != packageName) {
-//            Log.d("AppBlocker", "Removing session cooldown for $lastPackage as we moved to $packageName")
             removeCooldownFrom(lastPackage)
         }
 
         lastPackage = packageName
-//        Log.d("AppBlocker", "Processing $packageName. Maps state - Usage: ${blockedAppsList.size}, Timed: ${timeBlockedAppsList.size}, OnOpen: ${onOpenAppsList.size}")
 
         if (cooldownAppsList.containsKey(packageName)) {
             val endTime = cooldownAppsList[packageName]!!
             if (endTime < System.currentTimeMillis()) {
-//                Log.d("AppBlocker", "Cooldown expired for $packageName")
                 removeCooldownFrom(packageName)
             } else {
-//                Log.d("AppBlocker", "App $packageName is in cooldown until $endTime")
                 notificationManager.startTimer(totalMillis = endTime - System.currentTimeMillis(), timerId = packageName, title = "Remaining usage before lockdown")
                 return // Still in cooldown, let them use it
             }
         }
 
         if (onOpenAppsList.containsKey(packageName)) {
-//            Log.d("AppBlocker", "Blocking $packageName (OnOpen)")
             notificationManager.stopTimer()
             showWarningScreen(packageName)
             return

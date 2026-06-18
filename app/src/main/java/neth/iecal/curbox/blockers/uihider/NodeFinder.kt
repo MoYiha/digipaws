@@ -25,8 +25,6 @@ object NodeFinder {
 
     data class PathSegment(val className: String, val index: Int, val isWildcard: Boolean)
 
-    // ── Selector compilation ──
-
     /**
      * Compile the per node predicate selectors. The `path` selector drives a tree walk rather than a
      * per node test, so it is resolved separately and skipped here.
@@ -52,8 +50,6 @@ object NodeFinder {
         for (m in matchers) if (!m.test(node)) return false
         return true
     }
-
-    // ── Named selector search ──
 
     /**
      * First node under [start] matching [named], or null. [onVisit] is invoked once per visited node
@@ -150,8 +146,6 @@ object NodeFinder {
         }
     }
 
-    // ── String selectors (for hardcoded configs) ──
-
     /**
      * First node under [root] matching the UIHider selector [spec], or null. The node is owned by the
      * caller and should be recycled.
@@ -208,8 +202,6 @@ object NodeFinder {
         "path" -> "path"
         else -> null
     }
-
-    // ── Path walk ──
 
     /**
      * Parse a path string such as `"FrameLayout[0]>TextView[1]>ImageView[*]"` into segments.
@@ -277,8 +269,6 @@ object NodeFinder {
 
         return currentNodes
     }
-
-    // ── Node lifecycle ──
 
     private fun obtain(node: AccessibilityNodeInfo): AccessibilityNodeInfo =
         @Suppress("DEPRECATION") AccessibilityNodeInfo.obtain(node)

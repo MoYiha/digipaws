@@ -11,7 +11,6 @@ class AccessibilityHelper {
             try {
                 targetNode = node.findAccessibilityNodeInfosByViewId(id!!)[0]
             } catch (e: Exception) {
-                //e.printStackTrace();
             }
             return targetNode
         }

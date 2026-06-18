@@ -22,8 +22,6 @@ class Parser(private val tokens: List<Token>) {
         return statements
     }
 
-    // ── Statements ──
-
     private fun statement(): Stmt {
         return when {
             check(TokenType.IF) -> ifStatement()
@@ -103,8 +101,6 @@ class Parser(private val tokens: List<Token>) {
         val value = if (check(TokenType.RBRACE) || isAtEnd() || peek().line != line) null else expression()
         return Stmt.Return(value, line)
     }
-
-    // ── Expressions ──
 
     private fun expression(): Expr = or()
 
@@ -245,8 +241,6 @@ class Parser(private val tokens: List<Token>) {
             else -> throw ScriptError("unexpected '${token.lexeme.ifEmpty { "end of input" }}'", token.line)
         }
     }
-
-    // ── Token helpers ──
 
     private fun match(vararg types: TokenType): Boolean {
         if (types.any { check(it) }) { advance(); return true }

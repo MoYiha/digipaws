@@ -29,7 +29,6 @@ class ScreenTimeEstimateFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        // Initial setup
         updateRealityText(viewModel.estimatedHours.value ?: 4)
         
         binding.hoursSlider.addOnChangeListener { _, value, _ ->
