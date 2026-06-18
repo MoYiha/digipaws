@@ -33,6 +33,13 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
     private val packageManager = application.packageManager
     private val websiteStatsDao = AppDatabase.getInstance(application).websiteStatsDao()
 
+    // Search keywords typed in the URL bar get stored with the raw text as the domain.
+    // A real website domain has no spaces and contains at least one dot (e.g. "youtube.com").
+    private val domainRegex = Regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+$", RegexOption.IGNORE_CASE)
+
+    private fun WebsiteStatsEntity.isWebsite(): Boolean =
+        domain.isNotBlank() && !domain.contains(' ') && domainRegex.matches(domain)
+
     val ignoredPackages: MutableSet<String> = mutableSetOf()
 
     private val dayStatsCache = ConcurrentHashMap<LocalDate, List<AllAppsUsageFragment.Stat>>()
@@ -202,7 +209,7 @@ class AllAppsUsageViewModel(application: Application) : AndroidViewModel(applica
         }
 
         val dateString = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
-        val websiteStats = websiteStatsDao.getStatsForDate(dateString)
+        val websiteStats = websiteStatsDao.getStatsForDate(dateString).filter { it.isWebsite() }
 
         withContext(Dispatchers.Main) {
             _selectedDayStats.value = stats

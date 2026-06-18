@@ -51,6 +51,13 @@ class WebsiteUsageViewModel(application: Application, private val packageName: S
 
     private val dayLabelFormatter = DateTimeFormatter.ofPattern("MMM d")
 
+    // Search keywords typed in the URL bar get stored with the raw text as the domain.
+    // A real website domain has no spaces and contains at least one dot (e.g. "youtube.com").
+    private val domainRegex = Regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+$", RegexOption.IGNORE_CASE)
+
+    private fun WebsiteStatsEntity.isWebsite(): Boolean =
+        domain.isNotBlank() && !domain.contains(' ') && domainRegex.matches(domain)
+
     fun initialize() {
         loadWeekData()
     }
@@ -107,7 +114,7 @@ class WebsiteUsageViewModel(application: Application, private val packageName: S
                 val isFuture = date.isAfter(today)
 
                 val dateString = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
-                val stats = websiteStatsDao.getStatsForDate(dateString).filter { it.packageName == packageName }
+                val stats = websiteStatsDao.getStatsForDate(dateString).filter { it.packageName == packageName && it.isWebsite() }
                 val totalTimeMs = if (isFuture) 0L else stats.sumOf { it.totalTime }
 
                 val hours = totalTimeMs / (1000f * 60f * 60f)
@@ -137,7 +144,7 @@ class WebsiteUsageViewModel(application: Application, private val packageName: S
         val sublabel = if (isToday) "TOTAL TODAY" else "TOTAL · ${date.format(dayLabelFormatter)}"
 
         val dateString = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
-        val websiteStats = websiteStatsDao.getStatsForDate(dateString).filter { it.packageName == packageName }
+        val websiteStats = websiteStatsDao.getStatsForDate(dateString).filter { it.packageName == packageName && it.isWebsite() }
         val total = websiteStats.sumOf { it.totalTime }
 
         withContext(Dispatchers.Main) {
