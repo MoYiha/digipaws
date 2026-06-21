@@ -74,14 +74,21 @@ class ReelAppConfig {
 //            ),
 
             "com.facebook.katana" to ReelAppData(
-//                viewId = "path:android.widget.FrameLayout[0]>android.view.ViewGroup[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[0]>android.view.ViewGroup[0]>android.widget.Button[0]>android.view.ViewGroup[0]",
                 viewId = "desc:Tap to show video controls",
                 requiresPresent = listOf(),
                 comparsionResultCleanser = {
                     return@ReelAppData it.replace("Story trayCreate storyCreate storyCreate storyClose import contactsFacebook is better with friendsFacebook is better with friendsSee stories from friends by adding people you know from your contacts.See stories from friends by adding people you know from your contacts.Find friends through contacts","")
                 },
                 dynamicComparator = listOf("path:android.widget.FrameLayout[0]>android.view.ViewGroup[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[0]>android.view.ViewGroup[0]>android.widget.Button[0]>android.view.ViewGroup[2]",
-                    "path:android.widget.HorizontalScrollView[0]>androidx.viewpager.widget.ViewPager[0]>android.view.ViewGroup[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[0]>android.view.ViewGroup[0]>android.widget.Button[0]>android.view.ViewGroup[2]>android.view.ViewGroup[0]>android.view.ViewGroup[0]",))
+                    "path:android.widget.HorizontalScrollView[0]>androidx.viewpager.widget.ViewPager[0]>android.view.ViewGroup[0]>androidx.recyclerview.widget.RecyclerView[0]>android.view.ViewGroup[0]>android.view.ViewGroup[0]>android.widget.Button[0]>android.view.ViewGroup[2]>android.view.ViewGroup[0]>android.view.ViewGroup[0]",)),
+
+            "com.snapchat.android" to ReelAppData(
+                viewId = "desc:Spotlight",
+                requiresPresent = listOf(),
+                eventType = AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED,
+                dynamicComparator = listOf("path:android.widget.FrameLayout[1]>android.widget.FrameLayout[0]>android.widget.TextView[0]","path:android.widget.FrameLayout[1]>android.widget.FrameLayout[0]>android.widget.TextView[1]")
+            )
+
         )
 
     }
