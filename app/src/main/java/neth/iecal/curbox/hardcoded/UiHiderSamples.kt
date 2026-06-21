@@ -106,5 +106,18 @@ val DEFAULT_UIHIDER_SCRIPTS: List<UiHiderScript> = listOf(
                 }
             }
         """.trimIndent()
+    ),
+
+    UiHiderScript(
+        id = "snapchat_stories",
+        packageName = "com.snapchat.android",
+        label = "Snapchat: Hide stories",
+        isEnabled = false,
+        source = """
+            tab_title = find(path="android.widget.TextView[0]")
+            if tab_title != null and tab_title.text == appString("plus_default_tab_stories_title"){
+                back()
+            }
+        """.trimIndent()
     )
 )
