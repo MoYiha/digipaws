@@ -113,7 +113,7 @@
     <string name="blocking_configuration">BLOCKING CONFIGURATION</string>
     <string name="usage_based">Usage Based</string>
     <string name="time_based">Time Based</string>
-    <string name="configure_settings">Configure Schedule</string>
+    <string name="configure_settings">Configure Allowed Schedule</string>
     <string name="configure_warning_screen_1">Configure Warning Screen</string>
     <string name="done">Done</string>
     <string name="set_limits_for_each_day">Set limits for each day</string>

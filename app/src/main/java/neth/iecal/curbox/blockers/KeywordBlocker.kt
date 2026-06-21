@@ -260,6 +260,8 @@ class KeywordBlocker : BaseBlocker() {
         if (group.blockingType == AppBlockingType.Timed) isTimedBlockActive(group)
         else isUsageLimitExceeded(group, packageName)
 
+    // Intervals describe the ALLOWED time. Keywords are blocked whenever the
+    // current time falls outside every allowed interval (matching the app blocker).
     private fun isTimedBlockActive(group: KeywordGroup): Boolean {
         val config = Gson().fromJson(group.setting, AppTimeConfig::class.java) ?: return false
         val calendar = Calendar.getInstance()
@@ -273,10 +275,11 @@ class KeywordBlocker : BaseBlocker() {
         for (interval in intervals) {
             val start = TimeTools.convertToMinutesFromMidnight(interval.startHour, interval.startMinute)
             val end = TimeTools.convertToMinutesFromMidnight(interval.endHour, interval.endMinute)
-            if (start <= end) { if (currentMinutes in start until end) return true }
-            else { if (currentMinutes >= start || currentMinutes < end) return true }
+            val withinAllowed = if (start <= end) currentMinutes in start until end
+                                else currentMinutes >= start || currentMinutes < end
+            if (withinAllowed) return false
         }
-        return false
+        return true
     }
 
     private fun isUsageLimitExceeded(group: KeywordGroup, packageName: String): Boolean {
@@ -332,15 +335,21 @@ class KeywordBlocker : BaseBlocker() {
                 val intervals = if (config.isEveryday) config.everydayIntervals
                                 else config.dailyIntervals[dayOfWeek] ?: emptyList()
 
-                var minMinutesUntilStart = Int.MAX_VALUE
+                // We are inside an allowed window; re-check when it ends so the block kicks in.
+                var minMinutesUntilEnd = Int.MAX_VALUE
                 for (interval in intervals) {
                     val start = TimeTools.convertToMinutesFromMidnight(interval.startHour, interval.startMinute)
-                    if (start > currentMinutes) {
-                        minMinutesUntilStart = minOf(minMinutesUntilStart, start - currentMinutes)
+                    val end = TimeTools.convertToMinutesFromMidnight(interval.endHour, interval.endMinute)
+                    val withinAllowed = if (start <= end) currentMinutes in start until end
+                                        else currentMinutes >= start || currentMinutes < end
+                    if (withinAllowed) {
+                        val minutesUntilEnd = if (start <= end || currentMinutes < end) end - currentMinutes
+                                              else (1440 - currentMinutes) + end
+                        minMinutesUntilEnd = minOf(minMinutesUntilEnd, minutesUntilEnd)
                     }
                 }
-                if (minMinutesUntilStart != Int.MAX_VALUE) {
-                    val recheckAt = now + (minMinutesUntilStart * 60_000L) -
+                if (minMinutesUntilEnd != Int.MAX_VALUE) {
+                    val recheckAt = now + (minMinutesUntilEnd * 60_000L) -
                         (calendar.get(Calendar.SECOND) * 1000L) - calendar.get(Calendar.MILLISECOND)
                     if (nextRecheck == 0L || recheckAt < nextRecheck) nextRecheck = recheckAt
                 }

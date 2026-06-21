@@ -80,10 +80,10 @@ class CreateKeywordGroupFragment : Fragment() {
                     updateKeywordsList()
                     
                     if (group.blockingType == AppBlockingType.Usage) {
-                        binding.rbUsageBased.isChecked = true
+                        selectBlockingType(binding.rbUsageBased)
                         viewModel.currentUsageConfig = Gson().fromJson(group.setting, AppUsageConfig::class.java)
                     } else {
-                        binding.rbTimeBased.isChecked = true
+                        selectBlockingType(binding.rbTimeBased)
                         viewModel.currentTimeConfig = Gson().fromJson(group.setting, AppTimeConfig::class.java)
                     }
 
@@ -97,10 +97,7 @@ class CreateKeywordGroupFragment : Fragment() {
         val radioButtons = listOf(binding.rbUsageBased, binding.rbTimeBased)
 
         radioButtons.forEach { rb ->
-            rb.setOnClickListener {
-                radioButtons.forEach { it.isChecked = false }
-                rb.isChecked = true
-            }
+            rb.setOnClickListener { selectBlockingType(rb) }
         }
 
         binding.btnHelpUsage.setOnClickListener {
@@ -108,8 +105,13 @@ class CreateKeywordGroupFragment : Fragment() {
         }
 
         binding.btnHelpTime.setOnClickListener {
-            ViewUtils.showHelpPopup(it, "Block these keywords during specific time intervals during the day.", "https://curbox.app/docs/reducers/keyword-blocker/")
+            ViewUtils.showHelpPopup(it, "Allow these keywords only during specific time intervals during the day (e.g., during work hours). They stay blocked the rest of the time.", "https://curbox.app/docs/reducers/keyword-blocker/")
         }
+    }
+
+    private fun selectBlockingType(selected: View) {
+        binding.rbUsageBased.isChecked = selected == binding.rbUsageBased
+        binding.rbTimeBased.isChecked = selected == binding.rbTimeBased
     }
 
     private fun setupListeners() {
