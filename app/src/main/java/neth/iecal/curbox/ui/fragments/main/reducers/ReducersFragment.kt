@@ -1,9 +1,13 @@
 package neth.iecal.curbox.ui.fragments.main.reducers
 
 import android.os.Bundle
+import android.transition.AutoTransition
+import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import neth.iecal.curbox.R
 
@@ -96,6 +100,24 @@ class ReducersFragment : Fragment() {
                 putExtra("fragment", neth.iecal.curbox.ui.fragments.main.reducers.analytics.IntentsLogFragment.FRAGMENT_ID)
             }
             startActivity(intent)
+        }
+
+        val apiCard = view.findViewById<MaterialCardView>(R.id.card_api)
+        apiCard.setOnClickListener {
+            val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                putExtra("fragment", neth.iecal.curbox.ui.fragments.main.reducers.api.ApiFragment.FRAGMENT_ID)
+            }
+            startActivity(intent)
+        }
+
+        val advancedHeader = view.findViewById<View>(R.id.advanced_header)
+        val advancedContent = view.findViewById<View>(R.id.advanced_content)
+        val advancedArrow = view.findViewById<ImageView>(R.id.advanced_arrow)
+        advancedHeader.setOnClickListener {
+            val isVisible = advancedContent.isVisible
+            TransitionManager.beginDelayedTransition(view.findViewById(R.id.reducers_root), AutoTransition())
+            advancedContent.isVisible = !isVisible
+            advancedArrow.animate().rotation(if (isVisible) 0f else 90f).start()
         }
 
         return view

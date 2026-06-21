@@ -886,4 +886,24 @@
     <string name="terms_consent_exit">Not now</string>
     <string name="terms_url" translatable="false">https://curbox.app/terms.html</string>
     <string name="privacy_url" translatable="false">https://curbox.app/privacy.html</string>
+
+    <!-- Curbox API -->
+    <string name="label_automation">AUTOMATION</string>
+    <string name="api_screen_title">Curbox API</string>
+    <string name="api_card_subtitle">Let other apps control Curbox</string>
+    <string name="api_screen_subtitle">Other apps can ask to start focus mode, flip blockers, and read your stats. You decide who gets in.</string>
+    <string name="api_enable_title">Allow other apps</string>
+    <string name="api_enable_subtitle">When this is off, no app can control Curbox, even ones you allowed before.</string>
+    <string name="api_connected_title">Connected apps</string>
+    <string name="api_no_apps">No apps yet. When an app asks for access, I will check with you first, then show it here.</string>
+    <string name="api_revoke">Remove</string>
+    <string name="api_how_title">How it works</string>
+    <string name="api_how_body">When another app wants to control Curbox, I show you a screen with its name and ask if you want to allow it. If you say yes, it shows up here and can run commands until you remove it. Removing an app cuts off its access right away.</string>
+    <string name="api_help_popup">Other apps can ask to control Curbox. You allow or deny each one, and you can remove access any time.</string>
+
+    <!-- Curbox API permission screen -->
+    <string name="api_permission_title">Allow access?</string>
+    <string name="api_permission_message">%1$s wants to control Curbox. It can start focus sessions, turn blockers on or off, and read your screen time. You can remove this any time.</string>
+    <string name="api_permission_allow">Allow</string>
+    <string name="api_permission_deny">Deny</string>
 </resources>
