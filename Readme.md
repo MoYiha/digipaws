@@ -134,3 +134,14 @@ For questions or feedback, please open an issue on the GitHub repository or reac
 * Discord: @nethical
 * Telegram: @nethicalps
 * Email: [aguptaq88@gmail.com](aguptaq88@gmail.com)
+
+### TAGS (ignore em pls)
+
+<details>
+<summary>Keywords</summary>
+
+app blocker, free app blocker, open source app blocker, screen time app, screen time tracker, digital wellbeing app, focus app, productivity app, website blocker, porn blocker, adult content blocker, distraction blocker, social media blocker, Instagram blocker, Instagram Reels blocker, YouTube Shorts blocker, TikTok blocker, Snapchat Spotlight blocker, short form video blocker, doomscrolling blocker, reel counter, scroll counter, dopamine detox app, digital detox app, phone addiction app, screen addiction app, internet addiction app, self control app, focus mode app, deep work app, study focus app, grayscale app, app usage tracker, usage stats app, schedule DND app, app timer, app limit app, time limit app.
+
+StayFree alternative, Opal alternative, Freedom app alternative, Forest app alternative, Cold Turkey alternative, AppBlock alternative, ScreenZen alternative, one sec alternative, BlockSite alternative, Stay Focused alternative, ActionDash alternative, Digital Wellbeing alternative, Brick alternative, Unpluq alternative, Refocus alternative, Roots app alternative, Clearspace alternative, Jomo alternative, LockMeOut alternative, Detox app alternative, ZenScreen alternative, Minimalist Phone alternative, RescueTime alternative, Offtime alternative, Flipd alternative, Forest focus alternative, free StayFree alternative, open source Freedom alternative, no subscription app blocker, offline app blocker, private screen time app, app blocker without internet, Android app blocker, F-Droid app blocker, Shizuku app blocker.
+
+</details>
