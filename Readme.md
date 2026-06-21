@@ -33,6 +33,11 @@ The entire codebase is public. Anyone can verify how the app works. This ensures
 * Respect for Your Data
 Because there is no cloud connection, you are the sole owner of your statistics. There are literally a few companies selling your usage insights for millions so the algorithm can be further strengthened to keep you trapped.
 
+### Platforms:
+- Android (this repository)
+- [Web Extension Repository](https://github.com/curbox-app/curbox-extension)
+- IOS (comming soon)
+
 ### Independent Reviews & Endorsements
 
 * **HowToMen (900k followers):** [Top 20 shizuku apps 2025](https://youtu.be/hGsPpd0uIco?t=123&si=I4wFOCA-ePm61XLk)
@@ -60,13 +65,12 @@ Curbox goes beyond simple app timers. It targets the specific triggers that lead
 - **Short-Form Content Blocker:** Specifically target Instagram Reels and YouTube Shorts.
 - **Granular UI Hiding:** Block specific parts of an app's UI (e.g., block the entire YouTube home feed while allowing searches or hide instagram feed while allowing posts and messages from friends).
 - **URL Path Blocking:** Block specific sections of a website (e.g., block `m.youtube.com/shorts/*` but allow `m.youtube.com`).
-- **Automatic Redirection:** Automatically redirect to a different website when a blocked website is accessed.
 
 #### Insights & Awareness
 - **Usage Analytics:** Detailed insights into app and website usage.
 - **Focus Statistics:** Track your progress and focus sessions.
 - **Live Scroll Counter:** See a real-time count of how many short-form videos you've scrolled through.
-- **Session Timer:** A live timer showing how much time has elapsed since you opened the app.
+- **Session Timer:** A live timer showing how much time has elapsed since you opened a given app.
 
 #### Mindful Usage Tools
 - **Focus Mode:** Temporarily pause apps and websites to stay focused on your work.
@@ -85,9 +89,13 @@ Define what happens when you try to open an app outside its allowed schedule:
 - **Sentence Retyping:** Requires physically typing a specific sentence (e.g., "I am giving up on my goals to use this app right now") to unlock.
 - **Unlock Limits:** Set how many subsequent unlocks you can perform every X hours.
 
-### How to install
+#### For Developers
+- **[Curbox API](CURBOX_API.md):** Let your apps directly interact with curbox and start focus modes, change settings, get usage stats, etc. Requires user permission
 
-App can be downloaded from [GitHub Releases](https://github.com/nethical6/curbox/releases)
+### How to install
+[Read the documentation to get the step by step instructions](https://curbox.app/docs)
+
+App can be downloaded from (still highly recommended to read docs) [GitHub Releases](https://github.com/nethical6/curbox/releases)
 
 ### Contributing
 
@@ -110,7 +118,7 @@ for a new browser, etc.
 ### Special Thanks
 
 * All my beloved donors and sponsors
-* Digipaws: Inspiration for the entire code structure and working mechanism
+* Digipauws: Inspiration for the entire code structure and working mechanism
 * Usage Direct: For help with app usage statistics.
 * Redd Focus: For the foundation of the view blocker system.
 * ShizuTools: For Shizuku runner implementations.

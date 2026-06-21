@@ -1,8 +1,8 @@
 # Curbox API
 
-Curbox exposes an API that lets other apps control it, kinda similar way as Shizuku: your app
-binds to a service, the user approves your app once, and from then on you can run commands and read
-state. Access is per app and revocable, so the user is always in control.
+Curbox exposes an API that lets other apps control it, much like Shizuku does: your app binds to a
+service, the user approves your app once, and after that you can run commands and read state. Access
+is per app and revocable, so the user stays in control.
 
 This document is the integration guide. A complete working client lives in the `:apitester` module
 of this repo; read its `MainActivity.kt` alongside this doc.
@@ -105,7 +105,7 @@ fun connect() {
 
 ## 4. Request permission
 
-A binder cannot show UI, so permission is asked through an activity. Launch it
+A binder cannot show UI, so the permission request goes through an activity instead. Launch it
 **for result** so Curbox can read your package reliably:
 
 ```kotlin
