@@ -23,6 +23,7 @@ import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.keywordBlocker.CreateKeywordGroupFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHiderFragment
 import neth.iecal.curbox.ui.fragments.main.reducers.blockertools.uiHider.UiHiderEditorFragment
+import neth.iecal.curbox.ui.fragments.main.reducers.advanced.AntiUninstallFragment
 import androidx.core.view.isVisible
 import android.animation.ValueAnimator
 import android.content.Context
@@ -87,6 +88,7 @@ class FragmentActivity : AppCompatActivity() {
             neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID,
             KeywordBlockerFragment.FRAGMENT_ID,
             neth.iecal.curbox.ui.fragments.main.reducers.api.ApiFragment.FRAGMENT_ID,
+            AntiUninstallFragment.FRAGMENT_ID,
             CreateKeywordGroupFragment.FRAGMENT_ID -> {
                 // Hide bottom nav for these standalone fragments
                 bottomNav.visibility = android.view.View.GONE
@@ -108,6 +110,7 @@ class FragmentActivity : AppCompatActivity() {
                     neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment.FRAGMENT_ID -> neth.iecal.curbox.ui.fragments.main.reducers.anti_stimulants.mindful_messages.MindfulMessagesFragment()
                     IntentsLogFragment.FRAGMENT_ID -> IntentsLogFragment()
                     neth.iecal.curbox.ui.fragments.main.reducers.api.ApiFragment.FRAGMENT_ID -> neth.iecal.curbox.ui.fragments.main.reducers.api.ApiFragment()
+                    AntiUninstallFragment.FRAGMENT_ID -> AntiUninstallFragment()
                     else -> AccessibilityGuide()
                 }
                 fragment.arguments = intent.extras

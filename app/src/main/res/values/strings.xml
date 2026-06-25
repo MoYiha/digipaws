@@ -8,17 +8,20 @@
     <string name="minutes">minutes</string>
     <string name="app_icon">app_icon</string>
     <string name="accessibility_permission_app_blocker">
+        #CURBOX_TRIGGER#
         Turning this on lets Curbox do these things for you:\n1. Block apps\n2. Block short form content\n3. Block websites and keywords\n4. Focus Mode\n5. Hide parts of an app\'s screen that distract you\n\n
         Curbox needs accessibility access to see which app, website, or screen you are on, so it can step in and block it the way you set. Without this, none of the blocking can work.\n\n
         Curbox keeps everything safely on your phone. It never shares or sends your data, so your privacy is always safe.
         \n\n
     </string>
     <string name="accessibility_permission_usage_tracker">
+        #CURBOX_TRIGGER#
         This feature needs the Display over other apps permission to work. Please turn that on first, then turn this on. If something stops working, restart the app.\n\n
 
         Turning this on lets Curbox do these things for you:\n1. See how long you spend in each app\n2. Count how much short form content you scroll, and show the count in a floating overlay\n3. See which websites you visit and for how long\n\n
         Curbox needs accessibility access to read which app or website is on your screen, so it can keep these stats for you. Without this, tracking cannot work.\n\n
         Curbox keeps everything safely on your phone. It never shares or sends your data, so your privacy is always safe.
+        $CURBOX_TRIGGER$
         \n\n
     </string>
     <string name="admin_permission_desc">Curbox Anti-Uninstall</string>
@@ -900,6 +903,63 @@
     <string name="api_how_title">How it works</string>
     <string name="api_how_body">When another app wants to control Curbox, I show you a screen with its name and ask if you want to allow it. If you say yes, it shows up here and can run commands until you remove it. Removing an app cuts off its access right away.</string>
     <string name="api_help_popup">Other apps can ask to control Curbox. You allow or deny each one, and you can remove access any time.</string>
+
+    <!-- Uninstall protection -->
+    <string name="anti_uninstall_title">Uninstall protection</string>
+    <string name="anti_uninstall_card_subtitle">Make it harder to remove Curbox</string>
+    <string name="anti_uninstall_subtitle">When this is on, Curbox cannot be uninstalled until you turn it off the way you chose. Think of it like a seatbelt for your willpower.</string>
+    <string name="anti_uninstall_disable_warning">Curbox keeps itself installed to protect your focus. Turn off uninstall protection inside the app first.</string>
+    <string name="anti_uninstall_admin_explanation">Curbox uses this to stop itself from being uninstalled while protection is on.</string>
+    <string name="anti_uninstall_admin_needed">I need this permission to keep Curbox installed.</string>
+    <string name="anti_uninstall_help_popup">When this is on, Curbox cannot be uninstalled and its services cannot be switched off until you turn it off using the method you picked: a password, a wait of a few days, or a one day cooldown you can stop anytime.</string>
+
+    <string name="anti_uninstall_status_off_title">Protection is off</string>
+    <string name="anti_uninstall_status_off_body">Curbox can be uninstalled right now.</string>
+    <string name="anti_uninstall_status_on_title">Protection is on</string>
+    <string name="anti_uninstall_status_unlocking_title">Turning off soon</string>
+    <string name="anti_uninstall_status_unlocking_body">Protection turns off in %1$s.</string>
+
+    <string name="anti_uninstall_summary_password">I will need my password to turn this off.</string>
+    <plurals name="anti_uninstall_summary_timed">
+        <item quantity="one">This turns off %1$d day after I ask.</item>
+        <item quantity="other">This turns off %1$d days after I ask.</item>
+    </plurals>
+    <string name="anti_uninstall_summary_cooldown">I can turn this off after a one day wait, and stop the wait anytime.</string>
+
+    <string name="anti_uninstall_pick_mode">How do I turn it off later?</string>
+    <string name="anti_uninstall_mode_password_title">Password</string>
+    <string name="anti_uninstall_mode_password_desc">Turn off right away with a password only I know.</string>
+    <string name="anti_uninstall_mode_timed_title">Timed</string>
+    <string name="anti_uninstall_mode_timed_desc">Turn off on its own after a set number of days.</string>
+    <string name="anti_uninstall_mode_cooldown_title">As long as I am able</string>
+    <string name="anti_uninstall_mode_cooldown_desc">Ask to turn off and it lifts after one day. I can stop the wait anytime.</string>
+    <string name="anti_uninstall_days_hint">Days to wait</string>
+    <string name="anti_uninstall_days_error">Enter at least one day.</string>
+
+    <string name="anti_uninstall_turn_on">Turn on protection</string>
+    <string name="anti_uninstall_turn_off">Turn off protection</string>
+    <string name="anti_uninstall_keep_on">Keep protection on</string>
+    <string name="anti_uninstall_turned_on">Protection is on.</string>
+    <string name="anti_uninstall_start">Start</string>
+    <string name="anti_uninstall_cancel">Cancel</string>
+    <string name="anti_uninstall_save">Save</string>
+
+    <string name="anti_uninstall_set_password_title">Set a password</string>
+    <string name="anti_uninstall_enter_password_title">Enter your password</string>
+    <string name="anti_uninstall_password_hint">Password</string>
+    <string name="anti_uninstall_password_confirm_hint">Type it again</string>
+    <string name="anti_uninstall_password_too_short">Pick a password with at least four letters.</string>
+    <string name="anti_uninstall_password_mismatch">The two passwords do not match.</string>
+    <string name="anti_uninstall_wrong_password">That password is wrong.</string>
+
+    <plurals name="anti_uninstall_timed_confirm">
+        <item quantity="one">Protection will turn off on its own in %1$d day. Once the wait starts, it cannot be stopped.</item>
+        <item quantity="other">Protection will turn off on its own in %1$d days. Once the wait starts, it cannot be stopped.</item>
+    </plurals>
+    <string name="anti_uninstall_cooldown_confirm">Protection will turn off in one day. You can stop the wait anytime before then.</string>
+
+    <string name="anti_uninstall_remaining">%1$dh %2$dm %3$ds</string>
+    <string name="anti_uninstall_remaining_with_days">%1$dd %2$dh %3$dm %4$ds</string>
 
     <!-- Curbox API permission screen -->
     <string name="api_permission_title">Allow access?</string>
