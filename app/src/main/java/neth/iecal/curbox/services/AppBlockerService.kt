@@ -35,6 +35,8 @@ class AppBlockerService : BaseBlockingService() {
 
     private var grayScaleFilter = GrayScaleFilter()
 
+    override val isAppBlockerService: Boolean = true
+
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val eventChannel = Channel<AccessibilityEvent>(Channel.CONFLATED) { droppedEvent ->

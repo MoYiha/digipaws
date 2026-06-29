@@ -118,6 +118,14 @@ class ReducersFragment : Fragment() {
             startActivity(intent)
         }
 
+        val serviceProtectionCard = view.findViewById<MaterialCardView>(R.id.card_service_protection)
+        serviceProtectionCard.setOnClickListener {
+            val intent = Intent(requireContext(), FragmentActivity::class.java).apply {
+                putExtra("fragment", neth.iecal.curbox.ui.fragments.main.reducers.advanced.ServiceProtectionFragment.FRAGMENT_ID)
+            }
+            startActivity(intent)
+        }
+
         val advancedHeader = view.findViewById<View>(R.id.advanced_header)
         val advancedContent = view.findViewById<View>(R.id.advanced_content)
         val advancedArrow = view.findViewById<ImageView>(R.id.advanced_arrow)

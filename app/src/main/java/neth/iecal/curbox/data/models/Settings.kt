@@ -20,5 +20,6 @@ data class Settings(
     val uiHiderConfig: UiHiderConfig = UiHiderConfig(),
     val reelCounterOverlayConfig: ReelCounterOverlayConfig = ReelCounterOverlayConfig(),
     val nextWebsiteRecheckTime: Long = 0L,
-    val antiUninstallConfig: AntiUninstallConfig = AntiUninstallConfig()
+    val antiUninstallConfig: AntiUninstallConfig = AntiUninstallConfig(),
+    val serviceProtectionConfig: ServiceProtectionConfig = ServiceProtectionConfig()
 )

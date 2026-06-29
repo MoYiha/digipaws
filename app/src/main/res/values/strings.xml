@@ -904,6 +904,42 @@
     <string name="api_how_body">When another app wants to control Curbox, I show you a screen with its name and ask if you want to allow it. If you say yes, it shows up here and can run commands until you remove it. Removing an app cuts off its access right away.</string>
     <string name="api_help_popup">Other apps can ask to control Curbox. You allow or deny each one, and you can remove access any time.</string>
 
+    <!-- Service protection (keep alive) -->
+    <string name="service_protection_title">Keep services alive</string>
+    <string name="service_protection_card_subtitle">Stop my blockers from being killed</string>
+    <string name="service_protection_subtitle">Some phones shut my services down to save battery. This turns on a few layers that keep them running and bring them back fast if they stop. It cannot make them impossible to stop, but it gets very close.</string>
+    <string name="service_protection_master_title">Protection</string>
+    <string name="service_protection_master_desc">Turn on all the layers below</string>
+    <string name="service_protection_status_header">What is working now</string>
+    <string name="service_protection_row_services_title">My services</string>
+    <string name="service_protection_services_on">Both are running</string>
+    <string name="service_protection_services_off">One or both are off right now</string>
+    <string name="service_protection_row_battery_title">Battery freedom</string>
+    <string name="service_protection_battery_ok">My phone will not sleep my services</string>
+    <string name="service_protection_battery_bad">My phone may stop my services to save power</string>
+    <string name="service_protection_row_autostart_title">Auto start</string>
+    <string name="service_protection_row_autostart_desc">Your phone brand hides a setting that lets me start on my own. Please allow it.</string>
+    <string name="service_protection_row_shizuku_title">Auto repair</string>
+    <string name="service_protection_shizuku_on">I can turn my services back on by myself</string>
+    <string name="service_protection_shizuku_off">Set up Shizuku to let me repair myself</string>
+    <string name="service_protection_fix">Fix</string>
+    <string name="service_protection_open">Open</string>
+    <string name="service_protection_setup">Set up</string>
+    <string name="service_protection_shizuku_not_installed">Shizuku is not running. Opening its website.</string>
+    <string name="service_protection_repair_now">Repair now</string>
+    <string name="service_protection_repair_started">Trying to repair my services</string>
+    <string name="service_protection_no_screen">I could not open that screen on this phone</string>
+    <string name="service_protection_autostart_manual">Please open your phone settings and allow Curbox to auto start.</string>
+    <string name="service_protection_advanced_header">Advanced</string>
+    <string name="service_protection_device_owner">Make Curbox a device owner</string>
+    <string name="service_protection_device_owner_warning">This is the strongest option. It stays on even after a force stop and blocks uninstall fully. It only works on a phone with no accounts added, and it is hard to undo later. Only do this if you are sure.</string>
+    <string name="service_protection_cancel">Cancel</string>
+    <string name="service_protection_continue">Continue</string>
+    <string name="service_protection_help_popup">Phones often kill background apps to save battery. This screen turns on battery freedom, auto start, a watchdog that checks on my services, and, if you set up Shizuku, the power to switch my services back on by myself. Nothing can make an app truly impossible to stop, but together these make it very hard.</string>
+    <string name="service_protection_channel_name">Service protection</string>
+    <string name="service_protection_down_title">My blockers stopped</string>
+    <string name="service_protection_down_text">Tap to turn them back on so your blocks keep working.</string>
+
     <!-- Uninstall protection -->
     <string name="anti_uninstall_title">Uninstall protection</string>
     <string name="anti_uninstall_card_subtitle">Make it harder to remove Curbox</string>

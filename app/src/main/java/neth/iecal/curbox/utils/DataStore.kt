@@ -118,4 +118,8 @@ class DataStoreManager(private val context: Context) {
     suspend fun updateAntiUninstallConfig(transform: (neth.iecal.curbox.data.models.AntiUninstallConfig) -> neth.iecal.curbox.data.models.AntiUninstallConfig) {
         settingsDataStore.updateData { it.copy(antiUninstallConfig = transform(it.antiUninstallConfig)) }
     }
+
+    suspend fun updateServiceProtectionConfig(transform: (neth.iecal.curbox.data.models.ServiceProtectionConfig) -> neth.iecal.curbox.data.models.ServiceProtectionConfig) {
+        settingsDataStore.updateData { it.copy(serviceProtectionConfig = transform(it.serviceProtectionConfig)) }
+    }
 }
