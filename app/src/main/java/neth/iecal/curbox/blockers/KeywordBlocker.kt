@@ -56,7 +56,7 @@ class KeywordBlocker : BaseBlocker() {
     // Maps group ID → (compiled regexes, lowercase literal keywords)
     private var groupPatternMap = mutableMapOf<String, Pair<List<Regex>, List<String>>>()
 
-    private val detectionCache = LruCache<String, KeywordGroup>(200)
+    private val detectionCache = LruCache<String, List<KeywordGroup>>(200)
     private var isTurnedOn = false
     private var isUnsupportedBrowserBlockingOn = false
     private var lastpkg = ""
@@ -69,20 +69,16 @@ class KeywordBlocker : BaseBlocker() {
     private fun matchesPatterns(patterns: Pair<List<Regex>, List<String>>, urlIdentifier: String): Boolean =
         KeywordMatcher.matchesPatterns(patterns, urlIdentifier)
 
-    private fun findMatchingGroup(urlIdentifier: String): KeywordGroup? {
-        val cached = detectionCache.get(urlIdentifier)
-        if (cached != null) return if (cached.id == "SAFE") null else cached
+    // Returns every active group whose keywords match, preserving activeGroups order so the
+    // first group in the list wins the tie-break when more than one would block.
+    private fun findMatchingGroups(urlIdentifier: String): List<KeywordGroup> {
+        detectionCache.get(urlIdentifier)?.let { return it }   // empty list = cached "no match"
 
-        for (group in activeGroups) {
-            val patterns = groupPatternMap[group.id] ?: continue
-            if (matchesPatterns(patterns, urlIdentifier)) {
-                detectionCache.put(urlIdentifier, group)
-                return group
-            }
+        val matches = activeGroups.filter { group ->
+            groupPatternMap[group.id]?.let { matchesPatterns(it, urlIdentifier) } == true
         }
-
-        detectionCache.put(urlIdentifier, KeywordGroup(id = "SAFE"))
-        return null
+        detectionCache.put(urlIdentifier, matches)
+        return matches
     }
 
     private fun matchesGroup(group: KeywordGroup, urlIdentifier: String): Boolean {
@@ -157,18 +153,34 @@ class KeywordBlocker : BaseBlocker() {
     }
 
     private fun evaluateAndBlock(entry: WebsiteStatsEntity) {
-        val matchedGroup = findMatchingGroup(entry.urlIdentifier) ?: return
+        val matched = findMatchingGroups(entry.urlIdentifier)
+        if (matched.isEmpty()) return
+        val now = System.currentTimeMillis()
 
-        val cooldownEnd = cooldownGroupsList[matchedGroup.id]
-        if (cooldownEnd != null) {
-            if (cooldownEnd > System.currentTimeMillis()) return
-            else removeCooldownFrom(matchedGroup.id)
+        // Block if any matched group demands it; the first group in list order wins its warning screen.
+        // A group in cooldown is skipped so the others can still decide.
+        for (group in matched) {
+            val cooldownEnd = cooldownGroupsList[group.id]
+            if (cooldownEnd != null) {
+                if (cooldownEnd > now) continue
+                else removeCooldownFrom(group.id)
+            }
+            if (isBlocked(group)) {
+                handleBlocking(group)
+                return
+            }
         }
 
-        if (isBlocked(matchedGroup)) {
-            handleBlocking(matchedGroup)
-        } else {
-            calculateAndSetNextRecheck(matchedGroup)
+        // None blocked → schedule the soonest re-check across the matched groups
+        var soonest = 0L
+        for (group in matched) {
+            val recheck = computeNextRecheck(group)
+            if (recheck > now && (soonest == 0L || recheck < soonest)) soonest = recheck
+        }
+        if (soonest > now) {
+            CoroutineScope(Dispatchers.IO).launch {
+                service.dataStoreManager.updateNextWebsiteRecheckTime(soonest)
+            }
         }
     }
 
@@ -236,7 +248,9 @@ class KeywordBlocker : BaseBlocker() {
         }
     }
 
-    private fun calculateAndSetNextRecheck(group: KeywordGroup) {
+    // Returns when this group should next be re-checked (0 if no re-check is needed). The caller is
+    // responsible for persisting the soonest value across all matched groups.
+    private fun computeNextRecheck(group: KeywordGroup): Long {
         val now = System.currentTimeMillis()
         var nextRecheck = 0L
 
@@ -290,11 +304,7 @@ class KeywordBlocker : BaseBlocker() {
             if (nextRecheck == 0L || cooldownEnd < nextRecheck) nextRecheck = cooldownEnd + 500
         }
 
-        if (nextRecheck > now) {
-            CoroutineScope(Dispatchers.IO).launch {
-                service.dataStoreManager.updateNextWebsiteRecheckTime(nextRecheck)
-            }
-        }
+        return nextRecheck
     }
 
     private var configJob: Job? = null
